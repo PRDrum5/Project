@@ -9,32 +9,24 @@ from torch.utils.data import DataLoader
 from torch.utils.data import sampler
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
-from utils import denorm
+import utils
+import models
+import loss_functions
 
 # Use GPU if available
-GPU = True
-device_idx = 0
-if GPU:
-    device = torch.device("cuda:" + str(device_idx) if torch.cuda.is_available() else "cpu")
-else:
-    device = torch.device("cpu")
-print(device)
-
+device = utils.use_gpu()
 
 # Fix Random Seed
-if torch.cuda.is_available():
-    torch.backends.cudnn.deterministic = True
-torch.manual_seed(0)
-
+utils.fix_seed()
 
 ### Parameters ###
 model_name = './DCGAN'
 batch_size = 128
-NUM_TRAIN = 49000
 num_epochs = 100
 learning_rate  = 0.0002
-latent_vector_size = 100
+latent_z = 100
 
+# Make file system for model and data
 data_dir = '.././datasets'
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
@@ -64,145 +56,41 @@ cifar10_test = datasets.CIFAR10(data_dir,
                                 download=True, 
                                 transform=transform)
 
+train_size = 49000
+
 loader_train = DataLoader(cifar10_train, 
                           batch_size=batch_size, 
-                          sampler=sampler.SubsetRandomSampler(range(NUM_TRAIN)))
+                          sampler=sampler.SubsetRandomSampler(range(train_size)))
 
 loader_val = DataLoader(cifar10_val, 
                         batch_size=batch_size, 
-                        sampler=sampler.SubsetRandomSampler(range(NUM_TRAIN, 50000)))
+                        sampler=sampler.SubsetRandomSampler(range(train_size, 50000)))
 
 loader_test = DataLoader(cifar10_test, batch_size=batch_size)
 
 it = iter(loader_test)
 sample_inputs, _ = next(it)
 fixed_input = sample_inputs[0:32, :, :, :]
-save_image(denorm(fixed_input), os.path.join(model_name, 'input_sample.png'))
-
-class Generator(nn.Module):
-    def __init__(self):
-        super(Generator, self).__init__()
-
-        self.conv_t1 = nn.ConvTranspose2d(100, 512, kernel_size=2, stride=1, bias=False)
-        self.conv_t2 = nn.ConvTranspose2d(512, 256, kernel_size=2, stride=2, bias=False)
-        self.conv_t3 = nn.ConvTranspose2d(256, 128, kernel_size=2, stride=2, bias=False)
-        self.conv_t4 = nn.ConvTranspose2d(128, 64, kernel_size=2, stride=2, bias=False)
-        self.conv_t5 = nn.ConvTranspose2d(64, 3, kernel_size=2, stride=2, bias=False)
-        
-        self.batch_norm1 = nn.BatchNorm2d(512)
-        self.batch_norm2 = nn.BatchNorm2d(256)
-        self.batch_norm3 = nn.BatchNorm2d(128)
-        self.batch_norm4 = nn.BatchNorm2d(64)
-        
-        self.relu = nn.ReLU()
-        
-        self.tanh = nn.Tanh()
-        
-
-    def decode(self, x):
-        x = self.conv_t1(x)
-        x = self.batch_norm1(x)
-        x = self.relu(x)
-        
-        x = self.conv_t2(x)
-        x = self.batch_norm2(x)
-        x = self.relu(x)
-        
-        x = self.conv_t3(x)
-        x = self.batch_norm3(x)
-        x = self.relu(x)
-        
-        x = self.conv_t4(x)
-        x = self.batch_norm4(x)
-        x = self.relu(x)
-        
-        x = self.conv_t5(x)
-        x = self.tanh(x)
-
-        return x
-
-    def forward(self, z):
-        print("z = ", z.shape)
-        1/0
-        return self.decode(z)
-    
-
-class Discriminator(nn.Module):
-    def __init__(self):
-        super(Discriminator, self).__init__()
-
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=4, stride=2, padding=1, bias=False)
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=4, stride=2, padding=1, bias=False)
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=4, stride=2, padding=1, bias=False)
-        self.conv4 = nn.Conv2d(256, 512, kernel_size=4, stride=2, padding=1, bias=False)
-        self.conv5 = nn.Conv2d(512, 1, kernel_size=2, stride=1, padding=0, bias=False)
-        
-        self.batch_norm1 = nn.BatchNorm2d(128)
-        self.batch_norm2 = nn.BatchNorm2d(256)
-        self.batch_norm3 = nn.BatchNorm2d(512)
-        
-        self.dropout = nn.Dropout2d(p=0.5)
-        
-        self.leaky_relu = nn.LeakyReLU(negative_slope=0.2)
-        
-        self.sigmoid = nn.Sigmoid()
-        
-    def discriminator(self, x):
-        x = self.conv1(x)
-        x = self.leaky_relu(x)
-        x = self.dropout(x)
-        
-        x = self.conv2(x)
-        x = self.batch_norm1(x)
-        x = self.leaky_relu(x)
-        x = self.dropout(x)
-        
-        x = self.conv3(x)
-        x = self.batch_norm2(x)
-        x = self.leaky_relu(x)
-        x = self.dropout(x)
-        
-        x = self.conv4(x)
-        x = self.batch_norm3(x)
-        x = self.leaky_relu(x)
-        x = self.dropout(x)
-        
-        x = self.conv5(x)
-        out = self.sigmoid(x)
-        
-        return out
-
-    def forward(self, x):
-        print("x = ", x.shape)
-        1/0
-        out = self.discriminator(x)
-        return out.view(-1, 1).squeeze(1)
+save_image(utils.denorm(fixed_input), os.path.join(model_name, 'input_sample.png'))
 
 
-# custom weights initialization called on netG and netD
-def weights_init(m):
-    classname = m.__class__.__name__
-    if classname.find('Conv') != -1:
-        m.weight.data.normal_(0.0, 0.02)
-    elif classname.find('BatchNorm') != -1:
-        m.weight.data.normal_(1.0, 0.02)
-        m.bias.data.fill_(0)
+# Instantiate models
+weight_norm = 'weight_norm'
+function_norm = 'batch_norm'
 
-
-use_weights_init = True
-
-model_G = Generator().to(device)
-if use_weights_init:
-    model_G.apply(weights_init)
-params_G = sum(p.numel() for p in model_G.parameters() if p.requires_grad)
+model_G = models.DC_Generator(z_dim=latent_z, 
+                              norm_weights=weight_norm, 
+                              norm_function=function_norm).to(device)
+model_G.apply(utils.weights_init)
+params_G = utils.param_count(model_G)
 print("Total number of parameters in Generator is: {}".format(params_G))
 print(model_G)
 print('\n')
 
-model_D = Discriminator().to(device)
-if use_weights_init:
-    model_D.apply(weights_init)
-params_D = sum(p.numel() for p in model_D.parameters() if p.requires_grad)
+model_D = models.DC_Discriminator(norm_weights=weight_norm,
+                                  norm_function=function_norm).to(device)
+model_D.apply(utils.weights_init)
+params_D = utils.param_count(model_D)
 print("Total number of parameters in Discriminator is: {}".format(params_D))
 print(model_D)
 print('\n')
@@ -221,7 +109,7 @@ optimizerD = torch.optim.Adam(model_D.parameters(), lr=learning_rate, betas=(bet
 optimizerG = torch.optim.Adam(model_G.parameters(), lr=learning_rate, betas=(beta1, 0.999))
 
 
-fixed_noise = torch.randn(batch_size, latent_vector_size, 1, 1, device=device)
+fixed_noise = torch.randn(batch_size, latent_z, 1, 1, device=device)
 real_label = 1
 fake_label = 0
 
@@ -252,7 +140,7 @@ for epoch in range(num_epochs):
         D_x = output.mean().item()
 
         # train with fake
-        noise = torch.randn(batch_size, latent_vector_size, 1, 1, device=device)
+        noise = torch.randn(batch_size, latent_z, 1, 1, device=device)
         fake = model_G(noise)
         label.fill_(fake_label)
         output = model_D(fake.detach())
@@ -289,7 +177,7 @@ for epoch in range(num_epochs):
     train_losses_G.append(train_loss_G / len(loader_train))
             
 # save losses and models
-np.save(os.path.join(model_name, 'train_losses_G.npy', np.array(train_losses_G)))
-np.save(os.path.join(model_name, 'train_losses_D.npy', np.array(train_losses_D)))
+np.save(os.path.join(model_name, 'train_losses_G.npy'), np.array(train_losses_G))
+np.save(os.path.join(model_name, 'train_losses_D.npy'), np.array(train_losses_D))
 torch.save(model_G.state_dict(), os.path.join(model_name, 'DCGAN_model_G.pth'))
 torch.save(model_D.state_dict(), os.path.join(model_name, 'DCGAN_model_D.pth'))
