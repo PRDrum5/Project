@@ -2,3 +2,4 @@ datasets/
 Papers/
 .idea
 Repo_Details.md
+__pycache__/
