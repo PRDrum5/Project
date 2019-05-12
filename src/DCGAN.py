@@ -19,12 +19,14 @@ device = utils.use_gpu()
 # Fix Random Seed
 utils.fix_seed()
 
-### Parameters ###
+# ==============================================================================
+# =                                Parameters                                  =
+# ==============================================================================
+
+logging = 100
 model_name = './DCGAN'
 batch_size = 128
 num_epochs = 100
-learning_rate  = 0.0002
-latent_z = 100
 
 # Make file system for model and data
 data_dir = '.././datasets'
@@ -34,7 +36,10 @@ if not os.path.exists(data_dir):
 if not os.path.exists(model_name):
     os.makedirs(model_name)
 
-# Data Pre-Processing
+# ==============================================================================
+# =                            Data Pre-Processing                             =
+# ==============================================================================
+
 transform = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=(0.5, 0.5, 0.5), std=(0.5, 0.5, 0.5))
@@ -73,111 +78,96 @@ sample_inputs, _ = next(it)
 fixed_input = sample_inputs[0:32, :, :, :]
 save_image(utils.denorm(fixed_input), os.path.join(model_name, 'input_sample.png'))
 
+# ==============================================================================
+# =                            Instantiate Models                              =
+# ==============================================================================
 
-# Instantiate models
 weight_norm = 'weight_norm'
 function_norm = 'batch_norm'
+loss_mode = 'gan'
+d_learning_rate  = 0.0002
+g_learning_rate  = 0.0002
+latent_z = 100
 
 model_G = models.DC_Generator(z_dim=latent_z, 
                               norm_weights=weight_norm, 
                               norm_function=function_norm).to(device)
 model_G.apply(utils.weights_init)
 params_G = utils.param_count(model_G)
-print("Total number of parameters in Generator is: {}".format(params_G))
-print(model_G)
-print('\n')
 
 model_D = models.DC_Discriminator(norm_weights=weight_norm,
                                   norm_function=function_norm).to(device)
 model_D.apply(utils.weights_init)
 params_D = utils.param_count(model_D)
+
+print("Total number of parameters in Generator is: {}".format(params_G))
+print(model_G)
+print('\n')
 print("Total number of parameters in Discriminator is: {}".format(params_D))
 print(model_D)
 print('\n')
-
 print("Total number of parameters is: {}".format(params_G + params_D))
 
-criterion = nn.BCELoss(reduction='mean')
-def loss_function(out, label):
-    loss = criterion(out, label)
-    return loss
+# GAN loss function
+d_loss_fn, g_loss_fn = loss_functions.get_losses_fn(loss_mode)
 
-# setup optimizer
-# You are free to add a scheduler or change the optimizer if you want. We chose one for you for simplicity.
-beta1 = 0.5
-optimizerD = torch.optim.Adam(model_D.parameters(), lr=learning_rate, betas=(beta1, 0.999))
-optimizerG = torch.optim.Adam(model_G.parameters(), lr=learning_rate, betas=(beta1, 0.999))
+# Optimizer
+d_optimizer = torch.optim.Adam(model_D.parameters(), lr=d_learning_rate, betas=(0.5, 0.999))
+g_optimizer = torch.optim.Adam(model_G.parameters(), lr=g_learning_rate, betas=(0.5, 0.999))
 
 
-fixed_noise = torch.randn(batch_size, latent_z, 1, 1, device=device)
-real_label = 1
-fake_label = 0
+# ==============================================================================
+# =                              Train Model                                   =
+# ==============================================================================
+disc_training_losses = []
+d_training_loss = 0
 
-
-export_folder = model_name
-train_losses_G = []
-train_losses_D = []
-
-logging = 10
+gen_training_losses = []
+g_training_loss = 0
 
 for epoch in range(num_epochs):
-    for i, data in enumerate(loader_train, 0):
-        train_loss_D = 0
-        train_loss_G = 0
-        
-        ############################
-        # (1) Update D network: maximize log(D(x)) + log(1 - D(G(z)))
-        ###########################
-        # train with real
+    for i, x in enumerate(loader_train, 0):
+
+        # Enter training mode
+        model_D.train()
+        model_G.train()
+
+        # Train Discriminator
+        x = x.to(device)
+        z = torch.randn(batch_size, latent_z).to(device)
+
+        x_gen = model_G(z).detach()
+
+        d_x_loss, d_x_gen_loss = d_loss_fn(model_D(x), model_D(x_gen))
+
+        d_loss = d_x_loss + d_x_gen_loss
+        d_training_loss += d_loss.item()
+
         model_D.zero_grad()
-        real_cpu = data[0].to(device)
-        batch_size = real_cpu.size(0)
-        label = torch.full((batch_size,), real_label, device=device)
+        d_loss.backward()
+        d_optimizer.step()
 
-        output = model_D(real_cpu)
-        errD_real = loss_function(output, label)
-        errD_real.backward()
-        D_x = output.mean().item()
+        # Train Generator
+        z = torch.randn(batch_size, latent_z).to(device)
 
-        # train with fake
-        noise = torch.randn(batch_size, latent_z, 1, 1, device=device)
-        fake = model_G(noise)
-        label.fill_(fake_label)
-        output = model_D(fake.detach())
-        errD_fake = loss_function(output, label)
-        errD_fake.backward()
-        D_G_z1 = output.mean().item()
-        errD = errD_real + errD_fake
-        train_loss_D += errD.item()
-        optimizerD.step()
+        x_gen = model_G(z)
 
-        ############################
-        # (2) Update G network: maximize log(D(G(z)))
-        ###########################
+        g_loss = g_loss_fn(model_D(x_gen))
+        g_training_loss += g_loss.item()
+
         model_G.zero_grad()
-        label.fill_(real_label)  # fake labels are real for generator cost
-        output = model_D(fake)
-        errG = loss_function(output, label)
-        errG.backward()
-        D_G_z2 = output.mean().item()
-        train_loss_G += errG.item()
-        optimizerG.step()
-        
-        if i % logging == 0:
-            print('[%d/%d][%d/%d] Loss_D: %.4f Loss_G: %.4f D(x): %.4f D(G(z)): %.4f / %.4f'
-                  % (epoch, num_epochs, i, len(loader_train),
-                     errD.item(), errG.item(), D_x, D_G_z1, D_G_z2))
+        g_loss.backward()
+        g_optimizer.step()
 
-    if epoch == 0:
-        save_image(denorm(real_cpu.cpu()), os.path.join(model_name, 'real_samples.png'))
+        if i % logging == 0:
+            print("{:>6}/{:6} {:>6}/{:6} Loss D: {:f} Loss G: {:f}".format(
+                epoch, num_epochs, i, len(loader_train), d_loss.item(), g_loss.item()))
     
-    fake = model_G(fixed_noise)
-    save_image(denorm(fake.cpu()), os.path.join(model_name, 'fake_samples_epoch_%03d.png' % epoch))
-    train_losses_D.append(train_loss_D / len(loader_train))
-    train_losses_G.append(train_loss_G / len(loader_train))
-            
+    disc_training_losses.append(d_training_loss / len(loader_train))
+    gen_training_losses.append(g_training_loss / len(loader_train))
+
 # save losses and models
-np.save(os.path.join(model_name, 'train_losses_G.npy'), np.array(train_losses_G))
-np.save(os.path.join(model_name, 'train_losses_D.npy'), np.array(train_losses_D))
+np.save(os.path.join(model_name, 'train_losses_G.npy'), np.array(gen_training_losses))
+np.save(os.path.join(model_name, 'train_losses_D.npy'), np.array(disc_training_losses))
 torch.save(model_G.state_dict(), os.path.join(model_name, 'DCGAN_model_G.pth'))
 torch.save(model_D.state_dict(), os.path.join(model_name, 'DCGAN_model_D.pth'))
