@@ -2,6 +2,7 @@
 # This will provide a foundation on which to build more complex GAN models.
 
 import os
+import datetime
 import torch
 import torch.nn as nn
 import numpy as np
@@ -20,25 +21,28 @@ device = utils.use_gpu()
 utils.fix_seed()
 
 # ==============================================================================
-# =                                Parameters                                  =
+# =                            Model Directories                               =
 # ==============================================================================
 
-logging = 100
-model_name = './DCGAN'
-batch_size = 128
-num_epochs = 100
+model_dir = '../models/'
+model_name = 'DCGAN'
+time_now = datetime.datetime.now()
+experiment_name = '{0}_{1}'.format(time_now.strftime('%Y\%m\%d\%H:%M'), model_name)
+experiment_dir = os.path.join(model_dir, experiment_name)
 
 # Make file system for model and data
 data_dir = '.././datasets'
 if not os.path.exists(data_dir):
     os.makedirs(data_dir)
 
-if not os.path.exists(model_name):
-    os.makedirs(model_name)
+if not os.path.exists(experiment_dir):
+    os.makedirs(experiment_dir)
 
 # ==============================================================================
 # =                            Data Pre-Processing                             =
 # ==============================================================================
+
+batch_size = 128
 
 transform = transforms.Compose([
     transforms.ToTensor(),
@@ -46,37 +50,9 @@ transform = transforms.Compose([
     ])
 
 # Download and Construct Dataset
-cifar10_train = datasets.CIFAR10(data_dir, 
-                                 train=True, 
-                                 download=True,
-                                 transform=transform)
+cifar10 = datasets.CIFAR10(data_dir, train=True, download=True, transform=transform)
 
-cifar10_val = datasets.CIFAR10(data_dir, 
-                               train=True, 
-                               download=True,
-                               transform=transform)
-
-cifar10_test = datasets.CIFAR10(data_dir, 
-                                train=False, 
-                                download=True, 
-                                transform=transform)
-
-train_size = 49000
-
-loader_train = DataLoader(cifar10_train, 
-                          batch_size=batch_size, 
-                          sampler=sampler.SubsetRandomSampler(range(train_size)))
-
-loader_val = DataLoader(cifar10_val, 
-                        batch_size=batch_size, 
-                        sampler=sampler.SubsetRandomSampler(range(train_size, 50000)))
-
-loader_test = DataLoader(cifar10_test, batch_size=batch_size)
-
-it = iter(loader_test)
-sample_inputs, _ = next(it)
-fixed_input = sample_inputs[0:32, :, :, :]
-save_image(utils.denorm(fixed_input), os.path.join(model_name, 'input_sample.png'))
+data_loader = DataLoader(cifar10, batch_size=batch_size, shuffle=True)
 
 # ==============================================================================
 # =                            Instantiate Models                              =
@@ -87,7 +63,7 @@ function_norm = 'batch_norm'
 loss_mode = 'gan'
 d_learning_rate  = 0.0002
 g_learning_rate  = 0.0002
-latent_z = 100
+latent_z = 64
 
 model_G = models.DC_Generator(z_dim=latent_z, 
                               norm_weights=weight_norm, 
@@ -107,7 +83,7 @@ print("Total number of parameters in Discriminator is: {}".format(params_D))
 print(model_D)
 print('\n')
 print("Total number of parameters is: {}".format(params_G + params_D))
-
+1/0
 # GAN loss function
 d_loss_fn, g_loss_fn = loss_functions.get_losses_fn(loss_mode)
 
@@ -115,26 +91,32 @@ d_loss_fn, g_loss_fn = loss_functions.get_losses_fn(loss_mode)
 d_optimizer = torch.optim.Adam(model_D.parameters(), lr=d_learning_rate, betas=(0.5, 0.999))
 g_optimizer = torch.optim.Adam(model_G.parameters(), lr=g_learning_rate, betas=(0.5, 0.999))
 
-
 # ==============================================================================
 # =                              Train Model                                   =
 # ==============================================================================
+num_epochs = 100
+
+logging = 100
+
 disc_training_losses = []
 d_training_loss = 0
 
 gen_training_losses = []
 g_training_loss = 0
 
+# Fix a noise value for repeated evaluation.
+z_sample = torch.randn(1, latent_z, 1, 1).to(device)
+
 for epoch in range(num_epochs):
-    for i, x in enumerate(loader_train, 0):
+    for i, x in enumerate(data_loader, 0):
 
         # Enter training mode
         model_D.train()
         model_G.train()
 
         # Train Discriminator
-        x = x.to(device)
-        z = torch.randn(batch_size, latent_z).to(device)
+        x = x[0].to(device)
+        z = torch.randn(batch_size, latent_z, 1, 1).to(device)
 
         x_gen = model_G(z).detach()
 
@@ -148,7 +130,7 @@ for epoch in range(num_epochs):
         d_optimizer.step()
 
         # Train Generator
-        z = torch.randn(batch_size, latent_z).to(device)
+        z = torch.randn(batch_size, latent_z, 1, 1).to(device)
 
         x_gen = model_G(z)
 
@@ -160,11 +142,18 @@ for epoch in range(num_epochs):
         g_optimizer.step()
 
         if i % logging == 0:
-            print("{:>6}/{:6} {:>6}/{:6} Loss D: {:f} Loss G: {:f}".format(
-                epoch, num_epochs, i, len(loader_train), d_loss.item(), g_loss.item()))
-    
-    disc_training_losses.append(d_training_loss / len(loader_train))
-    gen_training_losses.append(g_training_loss / len(loader_train))
+            print("epoch: {}/{}    sample: {}/{} Loss D: {:f} Loss G: {:f}".format(
+                epoch, num_epochs, i, len(data_loader), d_loss.item(), g_loss.item()))
+            
+    # sample
+    model_G.eval()
+    x_gen_sample = model_G(z_sample)
+
+    image_name = 'sample_image_{0}.jpg'.format(epoch)
+    save_image(x_gen_sample, os.path.join(model_name, image_name))
+
+    disc_training_losses.append(d_training_loss / len(data_loader))
+    gen_training_losses.append(g_training_loss / len(data_loader))
 
 # save losses and models
 np.save(os.path.join(model_name, 'train_losses_G.npy'), np.array(gen_training_losses))

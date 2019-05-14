@@ -35,10 +35,10 @@ class DC_Generator(nn.Module):
             return layer
 
         self.gen_model = nn.Sequential(
-            conv_t_bn_relu_dp(in_dim=z_dim, out_dim=512, kernel_size=2, stride=1),
-            conv_t_bn_relu_dp(in_dim=512,   out_dim=256, kernel_size=2, stride=2),
-            conv_t_bn_relu_dp(in_dim=256,   out_dim=128, kernel_size=2, stride=2),
-            conv_t_bn_relu_dp(in_dim=128,   out_dim=64,  kernel_size=2, stride=2),
+            conv_t_bn_relu_dp(in_dim=z_dim, out_dim=256, kernel_size=3, stride=1),
+            conv_t_bn_relu_dp(in_dim=256,   out_dim=256, kernel_size=3, stride=2),
+            conv_t_bn_relu_dp(in_dim=256,   out_dim=128, kernel_size=3, stride=2),
+            conv_t_bn_relu_dp(in_dim=128,   out_dim=64,  kernel_size=2, stride=1),
             nn.ConvTranspose2d(in_channels=64, out_channels=3, kernel_size=2, stride=2),
             nn.Tanh()
         )
@@ -77,12 +77,14 @@ class DC_Discriminator(nn.Module):
                         )
             return layer
 
-        self.gen_model = nn.Sequential(
-            conv_bn_lrelu_dp(in_dim=3,   out_dim=64,  kernel_size=2, stride=2),
-            conv_bn_lrelu_dp(in_dim=64,  out_dim=128, kernel_size=2, stride=2),
-            conv_bn_lrelu_dp(in_dim=128, out_dim=256, kernel_size=2, stride=2),
-            conv_bn_lrelu_dp(in_dim=256, out_dim=512, kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=512, out_channels=1, kernel_size=2, stride=1),
+        self.disc_model = nn.Sequential(
+            conv_bn_lrelu_dp(in_dim=3,   out_dim=128, kernel_size=3, stride=1),
+            conv_bn_lrelu_dp(in_dim=128, out_dim=128, kernel_size=3, stride=1),
+            conv_bn_lrelu_dp(in_dim=128, out_dim=256, kernel_size=3, stride=1),
+            conv_bn_lrelu_dp(in_dim=256, out_dim=256, kernel_size=2, stride=2),
+            conv_bn_lrelu_dp(in_dim=256, out_dim=128, kernel_size=2, stride=2),
+            conv_bn_lrelu_dp(in_dim=128, out_dim=128, kernel_size=2, stride=2),
+            nn.Conv2d(in_channels=128, out_channels=1, kernel_size=3, stride=1),
             nn.Sigmoid()
         )
 
@@ -90,5 +92,5 @@ class DC_Discriminator(nn.Module):
         """
         Carries out a forward pass through the discriminator model
         """
-        out = self.discriminator(x)
+        out = self.disc_model(x)
         return out.view(-1, 1).squeeze(1)
