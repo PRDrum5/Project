@@ -63,7 +63,7 @@ function_norm = 'batch_norm'
 loss_mode = 'gan'
 d_learning_rate  = 0.0002
 g_learning_rate  = 0.0002
-latent_z = 64
+latent_z = 128
 
 model_G = models.DC_Generator(z_dim=latent_z, 
                               norm_weights=weight_norm, 
