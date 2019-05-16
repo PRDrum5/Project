@@ -1,4 +1,4 @@
-# Attempt to replicate the DCGAN model on the CIFAR dataset.
+# Attempt to replicate the DCGAN model on the CIFAR10 dataset.
 # This will provide a foundation on which to build more complex GAN models.
 
 import os
@@ -11,7 +11,7 @@ from torch.utils.data import sampler
 from torchvision import datasets, transforms
 from torchvision.utils import save_image
 import utils
-import models
+import dcgan_model
 import loss_functions
 
 # Use GPU if available
@@ -65,13 +65,13 @@ d_learning_rate  = 0.0002
 g_learning_rate  = 0.0002
 latent_z = 128
 
-model_G = models.DC_Generator(z_dim=latent_z, 
+model_G = dcgan_model.DC_Generator(z_dim=latent_z, 
                               norm_weights=weight_norm, 
                               norm_function=function_norm).to(device)
 model_G.apply(utils.weights_init)
 params_G = utils.param_count(model_G)
 
-model_D = models.DC_Discriminator(norm_weights=weight_norm,
+model_D = dcgan_model.DC_Discriminator(norm_weights=weight_norm,
                                   norm_function=function_norm).to(device)
 model_D.apply(utils.weights_init)
 params_D = utils.param_count(model_D)
@@ -83,7 +83,7 @@ print("Total number of parameters in Discriminator is: {}".format(params_D))
 print(model_D)
 print('\n')
 print("Total number of parameters is: {}".format(params_G + params_D))
-1/0
+
 # GAN loss function
 d_loss_fn, g_loss_fn = loss_functions.get_losses_fn(loss_mode)
 
@@ -94,7 +94,7 @@ g_optimizer = torch.optim.Adam(model_G.parameters(), lr=g_learning_rate, betas=(
 # ==============================================================================
 # =                              Train Model                                   =
 # ==============================================================================
-num_epochs = 100
+num_epochs = 50
 
 logging = 100
 
@@ -119,6 +119,9 @@ for epoch in range(num_epochs):
         z = torch.randn(batch_size, latent_z, 1, 1).to(device)
 
         x_gen = model_G(z).detach()
+
+        print(x_gen.shape)
+        1/0
 
         d_x_loss, d_x_gen_loss = d_loss_fn(model_D(x), model_D(x_gen))
 

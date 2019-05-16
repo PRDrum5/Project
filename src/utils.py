@@ -1,7 +1,6 @@
 # Selection of helper functions
 
 import torch
-import torch.nn as nn
 
 def use_gpu(GPU=True, device_idx=0):
     """
@@ -46,38 +45,6 @@ def param_count(model):
     parms = sum(p.numel() for p in model.parameters() if p.requires_grad)
     return parms
 
-
-class NoOp(nn.Module):
-
-    def __init__(self, *args, **keyword_args):
-        super(NoOp, self).__init__()
-
-    def forward(self, x):
-        return x
-
-
-def identity(x, *args, **keyword_args):
-    return x
-
-
-def _get_norm_func_2D(norm):  # 2d
-    if norm == 'batch_norm':
-        return nn.BatchNorm2d
-    elif norm == None:
-        return NoOp
-    else:
-        raise NotImplementedError
-
-
-def _get_weight_norm_func(weight_norm):
-    if weight_norm == 'spectral_norm':
-        return nn.utils.spectral_norm
-    elif weight_norm == 'weight_norm':
-        return nn.utils.weight_norm
-    elif weight_norm == None:
-        return identity
-    else:
-        return NotImplementedError
 
 
 
