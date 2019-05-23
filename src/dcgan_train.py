@@ -65,14 +65,13 @@ d_learning_rate  = 0.0002
 g_learning_rate  = 0.0002
 latent_z = 128
 
-model_G = dcgan_model.DC_Generator(z_dim=latent_z, 
-                              norm_weights=weight_norm, 
-                              norm_function=function_norm).to(device)
+model_G = dcgan_model.Conv_Generator(z_dim=latent_z, 
+                                     norm_function=function_norm).to(device)
 model_G.apply(utils.weights_init)
 params_G = utils.param_count(model_G)
 
-model_D = dcgan_model.DC_Discriminator(norm_weights=weight_norm,
-                                  norm_function=function_norm).to(device)
+model_D = dcgan_model.Conv_Discriminator(norm_weights=weight_norm,
+                                         norm_function=function_norm).to(device)
 model_D.apply(utils.weights_init)
 params_D = utils.param_count(model_D)
 

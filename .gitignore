@@ -1,6 +1,17 @@
 datasets/
+downloads/
 Papers/
 .idea
 Repo_Details.md
 __pycache__/
 .ipynb_checkpoints/
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.brf

@@ -42,6 +42,8 @@ class Generator(nn.Module):
         self.norm_fn = _get_norm_func_2D(norm_function)
         self.weight_norm_fn = _get_weight_norm_func(norm_weights)
 
+        self.gen_model = nn.Sequential()
+
         def forward(self):
             pass
 
@@ -51,6 +53,8 @@ class Discriminator(nn.Module):
 
         self.norm_fn = _get_norm_func_2D(norm_function)
         self.weight_norm_fn = _get_weight_norm_func(norm_weights)
+
+        self.disc_model = nn.Sequential()
 
         def forward(self):
             pass

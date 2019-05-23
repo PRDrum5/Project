@@ -16,11 +16,12 @@ class Conv_Generator(Generator):
             ReLU 
             """
             layer = nn.Sequential(
-                        self.weight_norm_fn(nn.ConvTranspose2d(in_dim, 
-                                                               out_dim, 
-                                                               kernel_size, 
-                                                               stride, 
-                                                               padding)),
+                        self.weight_norm_fn(
+                            nn.ConvTranspose2d(in_dim, 
+                                               out_dim, 
+                                               kernel_size, 
+                                               stride, 
+                                               padding)),
                         self.norm_fn(out_dim),
                         nn.ReLU())
             return layer
