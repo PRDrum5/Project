@@ -39,7 +39,12 @@ The paper points out that this method of achieving the Lipschtiz condition is no
 Other points of note, the loss plot produced by the WGAN model seems to correlate with perceived image quality, which could not be said for precious loss functions.
 
 \subsection{Improved Training of Wasserstein GANs}
-WGAN+GP \cite{Gulrajani2017}
+To improve the Lipschitz constraint condition to the WGANs \cite{Arjovsky2017}, an alternate method is proposed by using gradient penalty \cite{Gulrajani2017}.
+Paper examines the distribution of weights with WGAN and found that weights are bunched around clipping limits.
+With WGAN+GP the weights form a normal distribution, allowing more complex functions to be captured as clipped weights for a bias to simple functions, limiting the model capacity.
+No batch normalization is used, as this is no longer valid when using gradient penalty.
+This loss function seems to be able to train any architecture, even ResNet architectures which had currently been unsuccessful when used in GANs models.
+Training speed is also improved compared with WGAN.
 
 \subsection{Progressive Growing of GANs for Improved Quality, Stability, and Variation}
 Progressive growing GANs \cite{Karras2017b}
