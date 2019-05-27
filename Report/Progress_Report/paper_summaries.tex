@@ -1,0 +1,120 @@
+\documentclass[12pt]{article}
+
+\title{Paper Summaries}
+\author{Peter Robertson}
+\date{}
+
+\begin{document}
+\maketitle
+
+\section{GANs Based Methods}
+\subsection{Generative Adversarial Network}
+The original GANs paper proposed by Ian Goodfellow \cite{Goodfellow2014}.
+This paper uses two feed forward neural networks (as proof of concept) as generator and discriminator.
+The original loss function is used, although it is mentioned that even at this stage issues with it are highlighted.
+Argument made to say that while learning a probability distribution is great, the goal is to produce samples from it, so generating sample from an implicit distribution is as useful.
+No need to go into extreme depth as this was covered in the Deep Learning lectures.
+
+\subsection{Conditional Generative Adversarial Nets}
+Conditional GANs \cite{Mirza2014} extend from Goodfellow's work \cite{Goodfellow2014} by concatenating an input to the input noise given the generator.
+This is performed on the MNIST Dataset \cite{LeCun2010} by conditioning the generator on a given digit to produce.
+
+\subsection{DCGAN}
+This paper \cite{Radford2016} takes the concept of adversarial training of neural networks and applies it with convolutional neural networks on the CIFAR10 dataset \cite{Krizhevsky2009}.
+The paper also attempts to make some progress in stabilizing the training of GANs models with the use of Batch Normalization before the input to each subsequent layer.
+Experimentally this is shown to assist training by helping gradients to flow through the network and poor weight initialization.
+
+\subsection{Wasserstein GANs}
+In an attempt to stabilize the training of GANs models, the Wasserstein or 'Earth-Mover' loss function is proposed \cite{Arjovsky2017}.
+By using the Wasserstein loss function, the generator and discriminator no longer have to alternate training epochs to try to maintain model stability.
+By using the Wasserstein loss function, the discriminator (critic as it is called in this paper) is trained to an optimum point, at which time the loss provided to the generator is at a maximum, making training the generator easier.
+The generator can then be trained to an optimum position, at which time, training the critic can continue again.
+This method has greatly improved stability and is fairly robust to a large range of model architectures which have been tested.
+The generator and critic also no longer have to have a similar capacity.
+
+To achieve this, the Lipschtiz condition must be met.
+This is achieved by clipping the weights on the model.
+The paper points out that this method of achieving the Lipschtiz condition is non-ideal and is a point of further work.
+
+Other points of note, the loss plot produced by the WGAN model seems to correlate with perceived image quality, which could not be said for precious loss functions.
+
+\subsection{Improved Training of Wasserstein GANs}
+WGAN+GP \cite{Gulrajani2017}
+
+\subsection{Progressive Growing of GANs for Improved Quality, Stability, and Variation}
+Progressive growing GANs \cite{Karras2017b}
+
+\subsection{End-to-End Speech-Driven Facial Animation with Temporal GANs}
+These guys are downstairs \cite{Vougioukas2018}
+
+\subsection{Self-Attention Generative Adversarial Networks}
+Attention GANs, Goodfellow involved \cite{Zhang2018}
+
+\subsection{Few-Shot Adversarial Learning of Realistic Neural Talking Head Models}
+This paper uses meta-learning on conjunction with adversarial learning methods \cite{Zakharov2019}.
+The paper aims to learn an encoding which represents a person's face and then use this to generate video of the subject moving into an unseen position.
+The model initially learns an encoding based on several frames from an input video from random positions in the video.
+Once the subject encoding has been learnt, the model continues to learn to construct frames of video of the subject using facial landmarks to drive the positioning.
+Training is performed with existing positions in the video which the GAN model is tested on if the presented frame is real or generated.
+After training, the model is capable to producing subjects in positions unseen in the video.
+
+In regards to 3D modelling, a similar method could be used to encode a subject in a very similar manner to what has been performed here.
+With this subject encoding, a generic neutral mesh template could be replaced by a neutral subject specific mesh template, reducing the work of the generator to just having to capture realistic movement as opposed to movement and reproducing the subject.
+
+\section{Other Generative Methods}
+\subsection{Capture, Learning, and Synthesis of {3D} Speaking Styles}
+\cite{Cudeiro2019}
+
+\subsection{Audio-driven facial animation by joint end-to-end learning of pose
+and emotion}
+Nvidia facial animation from speech \cite{Karras2017a}
+
+\subsection{End-to-end Learning for 3D Facial Animation from Raw Waveforms of
+Speech}
+\cite{Pham2017}
+
+\subsection{Synthesising 3D Facial Motion from "In-the-Wild" Speech}
+Imperial Paper \cite{Tzirakis2019}
+
+\section{3D Modelling}
+\subsection{Direct-Manipulation of Blendshapes}
+This paper \cite{Lewis2010} provides a reasonable overview of what blendshapes are.
+It's a slightly older paper from 2010, but the techniques in the field of animation haven't changed.
+Animating one second of video may take a skilled animator an hour using blendshape models.
+Blendshapes are linear weighted sum of blendshape targets.
+These targets can be facial expressions, or approximations of facial muscles.
+A blendshape can have 100+ degrees of freedom, while facial meshes have many many more.
+Limiting the degrees of freedom to a human animator to 100 is still huge, but this may oversimplify the problem to a computer.
+Facial mesh may have 5000-10000 vertices, perhaps using PCA to reduce this down is smart.
+Or maybe using a technique similar to Nvidia's Progressively growing GAN \cite{Karras2017b} may allow the DOF to be slowly increased.
+
+\subsection{Learning a model of facial shape and expression from 4D scans}
+This paper creates the FLAME head model which has been designed for animation \cite{Li2017}.
+With the aim of being computationally efficient and compatible with game engines, this model only contains 5023 vertices.
+Aim is to be a good middle ground between current simple models which are unrealistic and high end models which are very time consuming.
+Model uses very large dataset made up of multiple datasets.
+Current comparison is FaceWarehouse
+Does some work to address the issue of registering 4D scans.
+
+
+\section{Lip Reading Papers}
+\subsection{Out of Time: Automated Lip Sync in the Wild}
+Lip sync in the wild \cite{Chung2016}
+
+\section{Speech Recognition}
+\subsection{Deep Speech: Scaling up end-to-end speech recognition}
+Mozilla Deep Speech \cite{Hannun2014}
+
+\section{Attention Based Mechanism}
+\subsection{Attention is All you Need}
+Google Attention paper \cite{Vaswani2017}
+
+\subsection{Show, Attend and Tell: Neural Image Caption Generation with Visual
+Attention}
+Attention applied to images \cite{Xu2015}
+
+
+
+\bibliographystyle{unsrt}
+\bibliography{../ref}
+\end{document}
