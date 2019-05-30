@@ -1,79 +1,84 @@
-\documentclass[12pt,twoside]{report}
+\documentclass[12pt]{article}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{geometry}
+ \geometry
+ {
+     a4paper,
+     left=25mm,
+     right=25mm,
+     top=25mm,
+     bottom=25mm,
+ }
 
-% Definitions for the title page
-
-\newcommand{\reporttitle}{Progress Report}
-\newcommand{\reportauthor}{Peter Robertson}
-\newcommand{\supervisor}{Dr Stefanos Zafeiriou}
-\newcommand{\degreetype}{Computing Science / Machine Learning}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-% load some definitions and default packages
-\input{includes}
-
-% load some macros
-\input{notation}
-
-\date{September 2019}
+\title{MSc Background Report}
+\author{Peter Robertson}
+\date{}
 
 \begin{document}
-
-% load title page
-\input{titlepage}
-
+\maketitle
 
 % page numbering etc.
 \pagenumbering{roman}
+\setcounter{page}{0}
 \clearpage{\pagestyle{empty}\cleardoublepage}
-\setcounter{page}{1}
-\pagestyle{fancy}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %--- table of contents
-\fancyhead[RE,LO]{\sffamily {Table of Contents}}
 \tableofcontents 
-
-
 \clearpage{\pagestyle{empty}\cleardoublepage}
+
+
 \pagenumbering{arabic}
 \setcounter{page}{1}
-\fancyhead[LE,RO]{\slshape \rightmark}
-\fancyhead[LO,RE]{\slshape \leftmark}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Introduction}
+\section{Introduction}
+Current methods of visual speech prediction, often referred to as lip reading, focuses on training machine learning models on 2D temporal data of participants speaking, labelled with the accompanying spoken text (cite some lip reading papers).
+However there has been little progress in lip reading from 3D temporal models which contain depth information of the subject.
+A substantial barrier to this problem is the lack of 3D datasets of subjects speaking when compared to the relative abundance of video datasets.
+To first attempt this problem, new datasets which capture 3D temporal models of subjects heads speaking must be established by the community.
 
-\begin{figure}[tb]
-\centering
-\includegraphics[width = 0.4\hsize]{./figures/imperial}
-\caption{Imperial College Logo. It's nice blue, and the font is quite stylish. But you can choose a different one if you don't like it.}
-\label{fig:logo}
-\end{figure}
+\section{Lip Reading}
 
-Figure~\ref{fig:logo} is an example of a figure. 
+\section{Data Generation}
+\subsection{Data Capture}
+\begin{itemize}
+    \item 2D datasets
+    \item 3D datasets
+    \item Capture New Dataset
+\end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Background}
+\subsection{Statistical Models}
+\begin{itemize}
+    \item Audio driven models
+\end{itemize}
 
+\subsection{Generative Models}
+\begin{itemize}
+    \item Intro to GANs
+    \item Issues with GANs
+    \item Progression of GANs
+    \item GANs for synthesising 2D lip sync video
+\end{itemize}
 
+\section{3D Modelling}
+\begin{itemize}
+    \item blendshapes
+    \item Model Correspondence
+\end{itemize}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Contribution}
+\section{Recurrent Models}
+\begin{itemize}
+    \item Recurrent networks
+    \item LSTMs
+    \item Attention Mechanism
+\end{itemize}
 
+\section{Speech Recognition}
+Deep Speech
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Experimental Results}
+\section{Current Work and Future Work}
+Data collection
 
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Conclusion}
-
-
-%% bibliography
-\bibliographystyle{apa}
-
-
+\bibliographystyle{unsrt}
+\bibliography{../ref}
 \end{document}
