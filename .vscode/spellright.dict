@@ -16,3 +16,12 @@ CIFAR10
 MNIST
 Lipschtiz
 WGANs
+ResNet
+un-normalized
+wav
+VOCASET
+softmax
+LSTM
+cepstral
+MFCC
+LSTMs

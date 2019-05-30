@@ -47,13 +47,32 @@ This loss function seems to be able to train any architecture, even ResNet archi
 Training speed is also improved compared with WGAN.
 
 \subsection{Progressive Growing of GANs for Improved Quality, Stability, and Variation}
-Progressive growing GANs \cite{Karras2017b}
+Using the WGAN+GP loss function from \cite{Gulrajani2017}, Nvidia propose a novel training architecture to produce large high quality images \cite{Karras2017b}.
+Starting with a very small network which the generator and discriminator can produce and criticize 4x4 images respectively. 
+The model is trained until the discriminator is successfully fooled by the generated images.
+Then, an additional layer is 'faded' into the networks, allowing 8x8 images to processed.
+The layer is faded in with a residual connection to the previous layer, slowly weighting the new layer more heavily until the residual connection weighted to zero. 
+This avoids sudden changed in the model architecture.
+
+The two networks are mirror images of each other.
+Transpose convolution is not used, instead the image in up-sampled with 2x2 element duplication, while down-sampling is performed with average pooling.
+
+While the project at hand is not related to generating images but 3D models, the concept of working from a low dimensionality upwards, adding complexity seems intuitive. 
+In regards to the generation of faces, 4x4 and 8x8 images force the model to learn simple facial structures such as face shape which will be consistent for all samples, while higher resolution images allow the model to add finer degrees of detail to the images, but learning lower level concepts is forced initially.
+This principle isn't dissimilar to the concept of meta-learning used in \cite{Zakharov2019}.
 
 \subsection{End-to-End Speech-Driven Facial Animation with Temporal GANs}
-These guys are downstairs \cite{Vougioukas2018}
+This paper \cite{Vougioukas2018} attempts to generate video from audio, given an image of the subject.
+The generator is given an image of the subject's head and a short audio clip to generate video for.
+The model uses two discriminators, one examining individual video frames to see if they are realistic images of the subject's face, the second examines the sequence of frames produced to see if they form a realistic video sequence.
+The model produces reasonably impressive results, even more so considering that it is using the original GANs loss function from \cite{Goodfellow2014} which has been shown to be unstable, difficult to train and has been greatly improved upon though various other methods.
 
 \subsection{Self-Attention Generative Adversarial Networks}
-Attention GANs, Goodfellow involved \cite{Zhang2018}
+The issue of convolutional GANs models \cite{Radford2016} failing to produce structural pattens in an image is addressed in \cite{Zhang2018} by incorporating the attention mechanism into a GANs model.
+The paper notes that as convolutional networks require large kernels or very deep models to have a large receptive field to capture long range dependencies in an image, models can be improved with attention.
+Common examples of this issue is generating images of animals which have an incorrect number of limbs, but have realistic fur texture as this is a local dependency.
+The attention mechanism allows long range dependencies in the image to be modelled by convolutional models more easily.
+This paper is also co-authored by Ian Goodfellow, the original creator of the GANs architecture.
 
 \subsection{Few-Shot Adversarial Learning of Realistic Neural Talking Head Models}
 This paper uses meta-learning on conjunction with adversarial learning methods \cite{Zakharov2019}.
@@ -66,20 +85,39 @@ After training, the model is capable to producing subjects in positions unseen i
 In regards to 3D modelling, a similar method could be used to encode a subject in a very similar manner to what has been performed here.
 With this subject encoding, a generic neutral mesh template could be replaced by a neutral subject specific mesh template, reducing the work of the generator to just having to capture realistic movement as opposed to movement and reproducing the subject.
 
+
 \section{Other Generative Methods}
 \subsection{Capture, Learning, and Synthesis of {3D} Speaking Styles}
-\cite{Cudeiro2019}
+The aim of \cite{Cudeiro2019} is to synthesise video sequences of 3D models speaking given an audio input.
+A main goal of this paper is to be independent to the speaker.
+Dataset (VOCASET) collected of 3D head scans of subjects while speaking a total of 480 sequences.
+Each sequence last 3-4 seconds for a total dataset of 29 minutes.
+Models are recorded at 60fps, resulting in 100,000 frames in the dataset.
+A common face template mesh is aligned to all the scans.
+The model uses the FLAME head model \cite{Li2017} as a template facial model.
 
-\subsection{Audio-driven facial animation by joint end-to-end learning of pose
-and emotion}
+Rather than including layers in the model to extract information on the input audio, the model uses the pre-trained Mozilla implementation of the DeepSpeech paper \cite{Hannun2014}, with a few minor improvements.
+The DeepSpeech model takes an input WAV file and returns un-normalized log probabilities for each letter and some additional characters for time slices in the audio file.
+The model outperforms all commercially available speech recognition methods at the time it was published (2014).
+
+Initially, the DeepSpeech model extracts the audio features at 50fps, this is up-sampled to 60fps.
+Then, an encoder model made up for four convolutional layers and two fully connected layers encode the audio features conditioned on the speaker so that the speaking styles of individual speakers can be learnt and later this latent space can be explored. 
+Finally, a decoder made up of a fully connected layer with a linear activation function is used to output the displacements of the 5023 vertices in the FLAME face model.
+
+Personal experimentation with the completed model has shown mixed results.
+
+\subsection{Audio-driven facial animation by joint end-to-end learning of pose and emotion}
+I need to reread and take in depth notes on this.
+This paper is more impressive than I initially gave it credit for.
 Nvidia facial animation from speech \cite{Karras2017a}
 
-\subsection{End-to-end Learning for 3D Facial Animation from Raw Waveforms of
-Speech}
+\subsection{End-to-end Learning for 3D Facial Animation from Raw Waveforms of Speech}
 \cite{Pham2017}
 
 \subsection{Synthesising 3D Facial Motion from "In-the-Wild" Speech}
+Read this again too.
 Imperial Paper \cite{Tzirakis2019}
+
 
 \section{3D Modelling}
 \subsection{Direct-Manipulation of Blendshapes}
@@ -101,14 +139,34 @@ Model uses very large dataset made up of multiple datasets.
 Current comparison is FaceWarehouse
 Does some work to address the issue of registering 4D scans.
 
+\subsection{A Survey on Shape Correspondence}
+The problem of finding the correspondence between two shapes is well discussed in \cite{Kaick2011}.
+Correspondence is also referred to as registration, alignment and matching.
+The paper outlines the main differences between types of correspondence problems such as full and partial correspondence, dense and sparse correspondence.
+
+\subsection{Modelling and Correspondence of Topologically Complex 3D Shapes}
+\cite{Alhashim2015}
+
 
 \section{Lip Reading Papers}
 \subsection{Out of Time: Automated Lip Sync in the Wild}
 Lip sync in the wild \cite{Chung2016}
 
+
 \section{Speech Recognition}
 \subsection{Deep Speech: Scaling up end-to-end speech recognition}
-Mozilla Deep Speech \cite{Hannun2014}
+The DeepSpeech model \cite{Hannun2014} at the time of publishing greatly outperformed all commercially available speech recognition models.
+The model uses no hand crafted components and is very robust to background noise due to the augmented training data.
+The model from the original paper was constructed and trained with efficiency in mind due to the belief that being able to train a simple but effective model for an extended period of time would yield greater results than that of a more complex model with a reduced training time.
+The model takes speech spectrograms as input and splits these into slices.
+The first three layers are fully connected, followed by a single bi-directional recurrent layer.
+The fifth layer is an additional fully connected layer, while the output layer is a softmax function.
+
+This simple model was extended by Mozilla in their publicly available implementation which made use of LSTM layer as the recurrent layer as well as using Mel-frequency cepstral coefficients (MFCC) as opposed to spectrograms.
+
+The training data was extended with data augmentation by adding noise to the audio.
+For 1000 hours of audio, 1000 hours of noise is required.
+
 
 \section{Attention Based Mechanism}
 \subsection{Attention is All you Need}
