@@ -1,5 +1,15 @@
 \documentclass[12pt]{article}
 
+\usepackage{geometry}
+ \geometry
+ {
+     a4paper,
+     left=25mm,
+     right=25mm,
+     top=25mm,
+     bottom=25mm,
+ }
+
 \title{Paper Summaries}
 \author{Peter Robertson}
 \date{}
@@ -18,6 +28,7 @@ No need to go into extreme depth as this was covered in the Deep Learning lectur
 \subsection{Conditional Generative Adversarial Nets}
 Conditional GANs \cite{Mirza2014} extend from Goodfellow's work \cite{Goodfellow2014} by concatenating an input to the input noise given the generator.
 This is performed on the MNIST Dataset \cite{LeCun2010} by conditioning the generator on a given digit to produce.
+
 
 \subsection{DCGAN}
 This paper \cite{Radford2016} takes the concept of adversarial training of neural networks and applies it with convolutional neural networks on the CIFAR10 dataset \cite{Krizhevsky2009}.
@@ -149,8 +160,40 @@ The paper outlines the main differences between types of correspondence problems
 
 
 \section{Lip Reading Papers}
-\subsection{Out of Time: Automated Lip Sync in the Wild}
-Lip sync in the wild \cite{Chung2016}
+\subsection{Lip Reading in the Wild}
+This paper first creates a new extended dataset, later named Lip Reading Words (LRW) which allowed for a CNN architecture based on the VGG-M architecture to be trained to lip read video \cite{Chung2016}.
+The model is able to greatly outperform the state of the art models of the time.
+LRW contains over 1000 hours of spoken text with over 1000 speakers, a corpus of over 1000 words and over a million word utterances.
+
+\subsection{LipNet: Sentence-level Lipreading}
+Collaboration between Oxford and Google DeepMind \cite{Assael2016} on the GRID dataset.
+Model makes use of Spatiotemporal convolutions which convolve across multiple video frames.
+Feature maps are passed to two GRU layers and followed by a linear softmax layer for character distributions.
+CTC loss is used on output layer.
+The model is the first sentence level model, previous models have been word level.
+Able to take variable length sequences.
+
+\subsection{Lip Reading Sentences in the wild}
+\cite{Chung2017} builds on previous work to construct a model which can work on sentence level rather than just word level.
+Paper describes process of constructing a new dataset; Lip Reading Sentences (LRS).
+Model is capable of multiple inputs and is trained on both audio and video to recognise characters.
+To prevent the model from being reliant on one of the two inputs (namely the audio), the inputs are systematically distorted or removed.
+Video is passed through a CNN architecture, followed by LSTM layers.
+Audio is processed as MFCC then input to LSTM layers.
+The two are combined with then attention mechanism and further LSTM layers and an output fully connected layer with softmax activation for character distributions.
+As LSTMs are challenging to train on long sequences, curriculum learning is used.
+Initially the model is trained on short single word sequences, as training continues, the length of the input sequences increases.
+This accelerates training and reduces model overfitting.
+
+\subsection{Deep Lip Reading: a comparison of models and an online application}
+\cite{Afouras2018} adapts various models which have had success for translation and automatic speech recognition (ASR) problems.
+
+\subsection{Large-Scale Visual Speech Recognition}
+As opposed to character level predictions, \cite{Shillingford2018} predicts phonemes, combined with a language model to predict words.
+The paper describes a new dataset (LSVSR) which is larger than all previous datasets.
+Due to the size of the datasets and the model, 64 GPUs are used in parallel to train with a batch size of 64.
+The model uses five spatiotemporal convolution layers, followed by three bidirectional LSTM layers and a fully connected layer to predict phonemes.
+This model again achieves the state of the art lip reading results.
 
 
 \section{Speech Recognition}
@@ -175,7 +218,6 @@ Google Attention paper \cite{Vaswani2017}
 \subsection{Show, Attend and Tell: Neural Image Caption Generation with Visual
 Attention}
 Attention applied to images \cite{Xu2015}
-
 
 
 \bibliographystyle{unsrt}

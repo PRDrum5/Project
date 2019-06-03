@@ -1,5 +1,6 @@
 \documentclass[12pt]{article}
 
+\usepackage{indentfirst}
 \usepackage{geometry}
  \geometry
  {
@@ -32,12 +33,39 @@
 \setcounter{page}{1}
 
 \section{Introduction}
-Current methods of visual speech prediction, often referred to as lip reading, focuses on training machine learning models on 2D temporal data of participants speaking, labelled with the accompanying spoken text (cite some lip reading papers).
+
+\textbf{( I want to rewrite this )}
+
+Current methods of visual speech prediction, often referred to as lip reading, focuses on training machine learning models on 2D temporal data of participants speaking, labelled with the accompanying spoken text \cite{Chung2016}, \cite{Assael2016}, \cite{Chung2017}, \cite{Shillingford2018}.
 However there has been little progress in lip reading from 3D temporal models which contain depth information of the subject.
 A substantial barrier to this problem is the lack of 3D datasets of subjects speaking when compared to the relative abundance of video datasets.
 To first attempt this problem, new datasets which capture 3D temporal models of subjects heads speaking must be established by the community.
 
 \section{Lip Reading}
+In recent years the problem of Lip Reading has seen huge advances due to the availability of new datasets and the use of Deep Learning models.
+In 2016 the Lip Reading Words (LRW) dataset was published \cite{Chung2016}, followed by Lip Reading Sentences (LRS) in 2017 \cite{Chung2017} and later Large-Scale Visual Speech Recognition (LSVSR) in 2018 \cite{Shillingford2018}, each of which larger in size and resulted in a model which outperforms previous models.
+Chung et al \cite{Chung2016} used a convolutional model based on the VGG-M architecture which produced character level distributions with the LRW dataset, these distributions are then processed by a language model for text prediction.
+The LRW dataset contains over 1000 hours of spoken text taken from BBC broadcasts, with a over 1000 different speakers, variations in angles and lighting, a vocabulary size of over 1000 words and over one million word utterances.
+
+The LipNet model \cite{Assael2016} was produced to be able to predict sentence-level lip reading of varied length, while previous work by \cite{Chung2016} predicted on a word level.
+The model used spatiotemporal convolutions to process multiple frames of video at once followed by a recurrent layer using Gated Recurrent Units (GRU) \cite{Cho2014}.
+The model used the GRID dataset which is of a similar size as LRW, but has far less variation in speakers.
+LipNet achieved the state of the art performance on the GRID dataset by using an model with increased complexity by incorporating 3D convolution and recurrent units.
+
+As the LRW dataset could not be used to train a model such as LipNet for sentence-level lip reading, but the GRID dataset had limitations in the number of subjects, Chung et al created the LRS dataset \cite{Chung2017}.
+The model presented was trained on both audio and video and made capable of taking either or both as the model inputs.
+To prevent the model from being dependent on a single input source, the inputs are systematically distorted or removed.
+The video input is passed through convolutional layers, followed by LSTM layers, while the audio is converted to MFCC, then input to LSTM layers.
+The two are combined with then attention mechanism and further LSTM layers and an output fully connected layer with softmax activation for character distributions.
+The model also makes use of curriculum learning by initially training the model on short sequences of single words.
+The length of training sequences are increased throughout training.
+It is stated by \cite{Chung2017} that this accelerates training and reduces overfitting.
+
+In 2018 DeepMind published their V2P model \cite{Shillingford2018} along with the LSVSR dataset which is larger than all previous datasets, containing 3886 hours of training data.
+The model follows a similar architecture to LipNet \cite{Assael2016} but with an increased number of convolutional layers and LSTM layers rather than GRUs.
+The size of the model and dataset dictated the use of 64 GPUs for training to allow a batch size of 128.
+Unlike previous models, the V2P model predicts phonemes as opposed to characters, these phonemes are then processed by a language model for word prediction as with previous models.
+
 
 \section{Data Generation}
 \subsection{Data Capture}
@@ -73,8 +101,9 @@ To first attempt this problem, new datasets which capture 3D temporal models of 
     \item Attention Mechanism
 \end{itemize}
 
+
 \section{Speech Recognition}
-Deep Speech
+Deep Speech \cite{Karras2017a}
 
 \section{Current Work and Future Work}
 Data collection
