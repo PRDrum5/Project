@@ -1,6 +1,8 @@
-\documentclass[12pt]{report}
+\documentclass[12pt]{article}
 
 \usepackage[nottoc,notlot,notlof]{tocbibind}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
 \usepackage{indentfirst}
 \usepackage{geometry}
  \geometry
@@ -33,7 +35,7 @@
 \pagenumbering{arabic}
 \setcounter{page}{1}
 
-\chapter{Introduction}
+\section{Introduction}
 
 \textbf{( I want to rewrite this )}
 
@@ -42,7 +44,7 @@ However there has been little progress in lip reading from 3D temporal models wh
 A substantial barrier to this problem is the lack of 3D datasets of subjects speaking when compared to the relative abundance of video datasets.
 To first attempt this problem, new datasets which capture 3D temporal models of subjects heads speaking must be established by the community.
 
-\chapter{Lip Reading}
+\section{Lip Reading}
 In recent years the problem of Lip Reading has seen huge advances due to the availability of new datasets and the use of Deep Learning models.
 In 2016 the Lip Reading Words (LRW) dataset was published \cite{Chung2016}, followed by Lip Reading Sentences (LRS) in 2017 \cite{Chung2017} and later Large-Scale Visual Speech Recognition (LSVSR) in 2018 \cite{Shillingford2018}, each of which larger in size and resulted in a model which outperforms previous models.
 Chung et al \cite{Chung2016} used a convolutional model based on the VGG-M architecture which produced character level distributions with the LRW dataset, these distributions are then processed by a language model for text prediction.
@@ -50,7 +52,7 @@ The LRW dataset contains over 1000 hours of spoken text taken from BBC broadcast
 
 The LipNet model \cite{Assael2016} was produced to be able to predict sentence-level lip reading of varied length, while previous work by \cite{Chung2016} predicted on a word level.
 The model used spatiotemporal convolutions to process multiple frames of video at once followed by a recurrent layer using Gated Recurrent Units (GRU) \cite{Cho2014}.
-The model used the GRID dataset which is of a similar size as LRW, but has far less variation in speakers.
+The model used the GRID dataset \cite{Cooke2006} which is of a similar size as LRW, but has far less variation in speakers.
 LipNet achieved the state of the art performance on the GRID dataset by using an model with increased complexity by incorporating 3D convolution and recurrent units.
 
 As the LRW dataset could not be used to train a model such as LipNet for sentence-level lip reading, but the GRID dataset had limitations in the number of subjects, Chung et al created the LRS dataset \cite{Chung2017}.
@@ -68,21 +70,27 @@ The size of the model and dataset dictated the use of 64 GPUs for training to al
 Unlike previous models, the V2P model predicts phonemes as opposed to characters, these phonemes are then processed by a language model for word prediction as with previous models.
 
 
-\chapter{Data Generation}
-\section{Data Capture}
+\section{Data Generation}
+\subsection{Data Capture}
 Current lip reading models currently make use of 2D temporal data such as videos.
 This is convenient as video data is already widely available and relatively straightforward to process.
 The reason for the wide availability of video data is due to the ease of capturing and viewing such data.
 Unlike 2D temporal data, 3D temporal data or 3D video, requires multiple cameras to record simultaneously, which requires synchronisation, adding to the complexity of the system.
 The data must then be processed to produce the final product, whether this is in the form of video with depth information or more complex 3D scans \cite{Li2017}.
 
-\subsection{2D Datasets}
-Due to the large availability of video data, datasets such as LRW, LRS and LSVSR have been constructed by compiling the appropriate data.
-LRW and LRS are both comprised of content from BBC broadcasts \cite{Chung2016, Chung2017}
+\subsubsection{2D Datasets}
+Due to the large availability of video data, datasets such as GRID \cite{Cooke2006}, LRW \cite{Chung2016}, LRS \cite{Chung2017} and LSVSR \cite{Shillingford2018} have been constructed by compiling the appropriate data.
+GRID contains 34,000 samples from 34 speakers, each with 1000 sentences.
+The corpus uses sentences with a fixed grammar: 
+<command:4>, <colour:4>, <preposition:4>, <letter:25>, <number:10>, <adverb:4>, with a total vocabulary of 51 words.
 
-\subsection{3D Datasets}
+LRW and LRS are both comprised of content from BBC broadcasts \cite{Chung2016, Chung2017} allowing for a far larger corpus size of over 1000 words for LRW and over 6000 words for LRS.
+Both of datasets are captured and processed with the same pipeline summarised as follows. 
+Firstly, as the subtitles are not aligned to the video on the broadcasts, optical chapter recognition is used to obtain the text being spoken in the video clips, the audio and text are then aligned per frame using the HTK toolkit \cite{Woodland1995}. 
+A HOG-based detection algorithm \cite{King2009} is used for face detection for cropping the frames to the subjects head followed by facial landmarks for mouth localisation and speaker identification. 
+\subsubsection{3D Datasets}
 
-\subsection{Original Dataset}
+\subsubsection{Original Dataset}
 
 \section{Statistical Models}
 \begin{itemize}
@@ -97,13 +105,13 @@ LRW and LRS are both comprised of content from BBC broadcasts \cite{Chung2016, C
     \item GANs for synthesising 2D lip sync video
 \end{itemize}
 
-\chapter{3D Modelling}
+\section{3D Modelling}
 \begin{itemize}
     \item blendshapes
     \item Model Correspondence
 \end{itemize}
 
-\chapter{Recurrent Models}
+\section{Recurrent Models}
 \begin{itemize}
     \item Recurrent networks
     \item LSTMs
@@ -111,10 +119,10 @@ LRW and LRS are both comprised of content from BBC broadcasts \cite{Chung2016, C
 \end{itemize}
 
 
-\chapter{Speech Recognition}
+\section{Speech Recognition}
 Deep Speech \cite{Karras2017a}
 
-\chapter{Current Work and Future Work}
+\section{Current Work and Future Work}
 Data collection
 
 \bibliographystyle{unsrt}
