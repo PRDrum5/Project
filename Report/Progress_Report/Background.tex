@@ -4,6 +4,8 @@
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
 \usepackage{indentfirst}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage{geometry}
  \geometry
  {
@@ -74,7 +76,7 @@ LSVSR is a dataset published by DeepMind and Google which makes use of the huge 
 The dataset is far larger than LRS, but aligns phonemes to frames, as opposed to words or characters.
 The pre-processing steps are similar as in LRW and LRS; alignment is performed with the algorithm laid out in previous work by DeepMind \cite{Liao2013}, faces are tracked to ensure the speaker is visible in frame.
 
-\subsection{3D Datasets}
+\subsection{3D Datasets} \label{3D Datasets}
 To the best of the author's knowledge, there are currently two datasets with 3D temporal data which are appropriate for training lip reading models.
 The first of which is LRW-3D \cite{Tzirakis2019} which has been captured from four subjects, two native English speakers and two non-native to increase variability in the dataset.
 The subjects have been captured speaking the corpus used in the LRW dataset \cite{Chung2016}, a vocabulary of 500 words.
@@ -125,7 +127,39 @@ Unlike video data, there currently lacks a large body of 3D video data which is 
 
 \subsection{Audio Driven Data Generation}
 
+\subsubsection{Imperial}
+\cite{Tzirakis2019}
+
+\subsubsection{VOCA}
+The VOCA model \cite{Cudeiro2019} synthesises video sequences of 3D models speaking given an audio input.
+The VOCASET dataset discussed in section \ref{3D Datasets}, was captured with the intention of training this model to be independent of the speaker, hence a large range of speakers are used within the dataset.
+The model is comprised of three sections: audio feature extraction, a feature encoder and a decoder to drive a template facial mesh from the FLAME model \cite{Li2017}.
+The audio feature extraction makes use of the pre-trained Mozilla implementation of the DeepSpeech model, based on the paper by Hannun et al. \cite{Hannun2014}.
+The DeepSpeech model takes audio as an input and returns the unnormalised log-probabilities for an alphabet of the 26 standard characters, a space, apostrophe and blank character for time slices in the audio input.
+The encoder is a convolutional network which is conditioned on the speakers identity, such that the latent space of speaker styles can later be explored on new audio inputs.
+Finally, the decoder is made up of a fully connected layer with a linear activation function is used to output the displacements of the 5023 vertices in the template face.
+
+\subsubsection{Nvidia}
+\cite{Karras2017a}
+
+
 \subsection{Adversarial Trained Generative Methods}
+A recent development in generating synthetic data samples is the use of generative adversarial networks \cite{Goodfellow2014}.
+The concept behind generative adversarial networks is two have two machine learning models; a generator and a discriminator.
+The task of the generator is to produce samples from an unknown high order probability distribution which correctly resemble samples from the distribution defined by training data.
+The generator achieves this by transforming a random sample from a known probability distribution, such as a Gaussian distribution as used in \cite{Goodfellow2014}, to a sample from the unknown distribution.
+This is achieved by finding the function which maps between the two distributions.
+The discriminator however, attempts to correctly learn to discriminate between the real and the fake generated samples.
+
+\begin{equation} \label{cgans}
+    \mathcal{L}_{adv} = \mathbb{E}_{x \sim X_{real}}[\log(D_{src}(x)] 
+    + \mathbb{E}_{x \sim X_{real},c \sim C}[\log(1-D_{src}(G(x,c))]
+\end{equation}
+
+This paper uses two feed forward neural networks (as proof of concept) as generator and discriminator.
+The original loss function is used, although it is mentioned that even at this stage issues with it are highlighted.
+Argument made to say that while learning a probability distribution is great, the goal is to produce samples from it, so generating sample from an implicit distribution is as useful.
+No need to go into extreme depth as this was covered in the Deep Learning lectures.
 \begin{itemize}
     \item Issues with GANs
     \item Progression of GANs
