@@ -6,14 +6,16 @@
 \usepackage{indentfirst}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{subcaption}
 \usepackage{geometry}
  \geometry
  {
      a4paper,
      left=25mm,
      right=25mm,
-     top=25mm,
-     bottom=25mm,
+     top=30mm,
+     bottom=30mm,
  }
 
 \title{MSc Background Report}
@@ -145,26 +147,61 @@ Finally, the decoder is made up of a fully connected layer with a linear activat
 
 \subsection{Adversarial Trained Generative Methods}
 A recent development in generating synthetic data samples is the use of generative adversarial networks \cite{Goodfellow2014}.
-The concept behind generative adversarial networks is two have two machine learning models; a generator and a discriminator.
+The concept behind generative adversarial networks (GANs) is two have two machine learning models; a generator and a discriminator.
 The task of the generator is to produce samples from an unknown high order probability distribution which correctly resemble samples from the distribution defined by training data.
 The generator achieves this by transforming a random sample from a known probability distribution, such as a Gaussian distribution as used in \cite{Goodfellow2014}, to a sample from the unknown distribution.
 This is achieved by finding the function which maps between the two distributions.
 The discriminator however, attempts to correctly learn to discriminate between the real and the fake generated samples.
 
-\begin{equation} \label{cgans}
-    \mathcal{L}_{adv} = \mathbb{E}_{x \sim X_{real}}[\log(D_{src}(x)] 
-    + \mathbb{E}_{x \sim X_{real},c \sim C}[\log(1-D_{src}(G(x,c))]
+\begin{equation} \label{gans_loss}
+    \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
+                              + \mathbb{E}_{z \sim p_{z}(z)} [\log (1 - D(G(x)))]
 \end{equation}
 
-This paper uses two feed forward neural networks (as proof of concept) as generator and discriminator.
-The original loss function is used, although it is mentioned that even at this stage issues with it are highlighted.
-Argument made to say that while learning a probability distribution is great, the goal is to produce samples from it, so generating sample from an implicit distribution is as useful.
-No need to go into extreme depth as this was covered in the Deep Learning lectures.
+\noindent The original loss function (\ref{gans_loss}) proposed by Ian Goodfellow forms a min-max game, where the loss of the generator is attempting to be minimised by having the discriminator label all the generated samples as real.
+While the loss of the discriminator is maximised by correctly classifying real and fake samples.
+The two networks are trained in an alternating fashion until the discriminator achieves an accuracy of 50\%, effectively making binary guesses between real and generated samples.
+
+GANs however, are difficult to train for two main reasons.
+Firstly, the equation (\ref{gans_loss}) is challenging as it provides small gradients while generated samples are poor as discussed in \cite{Goodfellow2014}, making training difficult.
+Progress in developing new loss functions is discussed in section \ref{Stability_to_GANs}
+Secondly, early networks must also be balanced with a similar model capacity to prevent one from getting too much better than the other, preventing the other from improving.
+Various architectural changes have improved this issue \cite{Radford2016, Zhang2018}, although it seems to be closely tied to the loss function being used \cite{Gulrajani2017}.
+
+\subsubsection{Stability Improvements of GANs Networks} \label{Stability_to_GANs}
+A primary research focus around GANs has been in finding new loss functions on which to train the model to improve stability and performance.
+The original loss function proposed in the original paper \cite{Goodfellow2014} identifies an issue with equation (\ref{gans_loss}) in that the gradient back propagated to the generator when the generated samples are poor, is very low as shown in figure \ref{fig:Goodfellow_plot}.
+
+\begin{figure}[h]
+    \centering
+        \includegraphics[width=0.8\textwidth]{../figures/goodfellow_gen_losses.png}
+    \caption{Goodfellow's Generator Loss Plots \cite{Goodfellow2014}}\label{fig:Goodfellow_plot}
+\end{figure}
+
+\noindent This in turn makes it very challenging to improve the performance of the generator.
+The suggested improvement made in \cite{Goodfellow2014} is rather than to maximise the the number of generated samples which the discriminator incorrectly classifies, to minimise the number of generator samples the discriminator correctly classifies, described in equation (\ref{gans_loss2}).
+Figure \ref{fig:Goodfellow_plot} shows how this results in the gradient propagated back to the generator is far larger when the generated samples are poor.
+
+\begin{equation} \label{gans_loss2}
+    \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
+                              - \mathbb{E}_{z \sim p_{z}(z)} [\log (D(G(x)))]
+\end{equation}
+
 \begin{itemize}
-    \item Issues with GANs
-    \item Progression of GANs
-    \item GANs for synthesising 2D lip sync video
+    \item Batch Norm
+    \item WGAN
+    \item WGAN+GP
 \end{itemize}
+
+
+\subsubsection{Architectural Developments}
+\begin{itemize}
+    \item Conditional GANs
+    \item DCGAN
+    \item Temporal GANs
+    \item Attention GANs
+\end{itemize}
+
 
 \section{3D Modelling}
 \begin{itemize}
