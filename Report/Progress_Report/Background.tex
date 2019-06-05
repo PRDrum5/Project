@@ -1,5 +1,8 @@
 \documentclass[12pt]{article}
 
+% some macros
+\input{../notation}
+
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage[T1]{fontenc}
 \usepackage{hyperref}
@@ -154,8 +157,8 @@ This is achieved by finding the function which maps between the two distribution
 The discriminator however, attempts to correctly learn to discriminate between the real and the fake generated samples.
 
 \begin{equation} \label{eq:gans_loss}
-    \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
-                              + \mathbb{E}_{z \sim p_{z}(z)} [\log (1 - D(G(x)))]
+    \min_{G} \max_{D} V(G, D) = \E{\bm{x} \sim p_{data}(\bm{x})} [\log D(\bm{x})]
+                              + \E{\bm{z} \sim p_{z}(\bm{z})} [\log (1 - D(G(\bm{z})))]
 \end{equation}
 
 \noindent The original loss function (\ref{eq:gans_loss}) proposed by Ian Goodfellow forms a min-max game, where the loss of the generator is attempting to be minimised by having the discriminator label all the generated samples as real.
@@ -184,8 +187,8 @@ The suggested improvement made in \cite{Goodfellow2014} is rather than to maximi
 Figure \ref{fig:Goodfellow_plot} shows how this results in the gradient propagated back to the generator is far larger when the generated samples are poor.
 
 \begin{equation} \label{eq:gans_loss2}
-    \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
-                              - \mathbb{E}_{z \sim p_{z}(z)} [\log (D(G(x)))]
+    \min_{G} \max_{D} V(G, D) = \E{\bm{x} \sim p_{data}(\bm{x})} [\log D(\bm{x})]
+                              - \E{\bm{z} \sim p_{z}(\bm{z})} [\log (D(G(\bm{z})))]
 \end{equation}
 
 Further stability improvements were proposed in \cite{Radford2016} which allowed deep convolutional generative adversarial networks (DCGANs) to be successfully trained for the first time.
@@ -197,28 +200,33 @@ This normalises the input to each unit to zero mean and unit variance.
 This assists with training problems due to poor weight initialisation and allows gradients to flow through deeper networks more easily.
 Radford et al. state this to be a critical improvement to allow generator networks to begin learning by preventing all samples from collapsing to a single point. 
 
-In an attempt to stabilize the training of GANs models, the Wasserstein or 'Earth-Mover' loss function was proposed by Arjovsky et al. \cite{Arjovsky2017}.
-By using the Wasserstein loss function \ref{eq:wgan}, the generator and discriminator no longer have to alternate training epochs to try to maintain model stability, but can both be trained to saturation in a loop.
+In an attempt to stabilize the training of GANs models, the Wasserstein or 'Earth Mover Distance' loss function was proposed by Arjovsky et al. \cite{Arjovsky2017} shown in equation (\ref{eq:wgan}) where $\mathcal{D}$ is a set of 1-Lipschtiz functions.
 
 \begin{equation} \label{eq:wgan}
-    \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
-                              + \mathbb{E}_{z \sim p_{z}(z)} [\log (1 - D(G(x)))]
+    \min_{G} \max_{D \in \mathcal{D}} W(\Pd{r}, \Pd{g}) =
+            \E{\bm{x} \sim \Pd{r}} [D(\bm{x})]
+            -\E{\bm{\hat{x}} \sim \Pd{g}} [D(\hat{\bm{x}})]
 \end{equation}
 
-\noindent By using the Wasserstein loss function, the discriminator, or critic as it is named by Arjovsky et al., is trained to an optimum point, at which time the loss provided to the generator is at a maximum, making training the generator easier.
-The discriminator is referred to as the critic as it is no longer attempting to classify samples are real or fake.
-The generator can then be trained to an optimum position, at which time, training the critic can continue again.
-This method has greatly improved stability and is fairly robust to a large range of model architectures which have been tested.
-The generator and critic also no longer have to have a similar capacity.
+\noindent The WGAN model uses a critic as opposed to a discriminator, this is due to the fact that the discriminator is no longer a binary classifier, but being used to critique the real and generated samples. 
+As the Wasserstein function is continuous and differentiable, the critic can be trained until optimality, and \cite{Arjovsky2017} argues that it should be.
+As the critic is trained to optimality it does not saturate, but converges to a linear function.
+This provides the generator with a gradient which is more reliable, resulting in the generator learning consistently.
+The Wasserstein loss function has been shown to greatly improve training stability by providing consistent gradients throughout training and no longer requiring that the two networks have a balanced model capacity.
 
-To achieve this, the Lipschtiz condition must be met.
-This is achieved by clipping the weights on the model.
-The paper points out that this method of achieving the Lipschtiz condition is non-ideal and is a point of further work.
+In order to use the Wasserstein distance as the loss for WGAN, the Lipschtiz condition must be enforced.
+In the WGAN the model weights are clipped to enforce this constraint \cite{Arjovsky2017}, however this is stated to be a non-ideal method of achieving this constraint and calls for future work to be investigate more effective methods.
+The use of gradient penalty is proposed in \cite{Gulrajani2017} in order to satisfy this condition more elegantly as described in equation (\ref{eq:wgan_gp}).
 
-Other points of note, the loss plot produced by the WGAN model seems to correlate with perceived image quality, which could not be said for precious loss functions.
+\begin{equation} \label{eq:wgan_gp}
+    \min_{G} \max_{D \in \mathcal{D}} W(\Pd{r}, \Pd{g}) 
+        = \E{\bm{x} \sim \Pd{r}} [D(\bm{x})]
+        - \E{\bm{\tilde{x}} \sim \Pd{g}} [D(\tilde{{\bm{x}}})]
+        + \lambda \E{\bm{\hat{x}} \sim \Pd{\bm{\hat{x}}}} 
+            [(\| \nabla_{\bm{\hat{x}}} D(\bm{\hat{x}}) \| - 1)^2]
+\end{equation}
 
-\subsubsection{WGAN}
-\subsubsection{WGAN+GP}
+\noindent Using the Wasserstein loss function with gradient penalty enforces the Lipschtiz condition and allows highly complex architectures to be trained successfully, including those with residual units \cite{Gulrajani2017}.
 
 \subsubsection{Architectural Developments}
 \begin{itemize}
