@@ -153,24 +153,25 @@ The generator achieves this by transforming a random sample from a known probabi
 This is achieved by finding the function which maps between the two distributions.
 The discriminator however, attempts to correctly learn to discriminate between the real and the fake generated samples.
 
-\begin{equation} \label{gans_loss}
+\begin{equation} \label{eq:gans_loss}
     \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
                               + \mathbb{E}_{z \sim p_{z}(z)} [\log (1 - D(G(x)))]
 \end{equation}
 
-\noindent The original loss function (\ref{gans_loss}) proposed by Ian Goodfellow forms a min-max game, where the loss of the generator is attempting to be minimised by having the discriminator label all the generated samples as real.
+\noindent The original loss function (\ref{eq:gans_loss}) proposed by Ian Goodfellow forms a min-max game, where the loss of the generator is attempting to be minimised by having the discriminator label all the generated samples as real.
 While the loss of the discriminator is maximised by correctly classifying real and fake samples.
 The two networks are trained in an alternating fashion until the discriminator achieves an accuracy of 50\%, effectively making binary guesses between real and generated samples.
 
 GANs however, are difficult to train for two main reasons.
-Firstly, the equation (\ref{gans_loss}) is challenging as it provides small gradients while generated samples are poor as discussed in \cite{Goodfellow2014}, making training difficult.
+Firstly, the equation (\ref{eq:gans_loss}) is challenging as it provides small gradients while generated samples are poor as discussed in \cite{Goodfellow2014}, making training difficult.
 Progress in developing new loss functions is discussed in section \ref{Stability_to_GANs}
 Secondly, early networks must also be balanced with a similar model capacity to prevent one from getting too much better than the other, preventing the other from improving.
 Various architectural changes have improved this issue \cite{Radford2016, Zhang2018}, although it seems to be closely tied to the loss function being used \cite{Gulrajani2017}.
 
 \subsubsection{Stability Improvements of GANs Networks} \label{Stability_to_GANs}
+There have been a large number of papers presenting new techniques with differing levels of success and training stability, a small handful of key papers which provided large advances in the generative adversarial training model shall be discussed here.
 A primary research focus around GANs has been in finding new loss functions on which to train the model to improve stability and performance.
-The original loss function proposed in the original paper \cite{Goodfellow2014} identifies an issue with equation (\ref{gans_loss}) in that the gradient back propagated to the generator when the generated samples are poor, is very low as shown in figure \ref{fig:Goodfellow_plot}.
+The original loss function proposed in the original paper \cite{Goodfellow2014} identifies an issue with equation (\ref{eq:gans_loss}) in that the gradient back propagated to the generator when the generated samples are poor, is very low as shown in figure \ref{fig:Goodfellow_plot}.
 
 \begin{figure}[h]
     \centering
@@ -179,20 +180,45 @@ The original loss function proposed in the original paper \cite{Goodfellow2014} 
 \end{figure}
 
 \noindent This in turn makes it very challenging to improve the performance of the generator.
-The suggested improvement made in \cite{Goodfellow2014} is rather than to maximise the the number of generated samples which the discriminator incorrectly classifies, to minimise the number of generator samples the discriminator correctly classifies, described in equation (\ref{gans_loss2}).
+The suggested improvement made in \cite{Goodfellow2014} is rather than to maximise the the number of generated samples which the discriminator incorrectly classifies, but to minimise the number of generator samples the discriminator correctly classifies, described in equation (\ref{eq:gans_loss2}).
 Figure \ref{fig:Goodfellow_plot} shows how this results in the gradient propagated back to the generator is far larger when the generated samples are poor.
 
-\begin{equation} \label{gans_loss2}
+\begin{equation} \label{eq:gans_loss2}
     \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
                               - \mathbb{E}_{z \sim p_{z}(z)} [\log (D(G(x)))]
 \end{equation}
 
-\begin{itemize}
-    \item Batch Norm
-    \item WGAN
-    \item WGAN+GP
-\end{itemize}
+Further stability improvements were proposed in \cite{Radford2016} which allowed deep convolutional generative adversarial networks (DCGANs) to be successfully trained for the first time.
+Radford et al. proposed three main contributions.
+Replace deterministic pooling layers with strided convolutions in both the generator and discriminator networks, allowing the networks to learn their own spatial upsampling and downsampling.
+Remove all fully connected layers used on top of convolutional layers, resulting in a fully convolutional model.
+Apply batch normalisation \cite{Ioffe2015} before the input of each layer.
+This normalises the input to each unit to zero mean and unit variance.
+This assists with training problems due to poor weight initialisation and allows gradients to flow through deeper networks more easily.
+Radford et al. state this to be a critical improvement to allow generator networks to begin learning by preventing all samples from collapsing to a single point. 
 
+In an attempt to stabilize the training of GANs models, the Wasserstein or 'Earth-Mover' loss function was proposed by Arjovsky et al. \cite{Arjovsky2017}.
+By using the Wasserstein loss function \ref{eq:wgan}, the generator and discriminator no longer have to alternate training epochs to try to maintain model stability, but can both be trained to saturation in a loop.
+
+\begin{equation} \label{eq:wgan}
+    \min_{G} \max_{D} V(G, D) = \mathbb{E}_{x \sim p_{data}(x)} [\log D(x)]
+                              + \mathbb{E}_{z \sim p_{z}(z)} [\log (1 - D(G(x)))]
+\end{equation}
+
+\noindent By using the Wasserstein loss function, the discriminator, or critic as it is named by Arjovsky et al., is trained to an optimum point, at which time the loss provided to the generator is at a maximum, making training the generator easier.
+The discriminator is referred to as the critic as it is no longer attempting to classify samples are real or fake.
+The generator can then be trained to an optimum position, at which time, training the critic can continue again.
+This method has greatly improved stability and is fairly robust to a large range of model architectures which have been tested.
+The generator and critic also no longer have to have a similar capacity.
+
+To achieve this, the Lipschtiz condition must be met.
+This is achieved by clipping the weights on the model.
+The paper points out that this method of achieving the Lipschtiz condition is non-ideal and is a point of further work.
+
+Other points of note, the loss plot produced by the WGAN model seems to correlate with perceived image quality, which could not be said for precious loss functions.
+
+\subsubsection{WGAN}
+\subsubsection{WGAN+GP}
 
 \subsubsection{Architectural Developments}
 \begin{itemize}
