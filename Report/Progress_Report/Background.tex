@@ -41,6 +41,7 @@
 
 \pagenumbering{arabic}
 \setcounter{page}{1}
+\frenchspacing
 
 \section{Introduction}
 
@@ -123,6 +124,12 @@ Unlike previous models, the V2P model predicts phonemes as opposed to characters
 To the best of the author's knowledge, currently there do not exist any papers which have explored the use of 3D temporal datasets for the use with lip reading models. 
 This is likely due to the shortage of 3D temporal data on which such models could be trained on.
 
+\section{3D Modelling}
+\begin{itemize}
+    \item blendshapes
+    \item Model Correspondence
+\end{itemize}
+
 \section{Data Generation}
 In order to construct a deep learning lip reading model capable of being trained on 3D temporal data, appropriate datasets must be established.
 Current datasets have been captured directly \cite{Tzirakis2019, Cudeiro2019} with the use of multi-camera capture rigs under controlled situations.
@@ -131,22 +138,27 @@ As the models also use different mesh models to represent the data that has been
 Unlike video data, there currently lacks a large body of 3D video data which is publicly available, limiting the construction of 3D datasets to directly capturing more 3D scans with multi-camera capture rigs, similar to those used in \cite{Tzirakis2019, Cudeiro2019} and generating synthetic training data.
 
 \subsection{Audio Driven Data Generation}
+Karras et al proposed a method for generating 3D facial animation from audio with the use of a CNN architecture \cite{Karras2017a}.
+The model is actor specific, but is only trained on 3-5 minutes of data of the actor.
+Short range temporal features are first extracted from the audio by a formant analysis network.
+This representation is then analysed by an articulation network which also accepts a learned emotional state of the speaker.
+The output layer drives displacements from a neutral 3d mesh of the actor.
 
-\subsubsection{Imperial}
-\cite{Tzirakis2019}
+However, as the model by Karras et al. is not independent of the actor it cannot generalise to new subjects.
+Tzirakis et al. propose a model which is independent of speaker and capture rig \cite{Tzirakis2019}.
+As discussed in section \ref{3D Datasets}, a dataset was constructed of 3D speaking faces using the LRW dataset \cite{Chung2016} for the corpus.
+This allowed Tzirakis et al. to create a model which can synthesise facial motion from audio from the LRW dataset.
+The model used is similar to that used in \cite{Karras2017a}, firstly extracting short term temporal features from the input audio with a convolutional network followed by another convolutional network to analyse the extracted features.
+Unlike the model used in \cite{Karras2017a}, the model used in \cite{Tzirakis2019} is trained to drive learnt blendshapes.
+This reduces the number of output parameters of the model substantially in comparison to that used by Karras et al.
 
-\subsubsection{VOCA}
-The VOCA model \cite{Cudeiro2019} synthesises video sequences of 3D models speaking given an audio input.
+Similar to \cite{Tzirakis2019}, the VOCA model \cite{Cudeiro2019} synthesises video sequences of 3D models speaking given an audio input.
 The VOCASET dataset discussed in section \ref{3D Datasets}, was captured with the intention of training this model to be independent of the speaker, hence a large range of speakers are used within the dataset.
 The model is comprised of three sections: audio feature extraction, a feature encoder and a decoder to drive a template facial mesh from the FLAME model \cite{Li2017}.
 The audio feature extraction makes use of the pre-trained Mozilla implementation of the DeepSpeech model, based on the paper by Hannun et al. \cite{Hannun2014}.
 The DeepSpeech model takes audio as an input and returns the unnormalised log-probabilities for an alphabet of the 26 standard characters, a space, apostrophe and blank character for time slices in the audio input.
 The encoder is a convolutional network which is conditioned on the speakers identity, such that the latent space of speaker styles can later be explored on new audio inputs.
 Finally, the decoder is made up of a fully connected layer with a linear activation function is used to output the displacements of the 5023 vertices in the template face.
-
-\subsubsection{Nvidia}
-\cite{Karras2017a}
-
 
 \subsection{Adversarial Trained Generative Methods}
 A recent development in generating synthetic data samples is the use of generative adversarial networks \cite{Goodfellow2014}.
@@ -246,23 +258,10 @@ Zhang et al. point out that this is a common issue with DCGANs \cite{Radford2016
 This is often seen in generated images of animals with realistic fur, but oddly shaped or an incorrect number of limbs.
 The attention mechanism is applied to GANs \cite{Zhang2018} to allow for long range dependencies in the image to be modelled by convolutional models more effectively.
 
-
-\section{3D Modelling}
-\begin{itemize}
-    \item blendshapes
-    \item Model Correspondence
-\end{itemize}
-
-\section{Recurrent Models}
-\begin{itemize}
-    \item Recurrent networks
-    \item LSTMs
-    \item Attention Mechanism
-\end{itemize}
+To the best of the author's knowledge, there currently exists no generative adversarial networks which aim to generate 3D facial models with speech audio as a conditional input.
 
 
-\section{Speech Recognition}
-Deep Speech \cite{Karras2017a}
+
 
 \section{Current Work and Future Work}
 Data collection

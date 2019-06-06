@@ -118,15 +118,24 @@ Finally, a decoder made up of a fully connected layer with a linear activation f
 Personal experimentation with the completed model has shown mixed results.
 
 \subsection{Audio-driven facial animation by joint end-to-end learning of pose and emotion}
-I need to reread and take in depth notes on this.
-This paper is more impressive than I initially gave it credit for.
 Nvidia facial animation from speech \cite{Karras2017a}
+Attempts to generate 3D facial animation from audio.
+Output vertices difference from neutral face mesh.
+Specific to actor, trained on 3-5 minutes of footage for that actor.
+Model extracts temporal audio features with convolutional net.
+Then convolutional net to analyse temporal components of speech.
+Articulation network also accepts emotional state input to aim ambiguities between different facial shape from same audio.
 
 \subsection{End-to-end Learning for 3D Facial Animation from Raw Waveforms of Speech}
 \cite{Pham2017}
 
 \subsection{Synthesising 3D Facial Motion from "In-the-Wild" Speech}
-Read this again too.
+Model is independent of speaker and capture rig.
+Create dataset by recording talking 4D faces speaking words from LRW dataset.
+Register 3D meshes and learn 3D blendshapes.
+Use DCAW to align speech with meshes to give ground truth.
+Train a model to predict 3D facial motion from speech under uncontrolled conditions. 
+Use audio from LRW dataset to train with.
 Imperial Paper \cite{Tzirakis2019}
 
 
