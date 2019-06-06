@@ -229,12 +229,22 @@ The use of gradient penalty is proposed in \cite{Gulrajani2017} in order to sati
 \noindent Using the Wasserstein loss function with gradient penalty enforces the Lipschtiz condition and allows highly complex architectures to be trained successfully, including those with residual units \cite{Gulrajani2017}.
 
 \subsubsection{Architectural Developments}
-\begin{itemize}
-    \item Conditional GANs
-    \item DCGAN
-    \item Temporal GANs
-    \item Attention GANs
-\end{itemize}
+Mirza et al. showed that GANs could be conditioned on additional inputs to the generator network as the noise component \cite{Mirza2014}.
+This has allowed facilitated other uses of GANs such as image to image translation for style transfer \cite{Zhu2017}.
+Vougioukas et al. used a temporal model to generate a sequence of video frames given an image of a subject and an audio sequence of spoken text to synthesise the subject speaking \cite{Vougioukas2018}.
+The model uses two discriminators, one to determine if individual frames are realistic images of the subject's face and a second which evaluates the sequence of video frames to determine if it is realistic.
+The model uses temporal components to examine if the frames of video are consistent in time, preventing sudden jumps in facial position.
+
+Other novel architectures include the progressively growing GAN model \cite{Karras2017b} which is able to generate highly realistic images of faces to a high resolution.
+This is achieved by initially training a shallow model to produce 4x4 pixel images before increasing the depth of the network and training further at a higher resolution.
+By forcing the model to firstly produce and examine low resolution images the model firstly has to be able to synthesise simple low level features effectively, such as facial shape which are common to all samples.
+Once the model can produce these features a higher resolution is used, allowing it to learn more complex features, such as hair and eyes.
+
+The attention mechanism \cite{Vaswani2017} has been shown to be usefully when applied to image data \cite{Xu2015} in order to capture relationships between spatially distant points.
+As such points are further apart in the image, previously deeper convolutional models were required to allow a large enough receptive field to capture information on these two points.
+Zhang et al. point out that this is a common issue with DCGANs \cite{Radford2016}, where generated samples fail to produce structural patterns, while they do exceedingly well at local textural patterns.
+This is often seen in generated images of animals with realistic fur, but oddly shaped or an incorrect number of limbs.
+The attention mechanism is applied to GANs \cite{Zhang2018} to allow for long range dependencies in the image to be modelled by convolutional models more effectively.
 
 
 \section{3D Modelling}
