@@ -2,31 +2,20 @@
 
 % some macros
 \input{../notation}
+\input{includes}
 
-\usepackage[nottoc,notlot,notlof]{tocbibind}
-\usepackage[T1]{fontenc}
-\usepackage{hyperref}
-\usepackage{indentfirst}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{graphicx}
-\usepackage{subcaption}
-\usepackage{geometry}
- \geometry
- {
-     a4paper,
-     left=25mm,
-     right=25mm,
-     top=30mm,
-     bottom=30mm,
- }
+%\title{MSc Background Report}
+%\author{Peter Robertson}
+%\date{}
 
-\title{MSc Background Report}
-\author{Peter Robertson}
-\date{}
+\newcommand{\reporttitle}{Background and Progress Report}
+\newcommand{\reportauthor}{Peter Robertson}
+\newcommand{\supervisor}{Dr Stefanos Zafeiriou}
+\newcommand{\degreetype}{Computing Science / Machine Learning}
 
 \begin{document}
-\maketitle
+%\maketitle
+\input{titlepage}
 
 % page numbering etc.
 \pagenumbering{roman}
@@ -45,12 +34,13 @@
 
 \section{Introduction}
 
-\textbf{( I want to rewrite this )}
-
-Current methods of visual speech prediction, often referred to as lip reading, focuses on training machine learning models on 2D temporal data of participants speaking, labelled with the accompanying spoken text \cite{Chung2016, Assael2016, Chung2017, Shillingford2018}.
-However there has been little progress in lip reading from 3D temporal models which contain depth information of the subject.
-A substantial barrier to this problem is the lack of 3D datasets of subjects speaking when compared to the relative abundance of video datasets.
+Visual speech prediction, often referred to as lip reading, is a very difficult task, partly due to ambiguities between phonemes such as '\textit{p}' and '\textit{b}', which look the same but sound different.
+Current methods of addressing this problem focus on training deep learning models using 2D temporal data of people speaking with the relevant video frames labelled with the correct spoken text \cite{Chung2016, Assael2016, Chung2017, Shillingford2018}.
+There currently do not exist any models which attempt to address this problem with the use of 3D temporal datasets made up of head scans of subjects, capturing depth and thus, more information of the mouth which may be of use to the models.
+However, there currently exists a severe lack of availability of such datasets due to the complexity and hardware requirements in capturing such data.
+Currently their exists two publicly available datasets: LRW-3D \cite{Tzirakis2019} and the VOCASET \cite{Cudeiro2019}, both of which are relatively small in comparison to the models used in current lip reading models.
 To first attempt this problem, new datasets which capture 3D temporal models of subjects heads speaking must be established by the community.
+As well as capturing new data, expanding existing datasets with generated synthetic data with the use of generative adversarial networks may assist in the solution to this problem.
 
 \section{Lip Reading}
 This section shall discuss current lip reading models built with deep learning techniques and the availability of both 2D and 3D temporal datasets which lip reading models can currently be trained on.
@@ -124,11 +114,22 @@ Unlike previous models, the V2P model predicts phonemes as opposed to characters
 To the best of the author's knowledge, currently there do not exist any papers which have explored the use of 3D temporal datasets for the use with lip reading models. 
 This is likely due to the shortage of 3D temporal data on which such models could be trained on.
 
-\section{3D Modelling}
-\begin{itemize}
-    \item blendshapes
-    \item Model Correspondence
-\end{itemize}
+\section{3D Facial Modelling}
+Unlike 2D video where the subject is captured from a single angle without any depth information, 3D models cannot be captured with a single camera.
+In most instances, 3D head scans are captured with the use of a multi-camera rig with multiple cameras capturing video simultaneously.
+The number and type of camera can vary from system to system, but the principle remains consistent.
+All cameras must be synchronised to capture footage at the same time, with the same frame rate.
+This is inherently a more complex system than 2D video capture as is therefore more expensive, limiting the accessibility of such systems.  
+Once the images have been captured, the footage must be processed in order to produce a facial mesh of the subject \cite{Li2017}.
+
+\subsection{Blendshapes}
+A facial mesh is made up of a point cloud of vertices and vertex connections.
+Depending on the mesh capture pipeline, the number of vertices may vary, but even a low resolution mesh may contain several thousand vertices.
+Capturing realistic facial motion by modelling the displacements of all of these vertices is impractical when manipulating a model by hand.
+Blendshapes attempt to model aspects of realistic facial motion by finding the relations between these vertices and manipulating them simultaneously \cite{Lewis2010}, by reducing the number of parameters, the model becomes more manageable to control.
+One method of producing model blendshapes is with principle component analysis (PCA).
+By applying PCA on a set of facial meshes, the resulting principle components represent the changes in facial motion which capture the largest amount of variation in the set while reducing the number of model parameters substantial.
+
 
 \section{Data Generation}
 In order to construct a deep learning lip reading model capable of being trained on 3D temporal data, appropriate datasets must be established.
@@ -172,6 +173,7 @@ The discriminator however, attempts to correctly learn to discriminate between t
     \min_{G} \max_{D} V(G, D) = \E{\bm{x} \sim p_{data}(\bm{x})} [\log D(\bm{x})]
                               + \E{\bm{z} \sim p_{z}(\bm{z})} [\log (1 - D(G(\bm{z})))]
 \end{equation}
+\quad
 
 \noindent The original loss function (\ref{eq:gans_loss}) proposed by Ian Goodfellow forms a min-max game, where the loss of the generator is attempting to be minimised by having the discriminator label all the generated samples as real.
 While the loss of the discriminator is maximised by correctly classifying real and fake samples.
@@ -193,6 +195,7 @@ The original loss function proposed in the original paper \cite{Goodfellow2014} 
         \includegraphics[width=0.8\textwidth]{../figures/goodfellow_gen_losses.png}
     \caption{Goodfellow's Generator Loss Plots \cite{Goodfellow2014}}\label{fig:Goodfellow_plot}
 \end{figure}
+\quad
 
 \noindent This in turn makes it very challenging to improve the performance of the generator.
 The suggested improvement made in \cite{Goodfellow2014} is rather than to maximise the the number of generated samples which the discriminator incorrectly classifies, but to minimise the number of generator samples the discriminator correctly classifies, described in equation (\ref{eq:gans_loss2}).
@@ -202,6 +205,7 @@ Figure \ref{fig:Goodfellow_plot} shows how this results in the gradient propagat
     \min_{G} \max_{D} V(G, D) = \E{\bm{x} \sim p_{data}(\bm{x})} [\log D(\bm{x})]
                               - \E{\bm{z} \sim p_{z}(\bm{z})} [\log (D(G(\bm{z})))]
 \end{equation}
+\quad
 
 Further stability improvements were proposed in \cite{Radford2016} which allowed deep convolutional generative adversarial networks (DCGANs) to be successfully trained for the first time.
 Radford et al. proposed three main contributions.
@@ -219,6 +223,7 @@ In an attempt to stabilize the training of GANs models, the Wasserstein or 'Eart
             \E{\bm{x} \sim \Pd{r}} [D(\bm{x})]
             -\E{\bm{\hat{x}} \sim \Pd{g}} [D(\hat{\bm{x}})]
 \end{equation}
+\quad
 
 \noindent The WGAN model uses a critic as opposed to a discriminator, this is due to the fact that the discriminator is no longer a binary classifier, but being used to critique the real and generated samples. 
 As the Wasserstein function is continuous and differentiable, the critic can be trained until optimality, and \cite{Arjovsky2017} argues that it should be.
@@ -237,6 +242,7 @@ The use of gradient penalty is proposed in \cite{Gulrajani2017} in order to sati
         + \lambda \E{\bm{\hat{x}} \sim \Pd{\bm{\hat{x}}}} 
             [(\| \nabla_{\bm{\hat{x}}} D(\bm{\hat{x}}) \| - 1)^2]
 \end{equation}
+\quad
 
 \noindent Using the Wasserstein loss function with gradient penalty enforces the Lipschtiz condition and allows highly complex architectures to be trained successfully, including those with residual units \cite{Gulrajani2017}.
 
@@ -261,10 +267,17 @@ The attention mechanism is applied to GANs \cite{Zhang2018} to allow for long ra
 To the best of the author's knowledge, there currently exists no generative adversarial networks which aim to generate 3D facial models with speech audio as a conditional input.
 
 
-
-
 \section{Current Work and Future Work}
-Data collection
+At the current stage of the project, the current goal is to construct a new dataset of 3D facial scans of subjects speaking selected phrases by collecting the relevant data, this dataset can be combined with LRW-3D and VOCASET.
+In order to achieve this, the facial meshes from the individual datasets must be brought into correspondence, creating a larger dataset.
+The current issue with models which are to be trained on 3D temporal facial scans is the lack of such datasets due to the complexity in creating such datasets.
+By combining new and existing datasets, this aids in the solution of this issue.
+
+Future work will include training a GANs model which is capable to driving a template 3D mesh given an conditional audio input.
+This will allow for synthetic data augmentation to be applied to the current 3D facial datasets.
+This augmented dataset can be used to train further models which accept 3D facial meshes as input for tasks such as lip reading in order to see if model performance can be enhanced without the need for additional data capture.
+
+\newpage
 
 \bibliographystyle{unsrt}
 \bibliography{../ref}
