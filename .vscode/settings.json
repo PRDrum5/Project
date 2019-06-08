@@ -4,7 +4,7 @@
     ],
     "spellright.documentTypes": [
         "markdown",
-        "latex",
-        "plaintext"
-    ]
+        "latex"
+    ],
+    "python.pythonPath": "/home/peter/anaconda3/envs/MSc/bin/python"
 }
