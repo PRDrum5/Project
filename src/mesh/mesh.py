@@ -2,30 +2,31 @@ from plyfile import PlyData, PlyElement
 import scipy.linalg as la
 import os
 import numpy as np
-from random import shuffle
 
 class Mesh():
-    def __init__(self, dir_plys):
+    def __init__(self, dir_plys, mesh_deltas=False):
         self.dir_plys = dir_plys
 
         self.ply_files = []
 
         for root, _dirs, files in os.walk(self.dir_plys):
             for file in files:
-                if file.endswith(".ply"):
+                if file.endswith("01.ply"):
                     self.ply_files.append(os.path.join(root, file))
         
         self.ply_files = sorted(self.ply_files)
+        self.num_files = len(self.ply_files)
+        self._get_mesh_metadata(self.ply_files[0])
 
-        with open(self.ply_files.pop(0), 'rb') as f:
+    def _get_mesh_metadata(self, example_ply):
+        with open(example_ply, 'rb') as f:
             plydata = PlyData.read(f)
             self.vertex_count = plydata['vertex'].count
-            self.first_frame_vertex = np.empty((3*self.vertex_count, 1))
-            self._get_vertex_postions(plydata, self.first_frame_vertex)
-            self.first_frame_faces = plydata['face'].data
+            self.mesh_connections = plydata['face'].data
 
-        self.num_files = len(self.ply_files)
-        self.mesh_vertices = np.empty((3*self.vertex_count, self.num_files))
+    def get_empty_vertices(self, num_files):
+        mesh_vertices = np.empty((3*self.vertex_count, num_files))
+        return mesh_vertices
 
     def _get_vertex_postions(self, plydata, target_array, file_number=0):
         index = 0
@@ -36,8 +37,9 @@ class Mesh():
             target_array[index+1][file_number] = y
             target_array[index+2][file_number] = z
             index += 3
+        return target_array
 
-    def collect_vertex_postions(self, target_array):
+    def get_vertex_postions(self, target_array):
         """
         Extracts vertex postions for all ply files
         """
@@ -50,7 +52,8 @@ class Mesh():
                 if (file_number % 10) == 0:
                     print("Processing file number: {}".format(file_number))
     
-    def export_mesh(self, mesh_vertices, filename=None, text=False):
+    def export_mesh(self, mesh_vertices, mesh_connections, 
+                    filename=None, text=False):
         """
         Given numpy array of xyz postions for each vertex, export mesh back
         to a ply file with the vertex connections from original imported files.
@@ -63,19 +66,16 @@ class Mesh():
 
         index = 0
         for vert in range(self.vertex_count):
-            vertices[vert] = (vertices[index], 
-                              vertices[index+1], 
-                              vertices[index+2])
+            vertices[vert] = (mesh_vertices[index], 
+                              mesh_vertices[index+1], 
+                              mesh_vertices[index+2])
             index += 3
 
-        el_faces = PlyElement.describe(self.first_frame_faces, 'face')
+        el_faces = PlyElement.describe(mesh_connections, 'face')
         el_vertices = PlyElement.describe(vertices, 'vertex')
         PlyData([el_vertices, el_faces], text=text).write(filename + '.ply')
     
     def create_blendshapes(self, vertices, n_shapes):
-        # Subtract first frame from all frames
-        vertices -= self.first_frame_vertex
-
         # perform PCA on vertices to obtrain blendshapes
         v = vertices.T @ vertices
         eigvals, eigvecs = la.eig(v)    # Eigen analysis
@@ -95,6 +95,18 @@ class Mesh():
         blendshapes = np.delete(transform, np.s_[n_shapes:], axis=1)
 
         return blendshapes
+    
+    def create_frame_deltas(self, vertices):
+        """
+        Subtracts each subsequent frame resulting in the motion flow of the mesh
+        """
+        # Need an even number of samples
+        if (vertices.shape[1] % 2) != 0:
+            vertices = np.delete(vertices, -1, 1)
+        
+        # even columns - odd columns
+        vertices = vertices[:,1::2] - vertices[:,::2]
+        return vertices
         
     
 if __name__ == "__main__":
@@ -102,6 +114,9 @@ if __name__ == "__main__":
     dir_plys = "/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01"
 
     mesh = Mesh(dir_plys)
-    mesh.collect_vertex_postions(mesh.mesh_vertices)
-    shapes = mesh.create_blendshapes(mesh.mesh_vertices, n_shapes=3)
-    print(shapes)
+    mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
+    mesh.get_vertex_postions(mesh_vertices)
+    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    shapes = mesh.create_blendshapes(frame_deltas, 3)
+
+    mesh.export_mesh(mesh_vertices[:,0], mesh.mesh_connections, filename='temp')
