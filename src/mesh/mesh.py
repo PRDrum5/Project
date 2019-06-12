@@ -107,16 +107,63 @@ class Mesh():
         # even columns - odd columns
         vertices = vertices[:,1::2] - vertices[:,::2]
         return vertices
+    
+    def _get_procrustes_parameters(self, matrix1, matrix2):
+        # Translate centroids of matricies to origin
+        mean1 = np.mean(matrix1, 0)
+        mean2 = np.mean(matrix2, 0)
+        matrix1 -= mean1
+        matrix2 -= mean2
+
+        # Scale the matrix the same
+        norm1 = la.norm(matrix1)
+        norm2 = la.norm(matrix2)
+        matrix1 /= norm1
+        matrix2 /= norm2
+
+        rotation, scale = la.orthogonal_procrustes(matrix1, matrix2)
+
+        return mean1, mean2, norm1, norm2, rotation, scale
+    
+    def procrustes(self, matrix1, matrix2, landmarks):
+        """
+        Given two matrices of equal shape, bring them into alignment about 
+        given landmarks.
+        """
+        n_landmarks = len(landmarks)
+        dim = matrix1.shape[1]
+        submat1 = np.zeros((n_landmarks, dim))
+        submat2 = np.zeros((n_landmarks, dim))
+
+        for i, landmark_idx in enumerate(landmarks):
+            submat1[i] = matrix1[landmark_idx]
+            submat2[i] = matrix2[landmark_idx]
         
+        params = self._get_procrustes_parameters(submat1, submat2)
+        mean_sub1 = params[0]
+        mean_sub2 = params[1]
+        norm1 = params[2]
+        norm2 = params[3]
+        rotation_matrix = params[4]
+        scale = params[5]
+        print(params[0])
+        print(params[1])
+        print(params[2])
+        print(params[3])
+        print(params[4])
+        print(params[5])
     
 if __name__ == "__main__":
 
     dir_plys = "/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01"
 
     mesh = Mesh(dir_plys)
-    mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
-    mesh.get_vertex_postions(mesh_vertices)
-    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
-    shapes = mesh.create_blendshapes(frame_deltas, 3)
+    a = np.random.randn(5,3)
+    b = np.random.randn(5,3)
+    mesh.procrustes(a, b, [0,1,2])
+    #mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
+    #mesh.get_vertex_postions(mesh_vertices)
+    #frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    #shapes = mesh.create_blendshapes(frame_deltas, 3)
 
-    mesh.export_mesh(mesh_vertices[:,0], mesh.mesh_connections, filename='temp')
+    #mesh.export_mesh(mesh_vertices[:,0], mesh.mesh_connections, filename='temp')
