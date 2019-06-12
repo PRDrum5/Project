@@ -125,7 +125,24 @@ class Mesh():
 
         return mean1, mean2, norm1, norm2, rotation, scale
     
-    def procrustes(self, matrix1, matrix2, landmarks):
+    def _apply_procrustes(self, matrix1, matrix2, params):
+        """
+        params = [mean_matrix1, 
+                  mean_matrix2, 
+                  norm_matrix1, 
+                  norm_matrix2,
+                  rotation_matrix,
+                  scaling]
+        """
+        matrix1 -= params[0]
+        matrix2 -= params[1]
+        matrix1 /= params[2]
+        matrix2 /= params[3]
+        matrix2 = (matrix2 @ params[4].T) * params[5]
+
+        return matrix1, matrix2
+    
+    def procrustes(self, matrix1, matrix2, landmarks, difference=False):
         """
         Given two matrices of equal shape, bring them into alignment about 
         given landmarks.
@@ -140,30 +157,27 @@ class Mesh():
             submat2[i] = matrix2[landmark_idx]
         
         params = self._get_procrustes_parameters(submat1, submat2)
-        mean_sub1 = params[0]
-        mean_sub2 = params[1]
-        norm1 = params[2]
-        norm2 = params[3]
-        rotation_matrix = params[4]
-        scale = params[5]
-        print(params[0])
-        print(params[1])
-        print(params[2])
-        print(params[3])
-        print(params[4])
-        print(params[5])
+        matrix1, matrix2 = self._apply_procrustes(matrix1, matrix2, params)
+
+        diff = np.sum(np.square(matrix1 - matrix2))
+
+        return matrix1, matrix2, diff
+
     
 if __name__ == "__main__":
 
     dir_plys = "/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01"
 
     mesh = Mesh(dir_plys)
-    a = np.random.randn(5,3)
-    b = np.random.randn(5,3)
-    mesh.procrustes(a, b, [0,1,2])
-    #mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
-    #mesh.get_vertex_postions(mesh_vertices)
-    #frame_deltas = mesh.create_frame_deltas(mesh_vertices)
-    #shapes = mesh.create_blendshapes(frame_deltas, 3)
+    mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
+    mesh.get_vertex_postions(mesh_vertices)
 
-    #mesh.export_mesh(mesh_vertices[:,0], mesh.mesh_connections, filename='temp')
+    #TODO rewrite get_vertex_postions to create a matrix of shape [5069, 3, n_files]
+    #TODO write conversion from [5069,3,n_files] to [3*5069, n_files]
+
+#    mat1, mat2, diff = mesh.procrustes(a, b, [0,1,2,3])
+
+    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    shapes = mesh.create_blendshapes(frame_deltas, 3)
+
+    mesh.export_mesh(mesh_vertices[:,0], mesh.mesh_connections, filename='temp')
