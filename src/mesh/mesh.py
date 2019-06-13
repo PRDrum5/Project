@@ -25,18 +25,25 @@ class Mesh():
             self.mesh_connections = plydata['face'].data
 
     def get_empty_vertices(self, num_files):
-        mesh_vertices = np.empty((3*self.vertex_count, num_files))
+        mesh_vertices = np.empty((self.vertex_count, 3, num_files))
         return mesh_vertices
 
-    def _get_vertex_postions(self, plydata, target_array, file_number=0):
+    def old_get_vertex_postions(self, plydata, target_array, file_number=0):
         index = 0
         for vert in range(self.vertex_count):
             v = plydata['vertex'][vert]
-            (x, y, z) = (v[t] for t in ('x', 'y', 'z'))
-            target_array[index][file_number] = x
-            target_array[index+1][file_number] = y
-            target_array[index+2][file_number] = z
+            target_array[index][file_number] = v[0]
+            target_array[index+1][file_number] = v[1]
+            target_array[index+2][file_number] = v[2]
             index += 3
+        return target_array
+    
+    def _get_vertex_postions(self, plydata, target_array, file_number=0):
+        for vert in range(self.vertex_count):
+            v = plydata['vertex'][vert]
+            target_array[vert][0][file_number] = v[0]
+            target_array[vert][1][file_number] = v[1]
+            target_array[vert][2][file_number] = v[2]
         return target_array
 
     def get_vertex_postions(self, target_array):
@@ -51,6 +58,25 @@ class Mesh():
                 self._get_vertex_postions(plydata, target_array, file_number)
                 if (file_number % 10) == 0:
                     print("Processing file number: {}".format(file_number))
+    
+    def veticies_to_2d(self, vertices):
+        """
+        Convert 3d tensor of vertices to 2d array.
+        each column is a seperate mesh file
+        input shape (n_vertices, 3, n_files)
+        output shape (3*n_vertices, n_files)
+        """
+
+        return vertices.reshape(3*mesh.vertex_count, mesh.num_files)
+    
+    def vertices_to_3d(self, vertices):
+        """
+        convert 2d array to 3d tensor.
+        input shape (3*n_vertices, n_file)
+        output shape (n_vertices, 3, n_file)
+        """
+        return vertices.reshape(mesh.vertex_count, 3, mesh.num_files)
+
     
     def export_mesh(self, mesh_vertices, mesh_connections, 
                     filename=None, text=False):
@@ -142,7 +168,7 @@ class Mesh():
 
         return matrix1, matrix2
     
-    def procrustes(self, matrix1, matrix2, landmarks, difference=False):
+    def procrustes(self, matrix1, matrix2, landmarks):
         """
         Given two matrices of equal shape, bring them into alignment about 
         given landmarks.
@@ -162,6 +188,13 @@ class Mesh():
         diff = np.sum(np.square(matrix1 - matrix2))
 
         return matrix1, matrix2, diff
+    
+    def mesh_alignment(self, verts):
+        landmarks = [0, 1, 2, 3]
+        mat1 = verts[:,:,0]
+        for mesh in range(1, self.num_files):
+            mat2 = verts[:,:,mesh]
+            mat1, mat2, diff = self.procrustes(mat1, mat2, landmarks)
 
     
 if __name__ == "__main__":
@@ -172,11 +205,12 @@ if __name__ == "__main__":
     mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
     mesh.get_vertex_postions(mesh_vertices)
 
-    #TODO rewrite get_vertex_postions to create a matrix of shape [5069, 3, n_files]
-    #TODO write conversion from [5069,3,n_files] to [3*5069, n_files]
-
+    print(mesh_vertices[10][0][0])
+    mesh.mesh_alignment(mesh_vertices)
+    print(mesh_vertices[10][0][0])
 #    mat1, mat2, diff = mesh.procrustes(a, b, [0,1,2,3])
 
+    mesh_vertices = mesh.veticies_to_2d(mesh_vertices)
     frame_deltas = mesh.create_frame_deltas(mesh_vertices)
     shapes = mesh.create_blendshapes(frame_deltas, 3)
 
