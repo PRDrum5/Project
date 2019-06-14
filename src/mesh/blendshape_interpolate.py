@@ -1,38 +1,31 @@
 import numpy as np
 import os 
 from plyfile import PlyData
-from blendshapes import Blendshapes
+from mesh import Mesh
 from sklearn.preprocessing import normalize
 
+dir_plys = 'sentence01'
 dir_path = os.path.dirname(os.path.realpath(__file__))
-ply_file = os.path.join(dir_path, '/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01/sentence01.000001.ply')
-shapes_file = os.path.join(dir_path, 'blendshapes_sentence01.txt')
+mesh = Mesh(os.path.join(dir_path, dir_plys))
+mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
+mesh.get_vertex_postions(mesh_vertices)
+mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
+verts = mesh_vertices[:,0]
 
-bs = Blendshapes(ply_files=ply_file)
-
-verts = np.empty((3 * bs._num_vertices, bs.num_files))
-
-with open(bs.ply_files, 'rb') as f:
-    plydata = PlyData.read(f)
-    bs.collect_ply_data(plydata['vertex'], verts)
-    faces = plydata['face'].data
-
-shapes = np.loadtxt(shapes_file, delimiter=',')
+shapes = np.loadtxt(os.path.join(dir_path, 'shapes01.txt'), delimiter=',')
 shapes = normalize(shapes, axis=1)
 
-#princial_0 = verts + np.reshape(0.05 * shapes[:,0], verts.shape)
-#
-#bs.export_mesh(princial_0, faces, 'princ3')
+save_path = os.path.join(dir_path, 'blendshapes/shape01')
+if not os.path.exists(save_path):
+    os.makedirs(save_path)
 
-save_path = os.path.join(dir_path, 'blendshapes/shape00')
-
-shape = np.reshape(shapes[:,0], verts.shape)
-step = 0.001
+shape = np.reshape(shapes[:,1], verts.shape)
+step = 0.0002
 file_num = 0
-for i in range(-50, 51, 1):
+for i in range(-100, 101, 1):
     filename = 'face' + '%05d' % file_num
     path = os.path.join(save_path, filename)
     weight = step * i
-    blend = verts + (weight * shape)
-    bs.export_mesh(blend, faces, path)
+    blend =  verts + (weight * shape)
+    mesh.export_mesh(blend, mesh.mesh_connections, path)
     file_num += 1

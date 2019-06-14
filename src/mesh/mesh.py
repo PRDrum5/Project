@@ -4,15 +4,17 @@ import os
 import numpy as np
 
 class Mesh():
-    def __init__(self, dir_plys, mesh_deltas=False):
+    def __init__(self, dir_plys, given_mesh=None):
         self.dir_plys = dir_plys
 
-        self.ply_files = []
-
-        for root, _dirs, files in os.walk(self.dir_plys):
-            for file in files:
-                if file.endswith("01.ply"):
-                    self.ply_files.append(os.path.join(root, file))
+        if given_mesh:
+            self.ply_files = [os.path.join(dir_plys, given_mesh)]
+        else:
+            self.ply_files = []
+            for root, _dirs, files in os.walk(self.dir_plys):
+                for file in files:
+                    if file.endswith("01.ply"):
+                        self.ply_files.append(os.path.join(root, file))
         
         self.ply_files = sorted(self.ply_files)
         self.num_files = len(self.ply_files)
@@ -28,16 +30,6 @@ class Mesh():
         mesh_vertices = np.empty((self.vertex_count, 3, num_files))
         return mesh_vertices
 
-    def old_get_vertex_postions(self, plydata, target_array, file_number=0):
-        index = 0
-        for vert in range(self.vertex_count):
-            v = plydata['vertex'][vert]
-            target_array[index][file_number] = v[0]
-            target_array[index+1][file_number] = v[1]
-            target_array[index+2][file_number] = v[2]
-            index += 3
-        return target_array
-    
     def _get_vertex_postions(self, plydata, target_array, file_number=0):
         for vert in range(self.vertex_count):
             v = plydata['vertex'][vert]
@@ -59,7 +51,7 @@ class Mesh():
                 if (file_number % 10) == 0:
                     print("Processing file number: {}".format(file_number))
     
-    def veticies_to_2d(self, vertices):
+    def vertices_to_2d(self, vertices):
         """
         Convert 3d tensor of vertices to 2d array.
         each column is a seperate mesh file
@@ -67,7 +59,7 @@ class Mesh():
         output shape (3*n_vertices, n_files)
         """
 
-        return vertices.reshape(3*mesh.vertex_count, mesh.num_files)
+        return vertices.reshape(3*self.vertex_count, self.num_files)
     
     def vertices_to_3d(self, vertices):
         """
@@ -75,7 +67,7 @@ class Mesh():
         input shape (3*n_vertices, n_file)
         output shape (n_vertices, 3, n_file)
         """
-        return vertices.reshape(mesh.vertex_count, 3, mesh.num_files)
+        return vertices.reshape(self.vertex_count, 3, self.num_files)
 
     
     def export_mesh(self, mesh_vertices, mesh_connections, 
@@ -100,6 +92,13 @@ class Mesh():
         el_faces = PlyElement.describe(mesh_connections, 'face')
         el_vertices = PlyElement.describe(vertices, 'vertex')
         PlyData([el_vertices, el_faces], text=text).write(filename + '.ply')
+    
+    def export_all_meshes(self, vertices, filepath, filename):
+        faces = self.mesh_connections
+
+        for file in range(self.num_files):
+            save_path = os.path.join(filepath, filename + '%05d' % file)
+            self.export_mesh(vertices[:,file], faces, filename=save_path)
     
     def create_blendshapes(self, vertices, n_shapes):
         # perform PCA on vertices to obtrain blendshapes
@@ -189,29 +188,55 @@ class Mesh():
 
         return matrix1, matrix2, diff
     
-    def mesh_alignment(self, verts):
-        landmarks = [0, 1, 2, 3]
-        mat1 = verts[:,:,0]
-        for mesh in range(1, self.num_files):
+    def mesh_alignment(self, verts, root_mesh):
+        landmarks = [3365, 2433, 3150, 1402, 1417, 4336, 4892]#, 338, 27]
+        #[nose, out R eye, in R eye, out L eye, in L eye, back R eye, back L eye]#, R brow, L brow]
+        mat1 = root_mesh[:,:,0]
+        for mesh in range(0, self.num_files):
             mat2 = verts[:,:,mesh]
             mat1, mat2, diff = self.procrustes(mat1, mat2, landmarks)
-
+    
     
 if __name__ == "__main__":
 
-    dir_plys = "/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01"
+    root_mesh_dir = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01")
+    root_mesh = Mesh(root_mesh_dir, given_mesh="sentence01.000001.ply")
+    root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
+    root_mesh.get_vertex_postions(root_mesh_vertices)
 
-    mesh = Mesh(dir_plys)
+    for file in range(1, 2):
+        sentence = 'sentence' + '%02d' %file
+
+        dir_plys = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/", sentence)
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+
+        mesh = Mesh(dir_plys)
+        mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
+        mesh.get_vertex_postions(mesh_vertices)
+
+        mesh.mesh_alignment(mesh_vertices, root_mesh_vertices)
+
+        mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
+
+        save_path = os.path.join(dir_path, sentence)
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        file_name = 'aligned'
+        mesh.export_all_meshes(mesh_vertices, save_path, file_name)
+
+    dir_plys = 'sentence01'
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    mesh = Mesh(os.path.join(dir_path, dir_plys))
     mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
     mesh.get_vertex_postions(mesh_vertices)
+    mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-    print(mesh_vertices[10][0][0])
-    mesh.mesh_alignment(mesh_vertices)
-    print(mesh_vertices[10][0][0])
-#    mat1, mat2, diff = mesh.procrustes(a, b, [0,1,2,3])
+    #frame_deltas = mesh.create_frame_deltas(mesh_vertices)
 
-    mesh_vertices = mesh.veticies_to_2d(mesh_vertices)
-    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
-    shapes = mesh.create_blendshapes(frame_deltas, 3)
+    #shapes = mesh.create_blendshapes(frame_deltas, 10)
+    #np.savetxt('shapes01.txt', shapes, delimiter=',')
 
-    mesh.export_mesh(mesh_vertices[:,0], mesh.mesh_connections, filename='temp')
+    shapes = np.loadtxt('shapes01.txt', delimiter=',')
+    first_axis = np.array(shapes[:,0])
+
+#    mesh.export_mesh(mesh_vertices, mesh.mesh_connections, text=True, filename='temp')
