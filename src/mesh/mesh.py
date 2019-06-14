@@ -13,7 +13,7 @@ class Mesh():
             self.ply_files = []
             for root, _dirs, files in os.walk(self.dir_plys):
                 for file in files:
-                    if file.endswith("01.ply"):
+                    if file.endswith(".ply"):
                         self.ply_files.append(os.path.join(root, file))
         
         self.ply_files = sorted(self.ply_files)
@@ -111,10 +111,11 @@ class Mesh():
         eigvecs = eigvecs[:,idx]
         
         # Create diagonal of eigen values
-        eigvals_diag = np.diag(np.diag(eigvecs))
+        eigvals_diag = np.diag(eigvals)
 
         # Create the blendshapes transformation matrix
         transform = vertices @ eigvecs @ la.inv(eigvals_diag)
+        transform = np.real(transform)
 
         # Reduce down to amount desired
         blendshapes = np.delete(transform, np.s_[n_shapes:], axis=1)
@@ -199,11 +200,13 @@ class Mesh():
     
 if __name__ == "__main__":
 
+    # Import root mesh to align onto
     root_mesh_dir = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01")
     root_mesh = Mesh(root_mesh_dir, given_mesh="sentence01.000001.ply")
     root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
     root_mesh.get_vertex_postions(root_mesh_vertices)
 
+    # Align meshes
     for file in range(1, 2):
         sentence = 'sentence' + '%02d' %file
 
@@ -218,12 +221,14 @@ if __name__ == "__main__":
 
         mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
+        # Export aligned meshes
         save_path = os.path.join(dir_path, sentence)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         file_name = 'aligned'
         mesh.export_all_meshes(mesh_vertices, save_path, file_name)
 
+    # Load aligned meshes to create blendshapes
     dir_plys = 'sentence01'
     dir_path = os.path.dirname(os.path.realpath(__file__))
     mesh = Mesh(os.path.join(dir_path, dir_plys))
@@ -231,12 +236,12 @@ if __name__ == "__main__":
     mesh.get_vertex_postions(mesh_vertices)
     mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-    #frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
 
-    #shapes = mesh.create_blendshapes(frame_deltas, 10)
-    #np.savetxt('shapes01.txt', shapes, delimiter=',')
+    shapes = mesh.create_blendshapes(frame_deltas, 10)
+    np.savetxt('shapes00.txt', shapes, delimiter=',')
 
-    shapes = np.loadtxt('shapes01.txt', delimiter=',')
-    first_axis = np.array(shapes[:,0])
+    #shapes = np.loadtxt('shapes01.txt', delimiter=',')
+    #first_axis = np.array(shapes[:,0])
 
 #    mesh.export_mesh(mesh_vertices, mesh.mesh_connections, text=True, filename='temp')

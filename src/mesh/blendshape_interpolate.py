@@ -12,7 +12,7 @@ mesh.get_vertex_postions(mesh_vertices)
 mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 verts = mesh_vertices[:,0]
 
-shapes = np.loadtxt(os.path.join(dir_path, 'shapes01.txt'), delimiter=',')
+shapes = np.loadtxt(os.path.join(dir_path, 'shapes00.txt'), delimiter=',')
 shapes = normalize(shapes, axis=1)
 
 save_path = os.path.join(dir_path, 'blendshapes/shape01')
@@ -20,7 +20,7 @@ if not os.path.exists(save_path):
     os.makedirs(save_path)
 
 shape = np.reshape(shapes[:,1], verts.shape)
-step = 0.0002
+step = 0.001
 file_num = 0
 for i in range(-100, 101, 1):
     filename = 'face' + '%05d' % file_num
