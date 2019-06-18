@@ -1,4 +1,4 @@
-\documentclass[12pt,twoside]{report}
+\documentclass[12pt]{article}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -34,6 +34,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \begin{abstract}
 Your abstract.
+
 \end{abstract}
 
 \cleardoublepage
@@ -56,7 +57,7 @@ Comment this out if not needed.
 \fancyhead[LO,RE]{\slshape \leftmark}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Introduction}
+\section{Introduction}
 
 \begin{itemize}
 
@@ -67,32 +68,30 @@ Comment this out if not needed.
 
 \end{itemize}
 
-\begin{figure}[tb]
-\centering
-\includegraphics[width = 0.4\hsize]{./figures/imperial}
-\caption{Imperial College Logo. It's nice blue, and the font is quite stylish. But you can choose a different one if you don't like it.}
-\label{fig:logo}
-\end{figure}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Background}
+\newpage
+\section{Background}
 
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Contribution}
-Hello \cite{VOCA2019}
+\newpage
+\section{Contribution}
+Hello \cite{Cudeiro2019}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Experimental Results}
+\newpage
+\section{Experimental Results}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\chapter{Conclusion}
+\newpage
+\section{Conclusion}
 
 
 %% bibliography
+\newpage
 \bibliographystyle{unsrt}
 \bibliography{ref}
 

@@ -134,7 +134,7 @@ class Mesh():
         vertices = vertices[:,1::2] - vertices[:,::2]
         return vertices
     
-    def _get_procrustes_parameters(self, matrix1, matrix2):
+    def _apply_procrustes(self, matrix1, matrix2):
         # Translate centroids of matricies to origin
         mean1 = np.mean(matrix1, 0)
         mean2 = np.mean(matrix2, 0)
@@ -147,24 +147,9 @@ class Mesh():
         matrix1 /= norm1
         matrix2 /= norm2
 
-        rotation, scale = la.orthogonal_procrustes(matrix1, matrix2)
-
-        return mean1, mean2, norm1, norm2, rotation, scale
-    
-    def _apply_procrustes(self, matrix1, matrix2, params):
-        """
-        params = [mean_matrix1, 
-                  mean_matrix2, 
-                  norm_matrix1, 
-                  norm_matrix2,
-                  rotation_matrix,
-                  scaling]
-        """
-        matrix1 -= params[0]
-        matrix2 -= params[1]
-        matrix1 /= params[2]
-        matrix2 /= params[3]
-        matrix2 = (matrix2 @ params[4].T) * params[5]
+        # Rotate matrix 2
+        rotation, _ = la.orthogonal_procrustes(matrix1, matrix2)
+        matrix2 = (matrix2 @ rotation.T)
 
         return matrix1, matrix2
     
@@ -182,8 +167,7 @@ class Mesh():
             submat1[i] = matrix1[landmark_idx]
             submat2[i] = matrix2[landmark_idx]
         
-        params = self._get_procrustes_parameters(submat1, submat2)
-        matrix1, matrix2 = self._apply_procrustes(matrix1, matrix2, params)
+        matrix1, matrix2 = self._apply_procrustes(matrix1, matrix2)
 
         diff = np.sum(np.square(matrix1 - matrix2))
 
