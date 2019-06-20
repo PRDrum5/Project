@@ -13,9 +13,12 @@ mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 verts = mesh_vertices[:,0]
 
 shapes = np.loadtxt(os.path.join(dir_path, 'shapes00.txt'), delimiter=',')
-shapes = normalize(shapes, axis=1)
+total_shapes = shapes.shape[1]
+n_shapes = 10
+shapes = np.delete(shapes, range(10, total_shapes), axis=1)
+#shapes = normalize(shapes, axis=1)
 
-save_path = os.path.join(dir_path, 'blendshapes/shape01')
+save_path = os.path.join(dir_path, 'blendshapes/shape00')
 if not os.path.exists(save_path):
     os.makedirs(save_path)
 
