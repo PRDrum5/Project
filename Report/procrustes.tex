@@ -1,9 +1,9 @@
-\documentclass[12pt]{article}
+%\documentclass[12pt]{article}
 % some macros
-\input{notation}
-\input{includes}
+%\input{notation}
+%\input{includes}
 
-\begin{document}
+%\begin{document}
 
 \section{Facial Mesh Alignment}
 In order to create blendshapes from 3D facial scans, movement within scans should be limited to facial movement with as little head movement as possible.
@@ -16,7 +16,7 @@ To achieve this, Procrustes Analysis can be used.
 
 \subsection{Procrustes Analysis} \label{sec:procrustes_analysis}
 Procrustes Analysis is a statistical shape analysis method used to analyse the differences between two objects \cite{Krzanowski2000}.
-Given matrices $\mat{X} \in \mathbb{R}^{(n\times f)}$ and $\mat{Y} \in \mathbb{R}^{(n\times f)}$, each representing the coordinates of $n$ points in an $f$-dimensional feature space, a common statistical difference metric is the sum of square differences \ref{eq:ssd}.
+Given matrices $\mat{X} \in \mathbb{R}^{(n\times f)}$ and $\mat{Y} \in \mathbb{R}^{(n\times f)}$, each representing the coordinates of $n$ points in an $f$-dimensional feature space, a common statistical difference metric is the sum of square differences (\ref{eq:ssd}).
 \begin{equation}
     \label{eq:ssd}
     D = \sum_{i=1}^{n} \sum_{j=1}^{f} (x_{ij} - y_{ij})^2
@@ -69,7 +69,7 @@ The product of matrices $\mat{A}$ and $\mat{B}$ can be decomposed (\ref{eq:svd_2
 
 \subsubsection{A Simple Application of Procrustes Analysis}
 This section follows the steps of object alignment using Procrustes Analysis as described above with a simple example.
-A pair of configurations are given by the matrices below, visualised in figure \ref{fig:procrustes_ex_1}.
+A pair of configurations are given by the matrices below, visualised in Figure \ref{fig:procrustes_ex_1}.
 
 \begin{equation*}
     \mat{X} = 
@@ -142,7 +142,7 @@ Such positions include the nose, corners of the eyes and cheekbones.
 If the facial scans capture 360 degrees, then points on the back of the subjects head can also be used.
 From this subset of points, the translation, scaling and rotational matrix can be found which aligns these points using the steps described in section \ref{sec:procrustes_analysis} but then applied to the entire object.
     
-\newpage
-\bibliographystyle{unsrt}
-\bibliography{ref}
-\end{document}
+%\newpage
+%\bibliographystyle{unsrt}
+%\bibliography{ref}
+%\end{document}

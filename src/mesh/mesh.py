@@ -100,10 +100,17 @@ class Mesh():
             save_path = os.path.join(filepath, filename + '%05d' % file)
             self.export_mesh(vertices[:,file], faces, filename=save_path)
     
-    def create_blendshapes(self, vertices, n_shapes):
+    def create_blendshapes(self, vertices, n_shapes=None):
         # perform PCA on vertices to obtrain blendshapes
         v = vertices.T @ vertices
         eigvals, eigvecs = la.eig(v)    # Eigen analysis
+        eigvecs = np.real(eigvecs)
+        eigvals = np.real(eigvals)
+
+        # Remove zero eigen values
+        zero_idx = np.where(eigvals < 10E-10)[0]
+        eigvecs = np.delete(eigvecs, zero_idx, axis=1)
+        eigvals = np.delete(eigvals, zero_idx)
 
         # Sort eigenvectors by eigenvalues
         idx = eigvals.argsort()[::-1]   
@@ -114,11 +121,11 @@ class Mesh():
         eigvals_diag = np.diag(eigvals)
 
         # Create the blendshapes transformation matrix
-        transform = vertices @ eigvecs @ la.inv(eigvals_diag)
-        transform = np.real(transform)
+        blendshapes = vertices @ eigvecs @ la.inv(eigvals_diag)
 
         # Reduce down to amount desired
-        blendshapes = np.delete(transform, np.s_[n_shapes:], axis=1)
+        if n_shapes:
+            blendshapes = np.delete(blendshapes, np.s_[n_shapes:], axis=1)
 
         return blendshapes
     
@@ -183,7 +190,7 @@ class Mesh():
     
     
 if __name__ == "__main__":
-
+    """
     # Import root mesh to align onto
     root_mesh_dir = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01")
     root_mesh = Mesh(root_mesh_dir, given_mesh="sentence01.000001.ply")
@@ -211,7 +218,7 @@ if __name__ == "__main__":
             os.makedirs(save_path)
         file_name = 'aligned'
         mesh.export_all_meshes(mesh_vertices, save_path, file_name)
-
+    """
     # Load aligned meshes to create blendshapes
     dir_plys = 'sentence01'
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -222,8 +229,11 @@ if __name__ == "__main__":
 
     frame_deltas = mesh.create_frame_deltas(mesh_vertices)
 
-    shapes = mesh.create_blendshapes(frame_deltas, 10)
+    # vertices should have shape (features x samples)
+    shapes = mesh.create_blendshapes(frame_deltas)
+    print(shapes.shape)
     np.savetxt('shapes00.txt', shapes, delimiter=',')
+
 
     #shapes = np.loadtxt('shapes01.txt', delimiter=',')
     #first_axis = np.array(shapes[:,0])
