@@ -2,10 +2,15 @@ from plyfile import PlyData, PlyElement
 import scipy.linalg as la
 import os
 import numpy as np
+from tqdm import tqdm
 
 class Mesh():
-    def __init__(self, dir_plys, given_mesh=None):
+    def __init__(self, dir_plys, save_path=None, given_mesh=None):
         self.dir_plys = dir_plys
+        self.save_path = save_path
+
+        if self.save_path and not os.path.exists(self.save_path):
+            os.makedirs(self.save_path)
 
         if given_mesh:
             self.ply_files = [os.path.join(dir_plys, given_mesh)]
@@ -19,6 +24,11 @@ class Mesh():
         self.ply_files = sorted(self.ply_files)
         self.num_files = len(self.ply_files)
         self._get_mesh_metadata(self.ply_files[0])
+        self._get_root_mesh(self.ply_files[0])
+
+    def _get_root_mesh(self, root_ply):
+        self.root_mesh = self.get_empty_vertices(1)
+        self.get_vertex_postions(self.root_mesh)
 
     def _get_mesh_metadata(self, example_ply):
         with open(example_ply, 'rb') as f:
@@ -42,14 +52,16 @@ class Mesh():
         """
         Extracts vertex postions for all ply files
         """
-        print("Number of files being processed: {}".format(self.num_files))
+#        print("Number of files being processed: {}".format(self.num_files))
 
-        for file_number, file in enumerate(self.ply_files):
+        for file_number, file in tqdm(enumerate(self.ply_files)):
+            if file_number == target_array.shape[2]:
+                break
             with open(file, 'rb') as f:
                 plydata = PlyData.read(f)
                 self._get_vertex_postions(plydata, target_array, file_number)
-                if (file_number % 10) == 0:
-                    print("Processing file number: {}".format(file_number))
+                #if (file_number % 10) == 0:
+                #    print("Processing file number: {}".format(file_number))
     
     def vertices_to_2d(self, vertices):
         """
@@ -59,7 +71,7 @@ class Mesh():
         output shape (3*n_vertices, n_files)
         """
 
-        return vertices.reshape(3*self.vertex_count, self.num_files)
+        return vertices.reshape(3*self.vertex_count, -1)
     
     def vertices_to_3d(self, vertices):
         """
@@ -187,55 +199,88 @@ class Mesh():
         for mesh in range(0, self.num_files):
             mat2 = verts[:,:,mesh]
             mat1, mat2, diff = self.procrustes(mat1, mat2, landmarks)
+
+    def morph_mesh(self, vertices, blendshapes, shape_params):
+        """
+        Given blendshape axis and parameters to move along, morphs the given 
+        mesh vertices.
+        """
+        n_shapes = blendshapes.shape[1]
+        if len(shape_params) < n_shapes:
+            shape_params = np.pad(shape_params, (0,n_shapes), 'constant')
+        
+        morph = shape_params * blendshapes
+        morph = np.sum(morph, axis=1).reshape(vertices.shape)
+
+        morphed_vertices = vertices + morph
+        morphed_vertices = morphed_vertices.reshape(-1,1)
+
+        return morphed_vertices
+
+    def recover_blendshape_parameters(self, altered_vertices, blendshapes):
+        """
+        Given an altered set of mesh vertices and the blendshape axis along
+        which the mesh has been morphed, attempt to recover the parameters used
+        to morph from the root mesh.
+        """
+        n_shapes = blendshapes.shape[1]
+        altered_vertices = altered_vertices.reshape(-1,1)
+        
+        root_vertices = self.vertices_to_2d(self.root_mesh)
+        vert_deltas = altered_vertices - root_vertices
+
+        # Problem is over-determined
+        subshapes = blendshapes[0:n_shapes,0:n_shapes] 
+        sub_vert_deltas = vert_deltas[0:n_shapes]
+
+        params = np.linalg.solve(subshapes, sub_vert_deltas).reshape(n_shapes,)
+
+        return params
+
+    def get_sequence_blendshapes(self, seq_vertices, shapes):
+        """
+        Calculate the blendshapes which desicribe a given sequence.
+        """
+        n_seq = seq_vertices.shape[1]
+        n_shapes = shapes.shape[1]
+
+        seq_shapes = np.zeros((n_shapes, n_seq))
+
+        for v in range(n_seq):
+            verts = seq_vertices[:,v]
+            seq_shapes[:,v] = self.recover_blendshape_parameters(verts, shapes)
+        
+        return seq_shapes
     
-    
+    def export_sequence_blendshapes(self, seq_vertices, shapes, filename):
+        """
+        Save the blendshapes which describe a given sequence.
+        """
+        save_path = os.path.join(self.save_path, filename)
+        seq_shapes = self.get_sequence_blendshapes(seq_vertices, shapes)
+        np.save(save_path, seq_shapes)
+
+
 if __name__ == "__main__":
-    """
-    # Import root mesh to align onto
-    root_mesh_dir = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01")
-    root_mesh = Mesh(root_mesh_dir, given_mesh="sentence01.000001.ply")
-    root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
-    root_mesh.get_vertex_postions(root_mesh_vertices)
 
-    # Align meshes
-    for file in range(1, 2):
-        sentence = 'sentence' + '%02d' %file
-
-        dir_plys = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/", sentence)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-
-        mesh = Mesh(dir_plys)
-        mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
-        mesh.get_vertex_postions(mesh_vertices)
-
-        mesh.mesh_alignment(mesh_vertices, root_mesh_vertices)
-
-        mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
-
-        # Export aligned meshes
-        save_path = os.path.join(dir_path, sentence)
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        file_name = 'aligned'
-        mesh.export_all_meshes(mesh_vertices, save_path, file_name)
-    """
-    # Load aligned meshes to create blendshapes
-    dir_plys = 'sentence01'
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    mesh = Mesh(os.path.join(dir_path, dir_plys))
+
+    ply_path = 'sentence01'
+    blendshape_path = 'sequence_shapes'
+
+    ply_files = os.path.join(dir_path, ply_path)
+    save_path = os.path.join(dir_path, blendshape_path)
+
+    mesh = Mesh(ply_files, save_path)
+
     mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
     mesh.get_vertex_postions(mesh_vertices)
     mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    shapes = np.loadtxt(os.path.join(dir_path, 'shapes00.txt'), delimiter=',')
+    total_shapes = shapes.shape[1]
+    n_shapes = 10
+    shapes = np.delete(shapes, range(n_shapes, total_shapes), axis=1)
 
-    # vertices should have shape (features x samples)
-    shapes = mesh.create_blendshapes(frame_deltas)
-    print(shapes.shape)
-    np.savetxt('shapes00.txt', shapes, delimiter=',')
-
-
-    #shapes = np.loadtxt('shapes01.txt', delimiter=',')
-    #first_axis = np.array(shapes[:,0])
-
-#    mesh.export_mesh(mesh_vertices, mesh.mesh_connections, text=True, filename='temp')
+    mesh.export_sequence_blendshapes(mesh_vertices, shapes, ply_path)
+    
