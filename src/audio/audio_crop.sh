@@ -20,6 +20,8 @@ DURATION=0.1
 # Temp file name
 TEMP_FILE="temp_file"$EXTENSION
 
+THRESHOLD=0.00000001
+
 # Make filepath for trimmed audio samples to live
 mkdir -p $OUTPUT
 
@@ -45,9 +47,18 @@ do
 
     for i in $(seq -f "%04g" 1 $slices)
     do
-        sox $file $output_path/$filename_$i$EXTENSION trim 0 $DURATION
+        outfile=$output_path/$filename_$i$EXTENSION
+        sox $file $outfile trim 0 $DURATION
         sox $file $TEMP_FILE trim 0.1
         mv $TEMP_FILE $file
+
+        # Check that the amplitude of the file isn't zero
+        amplitude="$(sox $outfile -n stat 2>&1 | sed -n 's#^Maximum amplitude:[^0-9]*\([0-9.]*\)$#\1#p')"
+        if (( $(echo "$amplitude < $THRESHOLD" |bc -l) )); then
+            echo $outfile
+            rm $outfile
+            break
+        fi
     done
 
     # Recover original from backup
