@@ -83,14 +83,15 @@ if __name__ == "__main__":
     file_path = 'samples'
     spectogram_path = 'spectograms'
     file_name = 'sentence01'
+    file_name = 'temp'
 
     audio_files = os.path.join(dir_path, file_path)
     spec_files = os.path.join(dir_path, spectogram_path)
 
-    ms = MelSpec(file_path=audio_files, save_path=spec_files)
+    ms = MelSpec(file_path=dir_path, save_path=dir_path)
     #ms.convert_to_mfcc()
     sr, audio_data = ms.read_wav(file_name)
     mel_spec = ms.mfcc(audio_data, sr)
     print(mel_spec.shape)
-    #ms.display_melplot(mel_spec)
+    ms.display_melplot(mel_spec)
     #ms.save_spectrum(mel_spec, file_name)
