@@ -277,7 +277,7 @@ if __name__ == "__main__":
     mesh.get_vertex_postions(mesh_vertices)
     mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-    shapes = np.loadtxt(os.path.join(dir_path, 'shapes00.txt'), delimiter=',')
+    shapes = np.load(os.path.join(dir_path, 'shapes00.npy'))
     total_shapes = shapes.shape[1]
     n_shapes = 10
     shapes = np.delete(shapes, range(n_shapes, total_shapes), axis=1)

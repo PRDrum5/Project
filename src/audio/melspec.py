@@ -31,7 +31,8 @@ class MelSpec():
         wav_file = os.path.join(self.file_path, wav_file)
 
         sample_rate, audio_data = wavfile.read(wav_file)
-        audio_data = audio_data / audio_data.max()
+        if audio_data.max() != 0:
+            audio_data = audio_data / audio_data.max()
 
         return sample_rate, audio_data
     
@@ -57,25 +58,34 @@ class MelSpec():
         mel_spec = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=50)
         return mel_spec
 
-    def save_spectrum(self, spectrum, filename):
+    def save_spectrum(self, spectrum, filename, save_path):
         """
         Exports spectrum file
         """
-        save_path = os.path.join(self.save_path, filename)
+        save_path = os.path.join(save_path, filename)
         np.save(save_path, spectrum)
     
-    def convert_to_mfcc(self):
+    def convert_to_mfcc(self, nested=False):
         """
         Converts all wav files into mel spectograms and exports them as numpy 
         array files.
-        Files are saved to self.save_path
         """
         for f in tqdm(self.wav_files):
+            if nested:
+                folder = f.split(os.sep)[-2]
+                file_save_path = os.path.join(self.save_path, folder)
+
+                if not os.path.exists(file_save_path):
+                    os.makedirs(file_save_path)
+            else:
+                file_save_path = self.save_path
+
             filename = os.path.basename(f)
             filename = os.path.splitext(filename)[0]
+
             sr, audio_data = self.read_wav(f)
             mel_spec = self.mfcc(audio_data, sr)
-            self.save_spectrum(mel_spec, filename)
+            self.save_spectrum(mel_spec, filename, file_save_path)
 
 
 if __name__ == "__main__":
@@ -83,7 +93,6 @@ if __name__ == "__main__":
     file_path = 'samples'
     spectogram_path = 'spectograms'
     file_name = 'sentence01'
-    file_name = 'temp'
 
     audio_files = os.path.join(dir_path, file_path)
     spec_files = os.path.join(dir_path, spectogram_path)

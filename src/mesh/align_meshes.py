@@ -11,7 +11,7 @@ if __name__ == "__main__":
     root_mesh.get_vertex_postions(root_mesh_vertices)
 
     # Align meshes
-    for file in range(1, 2):
+    for file in range(1, 41):
         sentence = 'sentence' + '%02d' %file
 
         dir_plys = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/", sentence)
@@ -26,7 +26,7 @@ if __name__ == "__main__":
         mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
         # Export aligned meshes
-        save_path = os.path.join(dir_path, sentence)
+        save_path = os.path.join(dir_path, 'aligned', sentence)
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         file_name = 'aligned'

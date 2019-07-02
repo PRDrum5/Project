@@ -4,7 +4,7 @@ from mesh import Mesh
 
 if __name__ == "__main__":
     # Load aligned meshes to create blendshapes
-    dir_plys = 'sentence01'
+    dir_plys = 'aligned'
     dir_path = os.path.dirname(os.path.realpath(__file__))
     mesh = Mesh(os.path.join(dir_path, dir_plys))
     mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
@@ -16,4 +16,4 @@ if __name__ == "__main__":
     # vertices should have shape (features x samples)
     shapes = mesh.create_blendshapes(frame_deltas)
     print(shapes.shape)
-    np.savetxt('shapes00.txt', shapes, delimiter=',')
+    np.save('shapes00', shapes)

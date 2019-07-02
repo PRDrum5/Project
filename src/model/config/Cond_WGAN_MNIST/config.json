@@ -1,0 +1,66 @@
+{
+    "experiment_name": "Cond_WGAN_MNIST",
+    "n_gpu": 1,
+    "resume": true,
+    "data_loader": {
+        "spec": "DataLoaderMNIST",
+        "args":{
+            "data_dir": "data/",
+            "batch_size": 128,
+            "shuffle": true,
+            "train_split": 1.00,
+            "n_workers": 0,
+            "train": true,
+            "drop_last": true
+        }
+    },
+    "trainer": {
+        "epochs": 5,
+        "disc_gen_ratio": 4,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "level": 2,
+        "tensorboard": true
+    },
+    "generator": {
+        "arch": {
+            "spec": "Cond_Generator_MNIST",
+            "args": {
+                "z_dim": 100,
+                "n_labels": 10
+            }
+        },
+        "optimizer": {
+            "spec": "Adam",
+            "args": {
+                "lr": 0.015,
+                "weight_decay": 0,
+                "amsgrad": true
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_g_loss"
+        }
+    },
+    "discriminator": {
+        "arch": {
+            "spec": "Cond_Critic_MNIST",
+            "args": {
+                "in_channels": 1,
+                "n_labels": 10
+            }
+        },
+        "optimizer": {
+            "spec": "Adam",
+            "args": {
+                "lr": 0.005,
+                "weight_decay": 0,
+                "amsgrad": true
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_d_loss",
+            "gradient_penalty": 1
+        }
+    }
+}
