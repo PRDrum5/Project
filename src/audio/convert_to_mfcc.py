@@ -4,11 +4,11 @@ import os
 
 if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_path = 'trimmed_samples'
-    spectogram_path = 'spectograms'
+    file_dir = 'trimmed_samples'
+    spectogram_dir = 'spectograms'
 
-    audio_files = os.path.join(dir_path, file_path)
-    spec_files = os.path.join(dir_path, spectogram_path)
+    audio_files = os.path.join(dir_path, file_dir)
+    spec_files = os.path.join(dir_path, spectogram_dir)
 
     ms = MelSpec(file_path=audio_files, save_path=spec_files)
 

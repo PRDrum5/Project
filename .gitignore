@@ -21,3 +21,7 @@ __pycache__/
 *.ply
 src/audio/spectograms/
 src/data/spectograms/
+src/mesh/animation_visualization/
+src/mesh/shape_params/
+src/model/data/
+
