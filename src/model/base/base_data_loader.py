@@ -4,7 +4,7 @@ from torch.utils.data.sampler import SequentialSampler
 
 class BaseDataLoader(DataLoader):
     def __init__(self, dataset, batch_size, shuffle, 
-                 data_split, n_workers=1, drop_last=False):
+                 data_split, n_workers=1, drop_last=True):
 
         self.shuffle = shuffle
         self.batch_size = batch_size

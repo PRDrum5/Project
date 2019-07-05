@@ -1,6 +1,7 @@
 import os
 from torchvision import datasets, transforms
 from base import BaseDataLoader
+from datasets import MelSpecBlendshapesDataset, SpecShapesToTensor
 
 class DataLoaderMNIST(BaseDataLoader):
     """
@@ -45,31 +46,35 @@ class DataLoaderCIFAR10(BaseDataLoader):
                         
 class DataLoaderMelSpecShapes(BaseDataLoader):
     """
+    DataLoader for Mel Spectograms and Corresponding Blendshape Parameters
     """
-    def __init__(self, data_dir, batch_size,
+    def __init__(self, melspec_dir, blendshapes_dir, batch_size,
                  shuffle=False, train_split=0, n_workers=1):
 
-        self.data_dir = data_dir
+        self.melspec_dir = melspec_dir
+        self.blendshapes_dir = blendshapes_dir
 
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))
-        ])
+        transform = SpecShapesToTensor()
 
+        self.dataset = MelSpecBlendshapesDataset(self.melspec_dir,
+                                                 self.blendshapes_dir,
+                                                 transform=transform)
 
+        super().__init__(self.dataset, batch_size, shuffle, 
+                         train_split, n_workers)
 
-class MicroDataLoaderMelSpecShapes(BaseDataLoader):
-    """
-    Micro Dataset of Mel Spectrograms and Blendshape Parameters from the VOCASET
-    This Microset contains only data for subject 1, sentence 1
-    """
-    def __init__(self, data_dir, batch_size,
-                 shuffle=False, train_split=0, n_workers=1):
+if __name__ == "__main__":
 
-        self.data_dir = data_dir
+    data_path = '/home/peter/Documents/Uni/Project/src/model/data'
+    mel_dir = 'spectograms'
+    shape_dir = 'blendshapes'
+    mel_path = os.path.join(data_path, mel_dir)
+    shape_path = os.path.join(data_path, shape_dir)
 
-        transform = transforms.Compose([
-            transforms.ToTensor(),
-            transforms.Normalize((0.5,), (0.5,))
-        ])
+    data_loader = DataLoaderMelSpecShapes(mel_path, shape_path, 
+                                          batch_size=4, n_workers=0)
 
+    for idx, sample in enumerate(data_loader):
+        print(idx, sample['melspec'].shape, sample['shape_param'].shape)
+        if idx == 4:
+            break

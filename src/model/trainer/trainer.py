@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from base import *
+from base import BaseMultiTrainer
 from logger import TensorboardWriter
 from torchvision.utils import save_image
 from model.losses import gradient_penalty
