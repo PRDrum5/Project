@@ -235,3 +235,4 @@ class CGANTrainer(BaseMultiTrainer):
             #if epoch % self.save_period == 0:
             #    self._save_checkpoint(epoch)
 
+#TODO Write VOCASET training loop

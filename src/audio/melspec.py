@@ -50,12 +50,14 @@ class MelSpec():
         librosa.display.specshow(librosa.power_to_db(mel_spec), x_axis='time')
         plt.show()
     
-    def mfcc(self, audio_data, sample_rate, n_filters=30):
+    def mfcc(self, audio_data, sample_rate, n_mfcc=50):
         """
         Returns the mel spectrum of an audio signal.
         The number of mel filters can be varied.
         """
-        mel_spec = librosa.feature.mfcc(y=audio_data, sr=sample_rate, n_mfcc=50)
+        mel_spec = librosa.feature.mfcc(y=audio_data, 
+                                        sr=sample_rate, 
+                                        n_mfcc=n_mfcc)
         return mel_spec
 
     def save_spectrum(self, spectrum, filename, save_path):

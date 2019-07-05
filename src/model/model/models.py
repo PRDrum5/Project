@@ -214,3 +214,134 @@ class Cond_Critic_MNIST(BaseModel):
         out = self.linear(self.conv7(x))
         out = torch.squeeze(out)
         return out
+
+class Voca_Shape_Generator(BaseModel):
+    def __init__(self, z_dim=10, n_labels=1):
+        super().__init__()
+
+        in_dim = z_dim + n_labels
+
+        self.conv1 = nn.Conv2d(in_dim, 64, kernel_size=(4,1), 
+                               stride=(1,1), bias=False)
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=(4,1), 
+                               stride=(1,1), bias=False)
+        self.relu2 = nn.ReLU()
+    
+        self.conv3 = nn.Conv2d(128, 128, kernel_size=(4,2), 
+                               stride=(2,1), bias=False)
+        self.relu3 = nn.ReLU()
+    
+        self.conv4 = nn.Conv2d(128, 64, kernel_size=(4,1), 
+                               stride=(1,1), bias=False)
+        self.relu4 = nn.ReLU()
+    
+        self.conv5 = nn.Conv2d(64, 32, kernel_size=(4,2), 
+                               stride=(1,1), bias=False)
+        self.relu5 = nn.ReLU()
+    
+        self.conv6 = nn.Conv2d(32, 16, kernel_size=(4,2), 
+                               stride=(1,1), bias=False)
+        self.relu6 = nn.ReLU()
+    
+        self.conv7 = nn.Conv2d(16, 6, kernel_size=(3,2), 
+                               stride=(1,1), bias=False)
+        self.linear7 = nn.Linear(6, 6)
+    
+    def forward(self, z, c):
+        print(z.size())
+        print(c.size())
+        x = torch.cat((z, c), dim=1)
+        print(x.size())
+        x = self.relu1(self.conv1(x))
+        print(x.size())
+        x = self.relu2(self.conv2(x))
+        print(x.size())
+        x = self.relu3(self.conv3(x))
+        print(x.size())
+        x = self.relu4(self.conv4(x))
+        print(x.size())
+        x = self.relu5(self.conv5(x))
+        print(x.size())
+        x = self.relu6(self.conv6(x))
+        print(x.size())
+        out = self.linear7(self.conv7(x))
+        print(out.size())
+        return out
+
+class Voca_Shape_Critic(BaseModel):
+    def __init__(self, spec_channels, shape_channels):
+        super().__init__()
+
+        self.spec_conv1 = nn.Conv2d(spec_channels, 4, 
+                                    kernel_size=(4,1), bias=False)
+        self.spec_relu1 = nn.ReLU()
+
+        self.spec_conv2 = nn.Conv2d(4, 8, kernel_size=(4,1), bias=False)
+        self.spec_relu2 = nn.ReLU()
+    
+        self.spec_conv3 = nn.Conv2d(8, 16, kernel_size=(4,1), bias=False)
+        self.spec_relu3 = nn.ReLU()
+    
+        self.spec_conv4 = nn.Conv2d(16, 32, kernel_size=(4,1), bias=False)
+        self.spec_relu4 = nn.ReLU()
+    
+        self.spec_conv5 = nn.Conv2d(32, 64, kernel_size=(4,1), bias=False)
+        self.spec_relu5 = nn.ReLU()
+    
+        self.spec_conv6 = nn.Conv2d(64, 128, kernel_size=(4,2), bias=False)
+        self.spec_relu6 = nn.ReLU()
+    
+        self.spec_conv7 = nn.Conv2d(128, 128, kernel_size=(3,1), bias=False)
+        self.spec_relu7 = nn.ReLU()
+
+        self.shape_conv1 = nn.Conv2d(shape_channels, 16, 
+                                     kernel_size=(1,2), bias=False)
+        self.shape_relu1 = nn.ReLU()
+
+        self.shape_conv2 = nn.Conv2d(16, 32, kernel_size=(1,2), bias=False)
+        self.shape_relu2 = nn.ReLU()
+
+        self.shape_conv3 = nn.Conv2d(32, 64, kernel_size=(1,2), bias=False)
+        self.shape_relu3 = nn.ReLU()
+
+        self.conv1 = nn.Conv2d(192, 128, kernel_size=(3,1), bias=False)
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(128, 64, kernel_size=(3,1), bias=False)
+        self.relu2 = nn.ReLU()
+
+        self.conv3 = nn.Conv2d(64, 32, kernel_size=(3,1), bias=False)
+        self.relu3 = nn.ReLU()
+
+        self.conv4 = nn.Conv2d(32, 16, kernel_size=(3,2), bias=False)
+        self.relu4 = nn.ReLU()
+
+        self.conv5 = nn.Conv2d(16, 1, kernel_size=(2,2), bias=False)
+        self.linear5 = nn.Linear(1,1)
+    
+    def forward(self, melspec, shapes):
+        print(melspec.size())
+        print(shapes.size())
+        x = self.spec_relu1(self.spec_conv1(melspec))
+        x = self.spec_relu2(self.spec_conv2(x))
+        x = self.spec_relu3(self.spec_conv3(x))
+        x = self.spec_relu4(self.spec_conv4(x))
+        x = self.spec_relu5(self.spec_conv5(x))
+        x = self.spec_relu6(self.spec_conv6(x))
+        x = self.spec_relu7(self.spec_conv7(x))
+
+        y = self.shape_relu1(self.shape_conv1(shapes))
+        y = self.shape_relu2(self.shape_conv2(y))
+        y = self.shape_relu3(self.shape_conv3(y))
+
+        z = torch.cat((x, y), dim=1)
+
+        z = self.relu1(self.conv1(z))
+        z = self.relu2(self.conv2(z))
+        z = self.relu3(self.conv3(z))
+        z = self.relu4(self.conv4(z))
+        out = self.linear5(self.conv5(z))
+
+        return out

@@ -41,6 +41,6 @@ def gan_main(config):
 if __name__ == "__main__":
     fix_seed(0)
 
-    gan_config = GetConfig('./config/Cond_WGAN_MNIST/config.json')
+    config = GetConfig('./config/vocaset_gan/config.json')
 
-    gan_main(gan_config)
+    gan_main(config)
