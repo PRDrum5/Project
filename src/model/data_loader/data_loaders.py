@@ -49,7 +49,7 @@ class DataLoaderMelSpecShapes(BaseDataLoader):
     DataLoader for Mel Spectograms and Corresponding Blendshape Parameters
     """
     def __init__(self, melspec_dir, blendshapes_dir, batch_size,
-                 shuffle=False, train_split=0, n_workers=1):
+                 shuffle=False, train_split=1, n_workers=1):
 
         self.melspec_dir = melspec_dir
         self.blendshapes_dir = blendshapes_dir
@@ -63,18 +63,3 @@ class DataLoaderMelSpecShapes(BaseDataLoader):
         super().__init__(self.dataset, batch_size, shuffle, 
                          train_split, n_workers)
 
-if __name__ == "__main__":
-
-    data_path = '/home/peter/Documents/Uni/Project/src/model/data'
-    mel_dir = 'spectograms'
-    shape_dir = 'blendshapes'
-    mel_path = os.path.join(data_path, mel_dir)
-    shape_path = os.path.join(data_path, shape_dir)
-
-    data_loader = DataLoaderMelSpecShapes(mel_path, shape_path, 
-                                          batch_size=4, n_workers=0)
-
-    for idx, sample in enumerate(data_loader):
-        print(idx, sample['melspec'].shape, sample['shape_param'].shape)
-        if idx == 4:
-            break
