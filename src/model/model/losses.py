@@ -27,7 +27,7 @@ def wasserstein_g_loss(fake_logit):
     fake_loss = -fake_logit.mean()
     return fake_loss
 
-def gradient_penalty(d_model, real, fake, label=None):
+def gradient_penalty(d_model, real, fake, conditional=None):
     device = real.device
     batch_size = real.size(0)
 
@@ -37,8 +37,8 @@ def gradient_penalty(d_model, real, fake, label=None):
     interpolated = (alpha * real) + ((1-alpha) * fake)
     interpolated.requires_grad_()
 
-    if label is not None:
-        score = d_model(interpolated, label)
+    if conditional is not None:
+        score = d_model(interpolated, conditional)
     else:
         score = d_model(interpolated)
 

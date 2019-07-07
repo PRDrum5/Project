@@ -1,0 +1,66 @@
+{
+    "experiment_name": "VocaSet",
+    "n_gpu": 1,
+    "resume": true,
+    "data_loader": {
+        "spec": "DataLoaderMelSpecShapes",
+        "args":{
+            "melspec_dir": "data/spectograms/",
+            "blendshapes_dir": "data/blendshapes/",
+            "batch_size": 32,
+            "shuffle": false,
+            "train_split": 1.00,
+            "n_workers": 0,
+            "drop_last": true
+        }
+    },
+    "trainer": {
+        "epochs": 20,
+        "disc_gen_ratio": 5,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "level": 2,
+        "tensorboard": true
+    },
+    "generator": {
+        "arch": {
+            "spec": "Voca_Shape_Generator",
+            "args": {
+                "z_dim": 10,
+                "n_labels": 1
+            }
+        },
+        "optimizer": {
+            "spec": "Adam",
+            "args": {
+                "lr": 0.015,
+                "weight_decay": 0,
+                "amsgrad": true
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_g_loss"
+        }
+    },
+    "discriminator": {
+        "arch": {
+            "spec": "Voca_Shape_Critic",
+            "args": {
+                "spec_channels": 1,
+                "shape_channels": 1
+            }
+        },
+        "optimizer": {
+            "spec": "Adam",
+            "args": {
+                "lr": 0.005,
+                "weight_decay": 0,
+                "amsgrad": true
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_d_loss",
+            "gradient_penalty": 1
+        }
+    }
+}

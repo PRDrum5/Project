@@ -1,7 +1,7 @@
 import torch
 from model import losses, models
 from data_loader import data_loaders
-from trainer import GANTrainer, CGANTrainer
+from trainer import GANTrainer, CGANTrainer, VocaShapeTrainer
 from get_config import GetConfig
 from utils import fix_seed
 import torch.optim as optim
@@ -33,7 +33,7 @@ def gan_main(config):
     gen_loss = config.get_func('generator,loss_func', losses)
 
     #TODO add Trainer selection to config
-    trainer = CGANTrainer(config, data_loader,
+    trainer = VocaShapeTrainer(config, data_loader,
                          disc_model, disc_loss, disc_optimizer, 
                          gen_model, gen_loss, gen_optimizer)
     trainer.train()
