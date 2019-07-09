@@ -4,7 +4,7 @@ import os
 
 if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    file_dir = 'trimmed_samples'
+    file_dir = 'samples'
     spectogram_dir = 'spectograms'
 
     audio_files = os.path.join(dir_path, file_dir)

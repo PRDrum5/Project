@@ -39,8 +39,19 @@ def gan_main(config):
     trainer.train()
 
 if __name__ == "__main__":
-    fix_seed(0)
+    import os
+    data_path = '/home/peter/Documents/Uni/Project/src/model/data'
+    wav_dir = 'wavs'
+    shape_dir = 'blendshapes'
+    wav_path = os.path.join(data_path, wav_dir)
+    shape_path = os.path.join(data_path, shape_dir)
 
-    config = GetConfig('./config/vocaset_gan/config.json')
+    data_loader = data_loaders.DataLoaderWavShapes(wav_path, shape_path, batch_size=2, n_workers=0)
+    for idx, sample in enumerate(data_loader):
+        print(idx, sample['melspec'].shape, sample['shape_param'].shape)
 
-    gan_main(config)
+    #fix_seed(0)
+
+    #config = GetConfig('./config/vocaset_gan/config.json')
+
+    #gan_main(config)

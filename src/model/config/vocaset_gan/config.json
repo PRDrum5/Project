@@ -5,8 +5,8 @@
     "data_loader": {
         "spec": "DataLoaderMelSpecShapes",
         "args":{
-            "melspec_dir": "data/spectograms/",
-            "blendshapes_dir": "data/blendshapes/",
+            "melspec_dir": "data/standardized_spectograms/",
+            "blendshapes_dir": "data/standardized_blendshapes/",
             "batch_size": 32,
             "shuffle": false,
             "train_split": 1.00,
@@ -15,7 +15,7 @@
         }
     },
     "trainer": {
-        "epochs": 20,
+        "epochs": 100,
         "disc_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
@@ -33,7 +33,7 @@
         "optimizer": {
             "spec": "Adam",
             "args": {
-                "lr": 0.015,
+                "lr": 0.001,
                 "weight_decay": 0,
                 "amsgrad": true
             }
@@ -53,7 +53,7 @@
         "optimizer": {
             "spec": "Adam",
             "args": {
-                "lr": 0.005,
+                "lr": 0.001,
                 "weight_decay": 0,
                 "amsgrad": true
             }
