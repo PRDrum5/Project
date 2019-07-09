@@ -1,7 +1,7 @@
 import os
 from torchvision import datasets, transforms
 from base import BaseDataLoader
-from datasets import MelSpecBlendshapesDataset, SpecShapesToTensor
+from datasets import MelSpecBlendshapesDataset, SpecShapesToTensor, WavBlendshapesDataset
 
 class DataLoaderMNIST(BaseDataLoader):
     """
@@ -63,3 +63,16 @@ class DataLoaderMelSpecShapes(BaseDataLoader):
         super().__init__(self.dataset, batch_size, shuffle, 
                          train_split, n_workers, drop_last=drop_last)
 
+class DataLoaderWavShapes(BaseDataLoader):
+    """
+    """
+    def __init__(self, wav_path, blendshapes_path, batch_size, 
+                 shuffle=False, train_split=1, n_workers=1, drop_last=True):
+        self.wav_path = wav_path
+        self.blendshapes_path = blendshapes_path
+
+        self.dataset = WavBlendshapesDataset(self.wav_path, 
+                                             self.blendshapes_path)
+
+        super().__init__(self.dataset, batch_size, shuffle,
+                         train_split, n_workers, drop_last=drop_last)

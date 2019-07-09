@@ -20,8 +20,11 @@ __pycache__/
 *.wav
 *.ply
 src/audio/spectograms/
+src/audio/normalized_spectograms/
+src/audio/standardized_spectograms/
 src/data/spectograms/
 src/mesh/animation_visualization/
 src/mesh/shape_params/
+src/mesh/cropped_shape_params/
 src/model/data/
-
+src/model/saved/
