@@ -6,7 +6,7 @@ import os
 from scipy.io import wavfile
 from tqdm import tqdm
 
-class MelSpec():
+class MelFeqCep():
     def __init__(self, file_path=None, save_path=None):
         self.file_path = file_path
         self.save_path = save_path
@@ -43,33 +43,33 @@ class MelSpec():
         librosa.display.waveplot(y=audio, sr=sample_rate)
         plt.show()
     
-    def display_melplot(self, mel_spec):
+    def display_melplot(self, mfcc):
         """
-        Display mel spectogram
+        Display mfcc
         """
-        librosa.display.specshow(librosa.power_to_db(mel_spec), x_axis='time')
+        librosa.display.specshow(librosa.power_to_db(mfcc), x_axis='time')
         plt.show()
     
     def mfcc(self, audio_data, sample_rate, n_mfcc=50):
         """
-        Returns the mel spectrum of an audio signal.
+        Returns the mfcc of an audio signal.
         The number of mel filters can be varied.
         """
-        mel_spec = librosa.feature.mfcc(y=audio_data, 
-                                        sr=sample_rate, 
-                                        n_mfcc=n_mfcc)
-        return mel_spec
+        mfcc = librosa.feature.mfcc(y=audio_data, 
+                                    sr=sample_rate, 
+                                    n_mfcc=n_mfcc)
+        return mfcc
 
-    def save_spectrum(self, spectrum, filename, save_path):
+    def save_mfcc(self, mfcc, filename, save_path):
         """
         Exports spectrum file
         """
         save_path = os.path.join(save_path, filename)
-        np.save(save_path, spectrum)
+        np.save(save_path, mfcc)
     
     def convert_to_mfcc(self, nested=False):
         """
-        Converts all wav files into mel spectograms and exports them as numpy 
+        Converts all wav files into mfcc and exports them as numpy 
         array files.
         """
         for f in tqdm(self.wav_files):
@@ -86,8 +86,8 @@ class MelSpec():
             filename = os.path.splitext(filename)[0]
 
             sr, audio_data = self.read_wav(f)
-            mel_spec = self.mfcc(audio_data, sr)
-            self.save_spectrum(mel_spec, filename, file_save_path)
+            mfcc = self.mfcc(audio_data, sr)
+            self.save_mfcc(mfcc, filename, file_save_path)
 
 
 if __name__ == "__main__":
@@ -99,10 +99,14 @@ if __name__ == "__main__":
     audio_files = os.path.join(dir_path, file_path)
     spec_files = os.path.join(dir_path, spectogram_path)
 
-    ms = MelSpec(file_path=dir_path, save_path=dir_path)
-    #ms.convert_to_mfcc()
-    sr, audio_data = ms.read_wav(file_name)
-    mel_spec = ms.mfcc(audio_data, sr)
-    print(mel_spec.shape)
-    ms.display_melplot(mel_spec)
-    #ms.save_spectrum(mel_spec, file_name)
+    mel_feq_cep = MelFeqCep(file_path=audio_files, save_path=dir_path)
+    #mel_feq_cep.convert_to_mfcc()
+    sr, audio_data = mel_feq_cep.read_wav(file_name)
+    five_sec_length = 5 * sr
+    print(five_sec_length)
+    padded_audio = np.zeros((five_sec_length,))
+    padded_audio[:audio_data.shape[0],] = audio_data
+    mfcc = mel_feq_cep.mfcc(padded_audio, sr)
+    print(mfcc.shape)
+    mel_feq_cep.display_melplot(mfcc)
+    #mel_feq_cep.save_spectrum(mfcc, file_name)

@@ -14,16 +14,19 @@ class WavBlendshapesDataset(Dataset):
     This is currently using all blendshape parameters
     """
 
-    def __init__(self, wav_path, blendshapes_path, window_size=50):
+    def __init__(self, wav_path, blendshapes_path, n_shapes=10):
         self.wav_path = wav_path
         self.blendshapes_path = blendshapes_path
-        self.window_size = window_size
+        self.n_shapes = n_shapes
         self.wav_list = sorted(os.listdir(self.wav_path))
-        self.stats = {'melspec_min': np.inf,
-                      'melspec_max': -np.inf,
+
+        self.stats = {'mfcc_min': np.inf,
+                      'mfcc_max': -np.inf,
                       'shape_min': np.inf,
                       'shape_max': -np.inf}
-        self.frames = 0
+
+        self.mfcc_dur = 215 # 5 seconds at sample rate 22,000/s
+        self.shape_frame_dur = 300 # 5 seconds at 60fps
 
         self._collect_stats()
 
@@ -31,13 +34,12 @@ class WavBlendshapesDataset(Dataset):
         return len(self.wav_list)
     
     def __getitem__(self, idx):
-        melspec, shape_param = self._get_data_pair(idx)
+        mfcc, shape_param = self._get_data_pair(idx)
 
-        sample = {'melspec': melspec.astype(np.float32), 
+        sample = {'mfcc': mfcc.astype(np.float32), 
                   'shape_param': shape_param.astype(np.float32)}
         
         sample = self._normalize_to_tensor(sample)
-        self._window(sample)
         
         return sample
     
@@ -48,38 +50,31 @@ class WavBlendshapesDataset(Dataset):
 
         sr, audio_data = wavfile.read(os.path.join(self.wav_path, wav_name))
         audio_data = audio_data / audio_data.max() 
-        melspec = self._mfcc(audio_data, sr)
+        mfcc = self._mfcc(audio_data, sr)
 
         shape_param = np.load(os.path.join(self.blendshapes_path, shape_name))
-        return melspec, shape_param
+        crop_range = range(self.n_shapes, shape_param.shape[0])
+        shape_param = np.delete(shape_param, crop_range, axis=0)
+        shape_param = self._fix_array_width(shape_param, self.shape_frame_dur)
+
+        return mfcc, shape_param
 
     def _collect_stats(self):
         """
-        Finds max and min values for blendshape params and melspecs for dataset.
-        Finds the number of blendshape frames for the mel spectogram window.
+        Finds max and min values for blendshape params and mfcc for dataset.
         """
-        durations = np.zeros((self.__len__(),2))
-
         for idx in range(self.__len__()):
-            melspec, shape_param = self._get_data_pair(idx)
+            mfcc, shape_param = self._get_data_pair(idx)
 
-            melspec_len = melspec_len.shape[1]
-            shape_param_len = shape_param.shape[1]
-
-            durations[idx,0] = melspec_len
-            durations[idx,1] = shape_param_len
-            gradient, intercept = np.polyfit(durations[:,1], durations[:,0], 1)
-            self.frames = int(round((self.window_size * gradient) + intercept))
-
-            idx_melspec_min = melspec.min()
-            idx_melspec_max = melspec.max()
+            idx_mfcc_min = mfcc.min()
+            idx_mfcc_max = mfcc.max()
             idx_shape_min = shape_param.min()
             idx_shape_max = shape_param.max()
 
-            if idx_melspec_min < self.stats['melspec_min']: 
-                self.stats['melspec_min'] = idx_melspec_min
-            if idx_melspec_max > self.stats['melspec_max']: 
-                self.stats['melspec_max'] = idx_melspec_max
+            if idx_mfcc_min < self.stats['mfcc_min']: 
+                self.stats['mfcc_min'] = idx_mfcc_min
+            if idx_mfcc_max > self.stats['mfcc_max']: 
+                self.stats['mfcc_max'] = idx_mfcc_max
             if idx_shape_min < self.stats['shape_min']: 
                 self.stats['shape_min'] = idx_shape_min
             if idx_shape_max > self.stats['shape_max']: 
@@ -87,70 +82,83 @@ class WavBlendshapesDataset(Dataset):
     
     def _mfcc(self, audio_data, sample_rate, n_mfcc=50):
         """
-        Returns the mel spectrum of an audio signal.
-        The number of mel filters can be varied.
+        Returns the mfcc of an audio signal.
+        The number of mfcc filters can be varied.
         """
-        mel_spec = librosa.feature.mfcc(y=audio_data, 
-                                        sr=sample_rate, 
-                                        n_mfcc=n_mfcc)
-        return mel_spec
+
+        mfcc = librosa.feature.mfcc(y=audio_data, 
+                                    sr=sample_rate, 
+                                    n_mfcc=n_mfcc)
+
+        mfcc = self._fix_array_width(mfcc, self.mfcc_dur)
+
+        return mfcc
+    
+    def _fix_array_width(self, array, target_width):
+        """
+        Crops or pads (zeros) array to be a given width
+        """
+        height, width = array.shape
+
+        if width > target_width:
+            crop_range = range(target_width, width)
+            array = np.delete(array, crop_range, axis=1) 
+        else:
+            padded_array = np.zeros((height, target_width))
+            padded_array[:height,:width] = array
+            array = padded_array
+        return array
+
     
     def _normalize_to_tensor(self, sample):
         """
-        normalizes mel spectograms and blendshape parameters based on max and
+        normalizes mfcc and blendshape parameters based on max and
         min values of the dataset for each.
         Then coverts these to torch tensors.
         """
-        melspec = sample['melspec']
+        mfcc = sample['mfcc']
         shape_param = sample['shape_param']
 
         norm = lambda array, min_v, max_v: (array - min_v) / (max_v - min_v)
 
-        melspec = norm(melspec, 
-                       self.stats['melspec_min'], 
-                       self.stats['melspec_max'])
+        mfcc = norm(mfcc, 
+                    self.stats['mfcc_min'], 
+                    self.stats['mfcc_max'])
 
         shape_param = norm(shape_param, 
                            self.stats['shape_min'], 
                            self.stats['shape_max'])
-        
-        melspec = torch.from_numpy(melspec).unsqueeze(0)
-        shape_param = torch.from_numpy(shape_param).unsqueeze(0)
 
-        return {'melspec': melspec, 'shape_param': shape_param}
-    
-    def _window(self, sample):
-        melspec = sample['melspec']
-        shape_param = sample['shape_param']
-        #TODO slice melspec and shapes_params into windows
+        mfcc = torch.from_numpy(mfcc).unsqueeze(1)
+        shape_param = torch.from_numpy(shape_param).unsqueeze(1)
+
+        return {'mfcc': mfcc, 'shape_param': shape_param}
     
 
-
-
-class MelSpecBlendshapesDataset(Dataset):
+class MFCCBlendshapesDataset(Dataset):
     """
-    Mel Spectogram features
+    mfcc features
     Blendshape Parameters targets
     """
 
-    def __init__(self, melspec_dir, blendshapes_dir, transform=None):
-        self.melspec_dir = melspec_dir
+    def __init__(self, mfcc_dir, blendshapes_dir, transform=None):
+        self.mfcc_dir = mfcc_dir
         self.blendshapes_dir = blendshapes_dir
         self.transform = transform
-        self.melspec_list = sorted(os.listdir(melspec_dir))
+        self.mfcc_list = sorted(os.listdir(mfcc_dir))
 
     def __len__(self):
-        _path, _dirs, files = next(os.walk(self.melspec_dir))
+        _path, _dirs, files = next(os.walk(self.mfcc_dir))
         length = len(files)
         return length
     
     def __getitem__(self, idx):
-        item_name = self.melspec_list[idx]
+        item_name = self.mfcc_list[idx]
 
-        melspec = np.load(os.path.join(self.melspec_dir, item_name))
+        mfcc = np.load(os.path.join(self.mfcc_dir, item_name))
         shape_param = np.load(os.path.join(self.blendshapes_dir, item_name))
 
-        sample = {'melspec': melspec.astype(np.float32), 
+        sample = {'mfcc': mfcc.astype(np.float32), 
                   'shape_param': shape_param.astype(np.float32)}
 
         if self.transform:
@@ -160,18 +168,18 @@ class MelSpecBlendshapesDataset(Dataset):
 
 class SpecShapesToTensor(object):
     """
-    Transforms melspec ndarrays in sample to Tensors
+    Transforms mfcc ndarrays in sample to Tensors
     """
 
     def __call__(self, sample):
-        melspec = sample['melspec']
+        mfcc = sample['mfcc']
         shape_param = sample['shape_param']
 
         # Convert to tensors and add single colour channel to spectograms
-        melspec = torch.from_numpy(melspec).unsqueeze(0)
+        mfcc = torch.from_numpy(mfcc).unsqueeze(0)
         shape_param = torch.from_numpy(shape_param).unsqueeze(0)
 
-        return {'melspec': melspec, 'shape_param': shape_param}
+        return {'mfcc': mfcc, 'shape_param': shape_param}
 
 if __name__ == "__main__":
     data_path = '/home/peter/Documents/Uni/Project/src/model/data'
@@ -184,5 +192,5 @@ if __name__ == "__main__":
 
     for idx in range(len(dataset)):
         sample = dataset[idx]
-        print(idx, sample['melspec'].shape, sample['shape_param'].shape)
+        print(idx, sample['mfcc'].shape, sample['shape_param'].shape)
         

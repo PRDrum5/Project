@@ -1,7 +1,7 @@
 import os
 from torchvision import datasets, transforms
 from base import BaseDataLoader
-from datasets import MelSpecBlendshapesDataset, SpecShapesToTensor, WavBlendshapesDataset
+from datasets import MFCCBlendshapesDataset, SpecShapesToTensor, WavBlendshapesDataset
 
 class DataLoaderMNIST(BaseDataLoader):
     """
@@ -44,9 +44,9 @@ class DataLoaderCIFAR10(BaseDataLoader):
         super().__init__(self.dataset, batch_size, shuffle, train_split, 
                          n_workers) 
                         
-class DataLoaderMelSpecShapes(BaseDataLoader):
+class DataLoaderMFCCShapes(BaseDataLoader):
     """
-    DataLoader for Mel Spectograms and Corresponding Blendshape Parameters
+    DataLoader for MFCC and Corresponding Blendshape Parameters
     """
     def __init__(self, melspec_dir, blendshapes_dir, batch_size,
                  shuffle=False, train_split=1, n_workers=1, drop_last=True):
@@ -56,7 +56,7 @@ class DataLoaderMelSpecShapes(BaseDataLoader):
 
         transform = SpecShapesToTensor()
 
-        self.dataset = MelSpecBlendshapesDataset(self.melspec_dir,
+        self.dataset = MFCCBlendshapesDataset(self.melspec_dir,
                                                  self.blendshapes_dir,
                                                  transform=transform)
 

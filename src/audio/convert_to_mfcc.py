@@ -1,4 +1,4 @@
-from melspec import MelSpec
+from melfrqcep import MelFeqCep
 from tqdm import tqdm
 import os
 
@@ -10,6 +10,6 @@ if __name__ == "__main__":
     audio_files = os.path.join(dir_path, file_dir)
     spec_files = os.path.join(dir_path, spectogram_dir)
 
-    ms = MelSpec(file_path=audio_files, save_path=spec_files)
+    mel_feq_cep = MelFeqCep(file_path=audio_files, save_path=spec_files)
 
-    ms.convert_to_mfcc(nested=True)
+    mel_feq_cep.convert_to_mfcc(nested=True)

@@ -3,9 +3,9 @@ from scipy.io import wavfile
 import matplotlib.pyplot as plt
 import os
 
-def mel_spec_size_pred(frames):
+def mfcc_size_pred(frames):
     """
-    Best fit equation to predict the size of the mel spectogram given the number of video frames.
+    Best fit equation to predict the size of the mfcc given the number of video frames.
     """
     y = (frames * 1.396983933379579) - 0.9545913318493555
     y = round(y)
@@ -24,7 +24,7 @@ normalize = lambda array, min_val, max_val: (array - min_val) / (max_val - min_v
 
 standardize = lambda array, mean, std: (array - mean) / std
 
-def mel_spec_hist(f_list, title=None, verbose=False):
+def mfcc_hist(f_list, title=None, verbose=False):
     sample = np.load(f_list[0])
     height, width = sample.shape
 
