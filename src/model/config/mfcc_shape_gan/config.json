@@ -1,0 +1,66 @@
+{
+    "experiment_name": "MFCC_Shape_Gan",
+    "n_gpu": 1,
+    "resume": true,
+    "data_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/wavs/",
+            "blendshapes_path": "data/blendshapes/",
+            "batch_size": 10,
+            "shuffle": true,
+            "train_split": 1.00,
+            "n_workers": 10,
+            "drop_last": true
+        }
+    },
+    "trainer": {
+        "epochs": 100,
+        "disc_gen_ratio": 5,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "level": 2,
+        "tensorboard": true
+    },
+    "generator": {
+        "arch": {
+            "spec": "MFCC_Shape_Gen",
+            "args": {
+                "z_dim": 100,
+                "n_mfcc": 50
+            }
+        },
+        "optimizer": {
+            "spec": "Adam",
+            "args": {
+                "lr": 0.001,
+                "weight_decay": 0,
+                "amsgrad": true
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_g_loss"
+        }
+    },
+    "discriminator": {
+        "arch": {
+            "spec": "MFCC_Shape_Critic",
+            "args": {
+                "n_mfcc": 50,
+                "n_shapes": 10
+            }
+        },
+        "optimizer": {
+            "spec": "Adam",
+            "args": {
+                "lr": 0.001,
+                "weight_decay": 0,
+                "amsgrad": true
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_d_loss",
+            "gradient_penalty": 10
+        }
+    }
+}

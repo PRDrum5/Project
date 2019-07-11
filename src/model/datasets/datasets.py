@@ -114,7 +114,7 @@ class WavBlendshapesDataset(Dataset):
         """
         normalizes mfcc and blendshape parameters based on max and
         min values of the dataset for each.
-        Then coverts these to torch tensors.
+        Then coverts these to torch tensors. [filters, duration]
         """
         mfcc = sample['mfcc']
         shape_param = sample['shape_param']
@@ -129,8 +129,8 @@ class WavBlendshapesDataset(Dataset):
                            self.stats['shape_min'], 
                            self.stats['shape_max'])
 
-        mfcc = torch.from_numpy(mfcc).unsqueeze(1)
-        shape_param = torch.from_numpy(shape_param).unsqueeze(1)
+        mfcc = torch.from_numpy(mfcc)
+        shape_param = torch.from_numpy(shape_param)
 
         return {'mfcc': mfcc, 'shape_param': shape_param}
     

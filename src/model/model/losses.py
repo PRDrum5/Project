@@ -31,9 +31,13 @@ def gradient_penalty(d_model, real, fake, conditional=None):
     device = real.device
     batch_size = real.size(0)
 
-    alpha = torch.randn(batch_size, 1, 1, 1)
+    alpha = torch.randn(batch_size)
+    for i in range(len(real.size())-1):
+        alpha = alpha.unsqueeze(i+1)
+
     alpha = alpha.expand_as(real)
     alpha = alpha.to(device)
+
     interpolated = (alpha * real) + ((1-alpha) * fake)
     interpolated.requires_grad_()
 
