@@ -52,7 +52,6 @@ class Mesh():
         """
         Extracts vertex postions for all ply files
         """
-#        print("Number of files being processed: {}".format(self.num_files))
 
         for file_number, file in tqdm(enumerate(self.ply_files)):
             if file_number == target_array.shape[2]:
@@ -60,8 +59,6 @@ class Mesh():
             with open(file, 'rb') as f:
                 plydata = PlyData.read(f)
                 self._get_vertex_postions(plydata, target_array, file_number)
-                #if (file_number % 10) == 0:
-                #    print("Processing file number: {}".format(file_number))
     
     def vertices_to_2d(self, vertices):
         """
@@ -229,13 +226,10 @@ class Mesh():
         root_vertices = self.vertices_to_2d(self.root_mesh)
         vert_deltas = altered_vertices - root_vertices
 
-        # Problem is over-determined
-        subshapes = blendshapes[0:n_shapes,0:n_shapes] 
-        sub_vert_deltas = vert_deltas[0:n_shapes]
+        shape_inv = np.linalg.pinv(blendshapes)
+        params = shape_inv @ vert_deltas
 
-        params = np.linalg.solve(subshapes, sub_vert_deltas).reshape(n_shapes,)
-
-        return params
+        return params.reshape(-1,)
 
     def get_sequence_blendshapes(self, seq_vertices, shapes):
         """

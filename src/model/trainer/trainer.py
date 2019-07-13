@@ -450,9 +450,12 @@ class MFCCShapeTrainer(BaseMultiTrainer):
             self.logger.info('Disc Loss: {} '
                              'Gen Loss: {}'.format(disc_loss, gen_loss))
 
-            generated_sample = self.gen_model(fixed_noise, fixed_mfcc)
-            #sample_name = 'generated_sample_epoch_%03d.png' % epoch
-            #save_dir = self.config.samples_dir / sample_name
+            generated_sample = self.gen_model(fixed_noise, fixed_mfcc).detach()
+            sample_name = 'generated_sample_epoch_%03d' % epoch
+            save_dir = self.config.samples_dir / sample_name
+            generated_sample = generated_sample.numpy()
+            np.save(save_dir, generated_sample)
+            
 
             #save_image(generated_sample.cpu(), save_dir)
             #if epoch % self.save_period == 0:

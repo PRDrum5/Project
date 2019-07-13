@@ -15,5 +15,7 @@ if __name__ == "__main__":
 
     # vertices should have shape (features x samples)
     shapes = mesh.create_blendshapes(frame_deltas)
-    print(shapes.shape)
-    np.save('shapes00', shapes)
+
+    save_file_name = 'blendshape_axis_voca_subject1'
+    file_save_path = os.path.join(dir_path, save_file_name)
+    np.save(file_save_path, shapes)

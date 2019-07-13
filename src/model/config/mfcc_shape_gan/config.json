@@ -8,7 +8,7 @@
             "wav_path": "data/wavs/",
             "blendshapes_path": "data/blendshapes/",
             "batch_size": 10,
-            "shuffle": true,
+            "shuffle": false,
             "train_split": 1.00,
             "n_workers": 10,
             "drop_last": true
