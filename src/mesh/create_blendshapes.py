@@ -17,11 +17,16 @@ if __name__ == "__main__":
     mesh.get_vertex_postions(mesh_vertices)
     mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-    frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    ## Use difference between each frame
+    #frame_deltas = mesh.create_frame_deltas(mesh_vertices)
+    ## vertices should have shape (features x samples)
+    #shapes = mesh.create_blendshapes(frame_deltas)
 
+    # Use difference from first frame
+    first_frame_diff = mesh.create_frame_zero_diff(mesh_vertices)
     # vertices should have shape (features x samples)
-    shapes = mesh.create_blendshapes(frame_deltas)
+    shapes = mesh.create_blendshapes(first_frame_diff)
 
-    save_file_name = 'blendshape_axis_voca'
+    save_file_name = 'first_frame_blendshapes'
     file_save_path = os.path.join(dir_path, save_file_name)
     np.save(file_save_path, shapes)

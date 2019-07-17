@@ -14,30 +14,6 @@ def gen_file_list(path, ext='.ply'):
     return f_list
 
 class Mesh():
-    """
-    # Old method gave path to ply files.
-    def __init__(self, dir_plys, save_path=None, given_mesh=None):
-        self.dir_plys = dir_plys
-        self.save_path = save_path
-
-        if self.save_path and not os.path.exists(self.save_path):
-            os.makedirs(self.save_path)
-
-        if given_mesh:
-            self.ply_files = [os.path.join(dir_plys, given_mesh)]
-        else:
-            self.ply_files = []
-            for root, _dirs, files in os.walk(self.dir_plys):
-                for file in files:
-                    if file.endswith(".ply"):
-                        self.ply_files.append(os.path.join(root, file))
-        
-        self.ply_files = sorted(self.ply_files)
-        self.num_files = len(self.ply_files)
-        self._get_mesh_metadata(self.ply_files[0])
-        self._get_root_mesh(self.ply_files[0])
-    """
-
     def __init__(self, ply_files, save_path=None):
         self.save_path = save_path
 
@@ -175,6 +151,15 @@ class Mesh():
         # even columns - odd columns
         vertices = vertices[:,1::2] - vertices[:,::2]
         return vertices
+    
+    def create_frame_zero_diff(self, vertices):
+        """
+        Subtracts each frame from the first frame, resulting in a motion flow 
+        from the first frame.
+        """
+        first_frame = vertices[:,0].reshape(-1, 1)
+        diff = vertices - first_frame
+        return diff
     
     def _apply_procrustes(self, matrix1, matrix2):
         # Translate centroids of matricies to origin
