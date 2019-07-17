@@ -1,7 +1,7 @@
 import torch
 from model import losses, models
 from data_loader import data_loaders
-from trainer import MFCCShapeTrainer
+from trainer import MFCCShapeTrainer, CGANTrainer
 from get_config import GetConfig
 from utils import fix_seed
 import torch.optim as optim
@@ -12,6 +12,7 @@ def gan_main(config):
     logger = config.get_logger('train')
 
     data_loader = config.get('data_loader', data_loaders)
+    vis_loader = config.get('vis_loader', data_loaders)
 
     disc_model = config.get('discriminator,arch', models)
 
@@ -33,7 +34,7 @@ def gan_main(config):
     gen_loss = config.get_func('generator,loss_func', losses)
 
     #TODO add Trainer selection to config
-    trainer = MFCCShapeTrainer(config, data_loader,
+    trainer = MFCCShapeTrainer(config, data_loader, vis_loader,
                          disc_model, disc_loss, disc_optimizer, 
                          gen_model, gen_loss, gen_optimizer)
     trainer.train()

@@ -1,5 +1,6 @@
 import json
 import torch
+import numpy as np
 from collections import OrderedDict
 from datetime import datetime
 
@@ -11,6 +12,8 @@ def fix_seed(seed=0):
     if torch.cuda.is_available():
         torch.backends.cudnn.deterministic = True
     torch.manual_seed(seed)
+
+    np.random.seed(seed)
 
 class Timer:
     def __init__(self):

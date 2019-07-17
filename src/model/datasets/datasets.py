@@ -1,6 +1,7 @@
 import torch
 from torch.utils.data import Dataset
 import os
+import math
 import numpy as np
 from scipy.io import wavfile
 import librosa
@@ -14,19 +15,17 @@ class WavBlendshapesDataset(Dataset):
     This is currently using all blendshape parameters
     """
 
-    def __init__(self, wav_path, blendshapes_path, n_shapes=10):
+    def __init__(self, wav_path, blendshapes_path, n_shapes=10, transform=None):
         self.wav_path = wav_path
         self.blendshapes_path = blendshapes_path
         self.n_shapes = n_shapes
         self.wav_list = sorted(os.listdir(self.wav_path))
+        self.transform = transform
 
         self.stats = {'mfcc_min': np.inf,
                       'mfcc_max': -np.inf,
                       'shape_min': np.inf,
                       'shape_max': -np.inf}
-
-        self.mfcc_dur = 215 # 5 seconds at sample rate 22,000/s
-        self.shape_frame_dur = 300 # 5 seconds at 60fps
 
         self._collect_stats()
 
@@ -39,7 +38,10 @@ class WavBlendshapesDataset(Dataset):
         sample = {'mfcc': mfcc.astype(np.float32), 
                   'shape_param': shape_param.astype(np.float32)}
         
-        sample = self._normalize_to_tensor(sample)
+        sample = self._normalize(sample)
+
+        if self.transform:
+            sample = self.transform(sample)
         
         return sample
     
@@ -55,7 +57,6 @@ class WavBlendshapesDataset(Dataset):
         shape_param = np.load(os.path.join(self.blendshapes_path, shape_name))
         crop_range = range(self.n_shapes, shape_param.shape[0])
         shape_param = np.delete(shape_param, crop_range, axis=0)
-        shape_param = self._fix_array_width(shape_param, self.shape_frame_dur)
 
         return mfcc, shape_param
 
@@ -90,8 +91,6 @@ class WavBlendshapesDataset(Dataset):
                                     sr=sample_rate, 
                                     n_mfcc=n_mfcc)
 
-        mfcc = self._fix_array_width(mfcc, self.mfcc_dur)
-
         return mfcc
     
     def _fix_array_width(self, array, target_width):
@@ -110,11 +109,10 @@ class WavBlendshapesDataset(Dataset):
         return array
 
     
-    def _normalize_to_tensor(self, sample):
+    def _normalize(self, sample):
         """
         normalizes mfcc and blendshape parameters based on max and
         min values of the dataset for each.
-        Then coverts these to torch tensors. [filters, duration]
         """
         mfcc = sample['mfcc']
         shape_param = sample['shape_param']
@@ -129,11 +127,130 @@ class WavBlendshapesDataset(Dataset):
                            self.stats['shape_min'], 
                            self.stats['shape_max'])
 
-        mfcc = torch.from_numpy(mfcc)
-        shape_param = torch.from_numpy(shape_param)
-
         return {'mfcc': mfcc, 'shape_param': shape_param}
     
+    def denorm(self, shape_param):
+        """
+        denormalizes generated blendshape parameters
+        """
+        min_v = self.stats['shape_min']
+        max_v = self.stats['shape_max']
+        denormed = (shape_param * (max_v - min_v)) + min_v
+
+        return denormed
+
+class DropFramesToMfccDuration(object):
+    """
+    Randomly drops frames from blendshape parameters so that MFCC and shape 
+    params have same length
+    """
+
+    def __call__(self, sample):
+        mfcc = sample['mfcc']
+        shape_param = sample['shape_param']
+
+        mfcc_len = mfcc.size(1)
+        shape_param_len = shape_param.size(1)
+        len_diff = shape_param_len - mfcc_len
+
+        random_drop = torch.rand(1, len_diff)
+        1/0
+        return sample
+
+class MergeFrameToMfccDuration(object):
+    """
+    Randomly merges adjacent frames from blendshape params into the mean of the 
+    two so that MFCC and shape params have the same length
+    """
+
+    def __call__(self, sample):
+        mfcc = sample['mfcc']
+        shape_param = sample['shape_param']
+
+        shape_param = self.frame_merger(mfcc, shape_param)
+
+        sample = {'mfcc': mfcc, 'shape_param': shape_param}
+
+        return sample
+    
+    def frame_merger(self, target, current):
+        target_len = target.shape[1]
+        current_len = current.shape[1]
+        assert target_len < current_len, "Target length must be less \
+                                          than current length"
+        diff = current_len - target_len
+
+        step = int(math.ceil(current_len / diff)) # Round up step
+        reduction = ((current_len - (current_len % step)) / step)
+        reduced_len = current_len - reduction
+
+        # Prvents first frame always being reduced
+        random_start = np.random.randint(0, step-1)
+        idx_to_merge = np.arange(random_start, current_len-1, step)
+        for idx in idx_to_merge:
+            mean = (current[:, idx] + current[:, idx+1]) / 2
+            current[:, idx] = mean
+        
+        current = np.delete(current, idx_to_merge+1, axis=1)
+
+        current_len = current.shape[1]
+        diff = current_len - target_len
+
+        if diff > 0:
+            current = self.frame_merger(target, current)
+        
+        return current
+    
+class RandomOneSecondMfccCrop(object):
+    """
+    Takes a random one second crop from the MFCC and corresponding shape params
+    """
+    
+    def __call__(self, sample):
+        mfcc = sample['mfcc']
+        shape_param = sample['shape_param']
+
+        mfcc_len = mfcc.shape[1]
+        shape_param_len = shape_param.shape[1]
+        assert mfcc_len == shape_param_len, "MFCC and Shapes must \
+                                             have same length"
+
+        clip_duration = mfcc_len
+        one_sec_duration = 43
+        latest_start = clip_duration - one_sec_duration
+
+        random_start = np.random.randint(0, latest_start)
+        end_point = random_start + one_sec_duration
+
+        mfcc = mfcc[:, random_start:end_point]
+        shape_param = shape_param[:, random_start:end_point]
+
+        sample = {'mfcc': mfcc, 'shape_param': shape_param}
+        return sample
+
+class OneSecondMfccCrop(object):
+    """
+    Takes the first second of each clip
+    """
+    
+    def __call__(self, sample):
+        mfcc = sample['mfcc']
+        shape_param = sample['shape_param']
+
+        mfcc_len = mfcc.shape[1]
+        shape_param_len = shape_param.shape[1]
+        assert mfcc_len == shape_param_len, "MFCC and Shapes must \
+                                             have same length"
+
+        clip_duration = mfcc_len
+        one_sec_duration = 43
+        latest_start = clip_duration - one_sec_duration
+
+        mfcc = mfcc[:, 0:one_sec_duration]
+        shape_param = shape_param[:, 0:one_sec_duration]
+
+        sample = {'mfcc': mfcc, 'shape_param': shape_param}
+        return sample
 
 class MFCCBlendshapesDataset(Dataset):
     """
@@ -177,7 +294,8 @@ class SpecShapesToTensor(object):
 
         # Convert to tensors and add single colour channel to spectograms
         mfcc = torch.from_numpy(mfcc).unsqueeze(0)
-        shape_param = torch.from_numpy(shape_param).unsqueeze(0)
+        # Convert each blendshape params into channel
+        shape_param = torch.from_numpy(shape_param).unsqueeze(1)
 
         return {'mfcc': mfcc, 'shape_param': shape_param}
 

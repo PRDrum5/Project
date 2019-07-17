@@ -336,116 +336,112 @@ class Voca_Shape_Critic(BaseModel):
         return out
 
 class MFCC_Shape_Gen(BaseModel):
-    def __init__(self, z_dim=100, n_mfcc=50):
+    def __init__(self, z_dim=10, shapes_dim=5):
         super().__init__()
 
-        in_dim = z_dim + n_mfcc
+        in_dim = z_dim + 1
 
-        self.tcon1 = nn.ConvTranspose1d(in_dim, 125, kernel_size=10, dilation=2)
+        self.conv1 = nn.Conv2d(in_dim, 16, kernel_size=(3,3), padding=(0,1))
         self.relu1 = nn.ReLU()
 
-        self.tcon2 = nn.ConvTranspose1d(125, 100, kernel_size=9, dilation=2)
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=(3,3), padding=(0,1))
         self.relu2 = nn.ReLU()
 
-        self.tcon3 = nn.ConvTranspose1d(100, 80, kernel_size=8, dilation=2)
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=(3,3), padding=(0,1))
         self.relu3 = nn.ReLU()
 
-        self.tcon4 = nn.ConvTranspose1d(80, 60, kernel_size=7, dilation=2)
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=(3,3), padding=(0,1))
         self.relu4 = nn.ReLU()
 
-        self.tcon5 = nn.ConvTranspose1d(60, 40, kernel_size=6, dilation=2)
+        self.conv5 = nn.Conv2d(128, 128, kernel_size=(4,3), 
+                                         padding=(0,1), 
+                                         stride=(2,1))
         self.relu5 = nn.ReLU()
 
-        self.tcon6 = nn.ConvTranspose1d(40, 30, kernel_size=5, dilation=2)
+        self.conv6 = nn.Conv2d(128, 64, kernel_size=(3,3), padding=(0,1))
         self.relu6 = nn.ReLU()
 
-        self.tcon7 = nn.ConvTranspose1d(30, 15, kernel_size=5, dilation=1)
+        self.conv7 = nn.Conv2d(64, 64, kernel_size=(4,3), 
+                                         padding=(0,1),
+                                         stride=(2,1))
         self.relu7 = nn.ReLU()
 
-        self.tcon8 = nn.ConvTranspose1d(15, 10, kernel_size=4, dilation=1)
+        self.conv8 = nn.Conv2d(64, 32, kernel_size=(3,3), padding=(0,1))
+        self.relu8 = nn.ReLU()
+
+        self.conv9 = nn.Conv2d(32, 16, kernel_size=(3,3), padding=(0,1))
+        self.relu9 = nn.ReLU()
+
+        self.conv10 = nn.Conv2d(16, shapes_dim, kernel_size=(4,3), 
+                                                padding=(0,1))
+
 
     def forward(self, noise, mfcc):
         x = torch.cat((noise, mfcc), dim=1)
-        x = self.relu1(self.tcon1(x))
-        x = self.relu2(self.tcon2(x))
-        x = self.relu3(self.tcon3(x))
-        x = self.relu4(self.tcon4(x))
-        x = self.relu5(self.tcon5(x))
-        x = self.relu6(self.tcon6(x))
-        x = self.relu7(self.tcon7(x))
-        x = self.tcon8(x)
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.relu3(self.conv3(x))
+        x = self.relu4(self.conv4(x))
+        x = self.relu5(self.conv5(x))
+        x = self.relu6(self.conv6(x))
+        x = self.relu7(self.conv7(x))
+        x = self.relu8(self.conv8(x))
+        x = self.relu9(self.conv9(x))
+        x = self.conv10(x)
         return x
 
 class MFCC_Shape_Critic(BaseModel):
-    def __init__(self, n_mfcc, n_shapes):
+    def __init__(self, shapes_dim):
         super().__init__()
 
-        # Process mfcc input
-        self.mfcc_con1 = nn.Conv1d(n_mfcc, 128, kernel_size=10, dilation=2)
-        self.mfcc_lrelu1 = nn.LeakyReLU(0.2)
+        in_dim = shapes_dim + 1
 
-        self.mfcc_con2 = nn.Conv1d(128, 128, kernel_size=9, dilation=2)
-        self.mfcc_lrelu2 = nn.LeakyReLU(0.2)
+        # This could cause issues. 
+        # If in_dim is less than 32, we shrink the channels 
+        # before expanding them
+        self.conv1 = nn.Conv2d(in_dim, 32, kernel_size=3)
+        self.lrelu1 = nn.LeakyReLU(0.2)
 
-        self.mfcc_con3 = nn.Conv1d(128, 128, kernel_size=8, dilation=2)
-        self.mfcc_lrelu3 = nn.LeakyReLU(0.2)
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=3)
+        self.lrelu2 = nn.LeakyReLU(0.2)
 
-        self.mfcc_con4 = nn.Conv1d(128, 64, kernel_size=8, dilation=2)
-        self.mfcc_lrelu4 = nn.LeakyReLU(0.2)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=3, stride=2)
+        self.lrelu3 = nn.LeakyReLU(0.2)
 
-        self.mfcc_con5 = nn.Conv1d(64, 64, kernel_size=8, dilation=2)
-        self.mfcc_lrelu5 = nn.LeakyReLU(0.2)
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3)
+        self.lrelu4 = nn.LeakyReLU(0.2)
 
+        self.conv5 = nn.Conv2d(256, 256, kernel_size=3)
+        self.lrelu5 = nn.LeakyReLU(0.2)
 
-        # Process blendshape parameter inputs
-        self.shape_con1 = nn.Conv1d(n_shapes, 64, kernel_size=10, stride=2)
-        self.shape_lrelu1 = nn.LeakyReLU(0.2)
+        self.conv6 = nn.Conv2d(256, 256, kernel_size=(4,3), stride=2)
+        self.lrelu6 = nn.LeakyReLU(0.2)
 
-        self.shape_con2 = nn.Conv1d(64, 64, kernel_size=8)
-        self.shape_lrelu2 = nn.LeakyReLU(0.2)
+        self.conv7 = nn.Conv2d(256, 128, kernel_size=3)
+        self.lrelu7 = nn.LeakyReLU(0.2)
 
+        self.conv8 = nn.Conv2d(128, 64, kernel_size=3)
+        self.lrelu8 = nn.LeakyReLU(0.2)
 
-        # Concat output of mfcc and shape networks
-        # Process concat
-        self.cat_con1 = nn.Conv1d(128, 128, kernel_size=7, stride=2)
-        self.cat_lrelu1 = nn.LeakyReLU(0.2)
+        self.conv9 = nn.Conv2d(64, 1, kernel_size=(4,3))
+        self.lin9 = nn.Linear(1, 1)
 
-        self.cat_con2 = nn.Conv1d(128, 128, kernel_size=7, stride=2)
-        self.cat_lrelu2 = nn.LeakyReLU(0.2)
-
-        self.cat_con3 = nn.Conv1d(128, 128, kernel_size=5, stride=2)
-        self.cat_lrelu3 = nn.LeakyReLU(0.2)
-
-        self.cat_con4 = nn.Conv1d(128, 64, kernel_size=4)
-        self.cat_lrelu4 = nn.LeakyReLU(0.2)
-
-        self.cat_con5 = nn.Conv1d(64, 32, kernel_size=4)
-        self.cat_lrelu5 = nn.LeakyReLU(0.2)
-
-        self.cat_con6 = nn.Conv1d(32, 16, kernel_size=4)
-        self.cat_lrelu6 = nn.LeakyReLU(0.2)
-
-        self.cat_con7 = nn.Conv1d(16, 1, kernel_size=5)
-        self.cat_lin7 = nn.Linear(1, 1)
     
     def forward(self, shapes, mfcc):
 
-        x = self.mfcc_lrelu1(self.mfcc_con1(mfcc))
-        x = self.mfcc_lrelu2(self.mfcc_con2(x))
-        x = self.mfcc_lrelu3(self.mfcc_con3(x))
-        x = self.mfcc_lrelu4(self.mfcc_con4(x))
-        x = self.mfcc_lrelu5(self.mfcc_con5(x))
+        # Expand shapes to same shape as mfcc
+        height, width = mfcc.size(2), mfcc.size(3)
+        ones = torch.ones(height, width, device=shapes.device)
+        shapes = shapes * ones
 
-        y = self.shape_lrelu1(self.shape_con1(shapes))
-        y = self.shape_lrelu2(self.shape_con2(y))
-
-        z = torch.cat((x, y), dim=1)
-
-        z = self.cat_lrelu1(self.cat_con1(z))
-        z = self.cat_lrelu2(self.cat_con2(z))
-        z = self.cat_lrelu3(self.cat_con3(z))
-        z = self.cat_lrelu4(self.cat_con4(z))
-        z = self.cat_lrelu5(self.cat_con5(z))
-        z = self.cat_lrelu6(self.cat_con6(z))
-        z = self.cat_lin7(self.cat_con7(z))
-        return z
+        x = torch.cat((shapes, mfcc), dim=1)
+        x = self.lrelu1(self.conv1(x))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = self.lrelu4(self.conv4(x))
+        x = self.lrelu5(self.conv5(x))
+        x = self.lrelu6(self.conv6(x))
+        x = self.lrelu7(self.conv7(x))
+        x = self.lrelu8(self.conv8(x))
+        x = self.lin9(self.conv9(x))
+        return x

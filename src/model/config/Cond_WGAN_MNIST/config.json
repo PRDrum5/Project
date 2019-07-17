@@ -6,7 +6,7 @@
         "spec": "DataLoaderMNIST",
         "args":{
             "data_dir": "data/",
-            "batch_size": 128,
+            "batch_size": 64,
             "shuffle": true,
             "train_split": 1.00,
             "n_workers": 0,
@@ -15,8 +15,8 @@
         }
     },
     "trainer": {
-        "epochs": 5,
-        "disc_gen_ratio": 4,
+        "epochs": 100,
+        "disc_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
@@ -60,7 +60,7 @@
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
-            "gradient_penalty": 1
+            "gradient_penalty": 10
         }
     }
 }

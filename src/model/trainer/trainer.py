@@ -339,12 +339,14 @@ class VocaShapeTrainer(BaseMultiTrainer):
 
 
 class MFCCShapeTrainer(BaseMultiTrainer):
-    def __init__(self, config, data_loader,
+    def __init__(self, config, data_loader, vis_loader,
                  disc_model, disc_loss, disc_optimizer,
                  gen_model, gen_loss, gen_optimizer):
 
         self.data_loader = data_loader
+        self.vis_loader = vis_loader
         self.batch_size = data_loader.batch_size
+        self.vis_batch_size = vis_loader.batch_size
         self.len_epoch = len(self.data_loader)
 
         self.log_step = int(np.sqrt(self.batch_size))
@@ -352,7 +354,6 @@ class MFCCShapeTrainer(BaseMultiTrainer):
 
         self.penalty = config['discriminator']['loss_func']['gradient_penalty']
         self.z_dim = config['generator']['arch']['args']['z_dim']
-        self.n_mfcc = config['generator']['arch']['args']['n_mfcc']
 
         super().__init__(config, 
                          disc_model, disc_loss, disc_optimizer,
@@ -360,9 +361,9 @@ class MFCCShapeTrainer(BaseMultiTrainer):
     
     def _disc_training_epoch(self, epoch, mfcc, shape_param):
         self.disc_model.train()
-        duration = mfcc.size(2)
+        height, width = mfcc.size(2), mfcc.size(3)
 
-        noise = torch.randn(self.batch_size, self.z_dim, duration)
+        noise = torch.randn(self.batch_size, self.z_dim, height, width)
         noise = noise.to(self.device)
 
         fake_shapes = self.gen_model(noise, mfcc).detach()
@@ -387,8 +388,8 @@ class MFCCShapeTrainer(BaseMultiTrainer):
     
     def _gen_training_epoch(self, epoch, mfcc):
         self.gen_model.train()
-        duration = mfcc.size(2)
-        noise = torch.randn(self.batch_size, self.z_dim, duration)
+        height, width = mfcc.size(2), mfcc.size(3)
+        noise = torch.randn(self.batch_size, self.z_dim, height, width)
         noise = noise.to(self.device)
 
         fake_shapes = self.gen_model(noise, mfcc)
@@ -403,10 +404,11 @@ class MFCCShapeTrainer(BaseMultiTrainer):
         return gen_loss
     
     def train(self):
-        fixed_sample = next(iter(self.data_loader))
+        fixed_sample = next(iter(self.vis_loader))
         fixed_mfcc = fixed_sample['mfcc'].to(self.device)
-        duration = fixed_mfcc.size(2)
-        fixed_noise = torch.randn(self.batch_size, self.z_dim, duration)
+        height, width = fixed_mfcc.size(2), fixed_mfcc.size(3)
+        fixed_noise = torch.randn(self.vis_batch_size, self.z_dim, 
+                                  height, width)
         fixed_noise = fixed_noise.to(self.device)
 
         for epoch in range(1, self.epochs+1):
@@ -450,13 +452,16 @@ class MFCCShapeTrainer(BaseMultiTrainer):
             self.logger.info('Disc Loss: {} '
                              'Gen Loss: {}'.format(disc_loss, gen_loss))
 
-            generated_sample = self.gen_model(fixed_noise, fixed_mfcc).detach()
-            sample_name = 'generated_sample_epoch_%03d' % epoch
-            save_dir = self.config.samples_dir / sample_name
-            generated_sample = generated_sample.numpy()
-            np.save(save_dir, generated_sample)
-            
-
-            #save_image(generated_sample.cpu(), save_dir)
+            self.save_sample(fixed_noise, fixed_mfcc, epoch)
             #if epoch % self.save_period == 0:
             #    self._save_checkpoint(epoch)
+    
+    def save_sample(self, noise, mfcc, epoch):
+        gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
+        gen_sample = gen_sample.squeeze(0).squeeze(0)
+        gen_sample = gen_sample.numpy()
+        gen_sample = self.vis_loader.dataset.denorm(gen_sample)
+        
+        sample_name = 'generated_sample_epoch_%03d' % epoch
+        save_dir = self.config.samples_dir / sample_name
+        np.save(save_dir, gen_sample)
