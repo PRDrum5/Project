@@ -1,23 +1,42 @@
 import os
 import numpy as np
 from mesh import Mesh
+from tqdm import tqdm
 
 if __name__ == "__main__":
 
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+
     # Import root mesh to align onto
-    root_mesh_dir = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/sentence01")
-    root_mesh = Mesh(root_mesh_dir, given_mesh="sentence01.000001.ply")
+    root_mesh_dir = 'root_meshes/'
+    root_mesh_path = os.path.join(dir_path, root_mesh_dir)
+    root_mesh = "mean_root_mesh.ply"
+
+    root_mesh = Mesh(root_mesh_path, given_mesh=root_mesh)
     root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
     root_mesh.get_vertex_postions(root_mesh_vertices)
 
-    # Align meshes
-    for file in range(1, 41):
-        sentence = 'sentence' + '%02d' %file
+    unaligned_dir = "unaligned"
+    unaligned_path = os.path.join(dir_path, unaligned_dir)
 
-        dir_plys = os.path.join("/home/peter/Documents/Uni/Project/datasets/registereddata/FaceTalk_170725_00137_TA/", sentence)
-        dir_path = os.path.dirname(os.path.realpath(__file__))
+    sentence_list = []
 
-        mesh = Mesh(dir_plys)
+    subjects = sorted(os.listdir(unaligned_path))
+    for subject in subjects:
+        subject_path = os.path.join(unaligned_path, subject)
+        sentences = sorted(os.listdir(subject_path))
+        for sentence in sentences:
+            sentence_path = os.path.join(subject_path, sentence)
+            sentence_list.append(sentence_path)
+
+    print(len(sentence_list))
+
+    for sentence in tqdm(sentence_list):
+        path_split = sentence.split('/')
+        subject_name = path_split[-2]
+        sentence_name = path_split[-1]
+
+        mesh = Mesh(sentence)
         mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
         mesh.get_vertex_postions(mesh_vertices)
 
@@ -25,8 +44,9 @@ if __name__ == "__main__":
 
         mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-        # Export aligned meshes
-        save_path = os.path.join(dir_path, 'aligned', sentence)
+        save_path = os.path.join(dir_path, 'all_aligned', 
+                                 subject_name, sentence_name)
+
         if not os.path.exists(save_path):
             os.makedirs(save_path)
         file_name = 'aligned'

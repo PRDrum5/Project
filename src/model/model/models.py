@@ -97,26 +97,26 @@ class Critic_MNIST(BaseModel):
     def __init__(self):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, bias=False)
-        self.leaky_relu1 = nn.LeakyReLU()
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3)
+        self.leaky_relu1 = nn.LeakyReLU(0.2)
 
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, bias=False)
-        self.leaky_relu2 = nn.LeakyReLU()
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3)
+        self.leaky_relu2 = nn.LeakyReLU(0.2)
 
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=4, stride=2, bias=False)
-        self.leaky_relu3 = nn.LeakyReLU()
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=4, stride=2)
+        self.leaky_relu3 = nn.LeakyReLU(0.2)
 
-        self.conv4 = nn.Conv2d(64, 128, kernel_size=4, bias=False)
-        self.leaky_relu4 = nn.LeakyReLU()
+        self.conv4 = nn.Conv2d(64, 128, kernel_size=4)
+        self.leaky_relu4 = nn.LeakyReLU(0.2)
 
-        self.conv5 = nn.Conv2d(128, 256, kernel_size=3, bias=False)
-        self.leaky_relu5 = nn.LeakyReLU()
+        self.conv5 = nn.Conv2d(128, 256, kernel_size=3)
+        self.leaky_relu5 = nn.LeakyReLU(0.2)
 
-        self.conv6 = nn.Conv2d(256, 64, kernel_size=3, bias=False)
-        self.leaky_relu6 = nn.LeakyReLU()
+        self.conv6 = nn.Conv2d(256, 64, kernel_size=3)
+        self.leaky_relu6 = nn.LeakyReLU(0.2)
 
-        self.conv7 = nn.Conv2d(64, 1, kernel_size=4, bias=False)
-        self.linear = nn.Linear(1, 1, bias=False)
+        self.conv7 = nn.Conv2d(64, 1, kernel_size=4)
+        self.linear = nn.Linear(1, 1)
 
     def forward(self, x):
         x = self.leaky_relu1(self.conv1(x))
@@ -135,31 +135,31 @@ class Cond_Generator_MNIST(BaseModel):
 
         in_dim = z_dim + n_labels
 
-        self.convt1 = nn.ConvTranspose2d(in_dim, 256, kernel_size=4, bias=False)
+        self.convt1 = nn.ConvTranspose2d(in_dim, 256, kernel_size=4)
         self.bn1 = nn.BatchNorm2d(256)
         self.relu1 = nn.ReLU()
 
-        self.convt2 = nn.ConvTranspose2d(256, 128, kernel_size=3, bias=False)
+        self.convt2 = nn.ConvTranspose2d(256, 128, kernel_size=3)
         self.bn2 = nn.BatchNorm2d(128)
         self.relu2 = nn.ReLU()
 
-        self.convt3 = nn.ConvTranspose2d(128, 64, kernel_size=3, bias=False)
+        self.convt3 = nn.ConvTranspose2d(128, 64, kernel_size=3)
         self.bn3 = nn.BatchNorm2d(64)
         self.relu3 = nn.ReLU()
 
-        self.convt4 = nn.ConvTranspose2d(64, 64, kernel_size=4, bias=False)
+        self.convt4 = nn.ConvTranspose2d(64, 64, kernel_size=4)
         self.bn4 = nn.BatchNorm2d(64)
         self.relu4 = nn.ReLU()
 
-        self.convt5 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2, bias=False)
+        self.convt5 = nn.ConvTranspose2d(64, 32, kernel_size=4, stride=2)
         self.bn5 = nn.BatchNorm2d(32)
         self.relu5 = nn.ReLU()
 
-        self.convt6 = nn.ConvTranspose2d(32, 16, kernel_size=3, bias=False)
+        self.convt6 = nn.ConvTranspose2d(32, 16, kernel_size=3)
         self.bn6 = nn.BatchNorm2d(16)
         self.relu6 = nn.ReLU()
 
-        self.convt7 = nn.ConvTranspose2d(16, 1, kernel_size=3, bias=False)
+        self.convt7 = nn.ConvTranspose2d(16, 1, kernel_size=3)
         self.tanh7 = nn.Tanh()
 
     def forward(self, z, c):
@@ -449,8 +449,3 @@ class MFCC_Shape_Critic(BaseModel):
         z = self.cat_lrelu6(self.cat_con6(z))
         z = self.cat_lin7(self.cat_con7(z))
         return z
-
-
-
-
-

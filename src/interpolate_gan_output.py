@@ -2,7 +2,7 @@ import numpy as np
 import os
 import argparse
 from plyfile import PlyData
-from mesh.mesh import Mesh
+from mesh.mesh import Mesh, gen_file_list
 
 parser = argparse.ArgumentParser(description='Gan Output Interpolation')
 
@@ -37,7 +37,8 @@ if not os.path.exists(save_path):
 
 ## Load the root mesh to interpolate from
 # Instantiate root mesh class
-root_mesh = Mesh(root_mesh_path)
+root_mesh_list = gen_file_list(root_mesh_path)
+root_mesh = Mesh(root_mesh_list)
 
 # Collect the vertices for the root mesh, and populate it
 root_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)

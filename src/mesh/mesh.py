@@ -4,7 +4,18 @@ import os
 import numpy as np
 from tqdm import tqdm
 
+def gen_file_list(path, ext='.ply'):
+    f_list = []
+    for root, _dirs, files in os.walk(path):
+        for file in files:
+            if file.endswith(ext):
+                f_list.append(os.path.join(root, file))
+    f_list = sorted(f_list)
+    return f_list
+
 class Mesh():
+    """
+    # Old method gave path to ply files.
     def __init__(self, dir_plys, save_path=None, given_mesh=None):
         self.dir_plys = dir_plys
         self.save_path = save_path
@@ -25,6 +36,18 @@ class Mesh():
         self.num_files = len(self.ply_files)
         self._get_mesh_metadata(self.ply_files[0])
         self._get_root_mesh(self.ply_files[0])
+    """
+
+    def __init__(self, ply_files, save_path=None):
+        self.save_path = save_path
+
+        if self.save_path and not os.path.exists(self.save_path):
+            os.makedirs(self.save_path)
+
+        self.ply_files = sorted(ply_files)
+        self.num_files = len(self.ply_files)
+        self._get_mesh_metadata(self.ply_files[0])
+        self._get_root_mesh(self.ply_files[0])
 
     def _get_root_mesh(self, root_ply):
         self.root_mesh = self.get_empty_vertices(1)
@@ -36,8 +59,11 @@ class Mesh():
             self.vertex_count = plydata['vertex'].count
             self.mesh_connections = plydata['face'].data
 
-    def get_empty_vertices(self, num_files):
-        mesh_vertices = np.empty((self.vertex_count, 3, num_files))
+    def get_empty_vertices(self, num_files, dtype=None):
+        if dtype:
+            mesh_vertices = np.empty((self.vertex_count, 3, num_files),                                  dtype=dtype)
+        else:
+            mesh_vertices = np.empty((self.vertex_count, 3, num_files))
         return mesh_vertices
 
     def _get_vertex_postions(self, plydata, target_array, file_number=0):

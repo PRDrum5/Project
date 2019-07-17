@@ -2,10 +2,16 @@ import numpy as np
 import os 
 from plyfile import PlyData
 from mesh import Mesh
+from mesh import gen_file_list
 
 dir_plys = 'aligned/sentence01'
 dir_path = os.path.dirname(os.path.realpath(__file__))
-mesh = Mesh(os.path.join(dir_path, dir_plys))
+
+ply_path = os.path.join(dir_path, dir_plys)
+
+f_list = gen_file_list(ply_path)
+
+mesh = Mesh(ply_path)
 mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
 mesh.get_vertex_postions(mesh_vertices)
 mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
