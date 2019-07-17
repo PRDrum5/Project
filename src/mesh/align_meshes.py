@@ -1,6 +1,7 @@
 import os
 import numpy as np
 from mesh import Mesh
+from mesh import gen_file_list
 from tqdm import tqdm
 
 if __name__ == "__main__":
@@ -10,9 +11,10 @@ if __name__ == "__main__":
     # Import root mesh to align onto
     root_mesh_dir = 'root_meshes/'
     root_mesh_path = os.path.join(dir_path, root_mesh_dir)
-    root_mesh = "mean_root_mesh.ply"
 
-    root_mesh = Mesh(root_mesh_path, given_mesh=root_mesh)
+    root_mesh_list = gen_file_list(root_mesh_path, ext='.ply')
+
+    root_mesh = Mesh(root_mesh_list)
     root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
     root_mesh.get_vertex_postions(root_mesh_vertices)
 
@@ -29,14 +31,14 @@ if __name__ == "__main__":
             sentence_path = os.path.join(subject_path, sentence)
             sentence_list.append(sentence_path)
 
-    print(len(sentence_list))
-
-    for sentence in tqdm(sentence_list):
+    for sentence in sentence_list:
         path_split = sentence.split('/')
         subject_name = path_split[-2]
         sentence_name = path_split[-1]
 
-        mesh = Mesh(sentence)
+        f_list = gen_file_list(sentence, ext='.ply')
+
+        mesh = Mesh(f_list)
         mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
         mesh.get_vertex_postions(mesh_vertices)
 
