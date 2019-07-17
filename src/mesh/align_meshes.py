@@ -2,7 +2,6 @@ import os
 import numpy as np
 from mesh import Mesh
 from mesh import gen_file_list
-from tqdm import tqdm
 
 if __name__ == "__main__":
 
