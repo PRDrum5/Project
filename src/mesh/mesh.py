@@ -1,4 +1,5 @@
 from plyfile import PlyData, PlyElement
+from sklearn.decomposition import IncrementalPCA, PCA
 import scipy.linalg as la
 import os
 import numpy as np
@@ -140,6 +141,22 @@ class Mesh():
 
         return blendshapes
     
+    def inc_create_blendshapes(self, vertices, 
+                               batch_size=1000, n_components=None):
+
+        ipca = IncrementalPCA(n_components, whiten=True, batch_size=batch_size)
+        ipca.fit(vertices)
+        eigenvectors = ipca.components_
+
+        return eigenvectors.T
+
+    def new_create_blendshapes(self, vertices, n_components=None):
+        pca = PCA(n_components=n_components, whiten=True)
+        pca.fit(vertices)
+        eigenvectors = pca.components_
+
+        return eigenvectors.T
+    
     def create_frame_deltas(self, vertices):
         """
         Subtracts each subsequent frame resulting in the motion flow of the mesh
@@ -159,6 +176,13 @@ class Mesh():
         """
         first_frame = vertices[:,0].reshape(-1, 1)
         diff = vertices - first_frame
+        return diff
+    
+    def create_given_frame_diff(self, vertices, root_vertices):
+        """
+        Subtracts each from from the given root mesh
+        """
+        diff = vertices - root_vertices
         return diff
     
     def _apply_procrustes(self, matrix1, matrix2):
@@ -229,16 +253,15 @@ class Mesh():
         """
         Given an altered set of mesh vertices and the blendshape axis along
         which the mesh has been morphed, attempt to recover the parameters used
-        to morph from the root mesh.
+        to morph the mesh
         """
         n_shapes = blendshapes.shape[1]
         altered_vertices = altered_vertices.reshape(-1,1)
         
         root_vertices = self.vertices_to_2d(self.root_mesh)
-        vert_deltas = altered_vertices - root_vertices
 
         shape_inv = np.linalg.pinv(blendshapes)
-        params = shape_inv @ vert_deltas
+        params = shape_inv @ altered_vertices
 
         return params.reshape(-1,)
 

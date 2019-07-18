@@ -7,38 +7,21 @@ from tqdm import tqdm
 if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    shapes = np.load(os.path.join(dir_path, 'blendshape_axis_voca_subject1.npy'))
+    shapes = np.load(os.path.join(dir_path, 'root_diff_shape_axis_10.npy'))
     total_shapes = shapes.shape[1]
-    n_shapes = 1 # Number of principle axis to use.
+    n_shapes = 10 # Number of principle axis to use.
     shapes = np.delete(shapes, range(n_shapes, total_shapes), axis=1)
-
-    # Instantiate root mesh class
-    root_mesh_dir = 'root_meshes/vocaset_subject1'
-    root_mesh_path = os.path.join(dir_path, root_mesh_dir)
-    root_mesh_list = gen_file_list(root_mesh_path)
-
-    root_mesh = Mesh(root_mesh_list)
-
-    # Collect the vertices for the root mesh, and populate it
-    root_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
-    root_mesh.get_vertex_postions(root_vertices)
-    
-    # Convert the vertices into 2d representation
-    root_vertices = root_mesh.vertices_to_2d(root_vertices)
-
-    ply_dir = 'all_aligned'
-    ply_path = os.path.join(dir_path, ply_dir)
 
     for file in tqdm(range(40)):
         sentence = 'sentence' + '%02d' % (file+1)
-        dir_plys = 'aligned'
+        dir_plys = 'aligned/Subject01/'
 
         # instantiate Mesh class with lsit of ply files
         f_list = gen_file_list(os.path.join(dir_path, dir_plys, sentence))
         mesh = Mesh(f_list)
 
-        # Overwrite default root mesh
-        mesh.root_mesh = root_mesh.root_mesh
+        ## Overwrite default root mesh
+        #mesh.root_mesh = root_mesh.root_mesh
 
         mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
         mesh.get_vertex_postions(mesh_vertices)
