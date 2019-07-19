@@ -11,16 +11,22 @@ from psbody.mesh.meshviewer import MeshViewer
 
 
 parser = argparse.ArgumentParser(description='Sequence visualization')
-parser.add_argument('--sequence_path', default='', help='Path to motion sequence')
-# fetch from temporary mesh path
 
-parser.add_argument('--audio_fname', default='', help='Path of speech sequence')
-# fetch name from dataloader
+parser.add_argument('--sequence_path', 
+                    default='interpolation/', 
+                    help='Path to motion sequence')
 
-parser.add_argument('--out_path', default='./animation_visualization', help='Output path')
-# saved/samples/model_name/timestamp/
+parser.add_argument('--audio_fname', 
+                    default='audio/all_samples/sentence001.wav', 
+                    help='Path of speech sequence')
 
-parser.add_argument('--video_name', default='video', help='name of output video')
+parser.add_argument('--out_path', 
+                    default='./animation_visualization', 
+                    help='Output path')
+
+parser.add_argument('--video_name', 
+                    default='video', 
+                    help='name of output video')
 
 
 args = parser.parse_args()
@@ -56,5 +62,3 @@ video_name = ''.join([args.video_name, '.mp4'])
 out_video_fname = os.path.join(out_path, video_name)
 cmd = ['ffmpeg', '-framerate', '60', '-pattern_type', 'glob', '-i', os.path.join(img_path, '*.png')] + cmd_audio + [out_video_fname]
 call(cmd)
-
-# Remove img folder

@@ -253,15 +253,16 @@ class Mesh():
         """
         Given an altered set of mesh vertices and the blendshape axis along
         which the mesh has been morphed, attempt to recover the parameters used
-        to morph the mesh
+        to morph from the root mesh.
         """
         n_shapes = blendshapes.shape[1]
         altered_vertices = altered_vertices.reshape(-1,1)
         
         root_vertices = self.vertices_to_2d(self.root_mesh)
+        vert_deltas = altered_vertices - root_vertices
 
         shape_inv = np.linalg.pinv(blendshapes)
-        params = shape_inv @ altered_vertices
+        params = shape_inv @ vert_deltas
 
         return params.reshape(-1,)
 

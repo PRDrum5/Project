@@ -8,7 +8,7 @@ if __name__ == "__main__":
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     # Import root mesh to align onto
-    root_mesh_dir = 'root_meshes/'
+    root_mesh_dir = 'root_meshes/subject1'
     root_mesh_path = os.path.join(dir_path, root_mesh_dir)
 
     root_mesh_list = gen_file_list(root_mesh_path, ext='.ply')
@@ -17,7 +17,7 @@ if __name__ == "__main__":
     root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
     root_mesh.get_vertex_postions(root_mesh_vertices)
 
-    unaligned_dir = "unaligned"
+    unaligned_dir = 'partial_unaligned'
     unaligned_path = os.path.join(dir_path, unaligned_dir)
 
     sentence_list = []
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
         mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-        save_path = os.path.join(dir_path, 'all_aligned', 
+        save_path = os.path.join(dir_path, 'aligned', 
                                  subject_name, sentence_name)
 
         if not os.path.exists(save_path):
