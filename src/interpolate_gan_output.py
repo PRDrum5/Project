@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Gan Output Interpolation')
 
     parser.add_argument('--root_mesh_dir', 
-                        default='mesh/root_meshes/Subject01')
+                        default='mesh/root_meshes/Subject01_aligned')
 
     parser.add_argument('--blendshape_axis_dir', 
                         default='mesh/blendshape_axis')

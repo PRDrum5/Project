@@ -1,22 +1,26 @@
 #!/bin/bash
 
-while getopts p: option
+PARAMS_DIR='mesh/shape_params/shape_params_10'
+
+while getopts dp: option
 do
 case "${option}"
 in
-p) PARAMS=${OPTARG};;
+d) PARAMS_DIR=${OPTARG};;
+p) PARAMS_FILE=${OPTARG};;
 esac
 done
 
 source ~/anaconda3/etc/profile.d/conda.sh
 conda activate MSc
 
-ROOT_MESH='model/data/root_mesh'
-BLENDSHAPE_AXIS='model/data/blendshape_axis/shape_axis.npy'
-SEQ_PATH='gan_visualisation'
-WAV_PATH='model/data/sentence01_1sec.wav'
+ROOT_MESH='mesh/root_meshes/Subject01_aligned/'
+BLENDSHAPE_AXIS_DIR='mesh/blendshape_axis/'
+BLENDSHAPE_AXIS_FILE='shape_axis_100.npy' 
+SEQ_PATH='interpolation' 
+WAV_PATH='audio/all_samples/sentence001.wav'
 
-python interpolate_gan_output.py --root_mesh $ROOT_MESH --blendshape_axis $BLENDSHAPE_AXIS --params $PARAMS --out_path $SEQ_PATH
+python interpolate_gan_output.py --root_mesh_dir $ROOT_MESH --blendshape_axis_dir $BLENDSHAPE_AXIS_DIR --blendshape_axis_file $BLENDSHAPE_AXIS_FILE --shape_params_dir $PARAMS_DIR --shape_params_file $PARAMS_FILE --out_path $SEQ_PATH
 
 function join_by { local IFS="$1"; shift; echo "$*"; }
 
@@ -41,4 +45,4 @@ python visualize_sequence.py --sequence_path $SEQ_PATH --audio_fname $WAV_PATH -
 
 # Clean up
 rm -r $SAVE_PATH/img
-rm -r $SEQ_PATH
+#rm -r $SEQ_PATH
