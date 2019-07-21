@@ -28,7 +28,7 @@ class Mesh():
 
     def _get_root_mesh(self, root_ply):
         self.root_mesh = self.get_empty_vertices(1)
-        self.get_vertex_postions(self.root_mesh)
+        self.get_vertex_postions(self.root_mesh, no_progress=True)
 
     def _get_mesh_metadata(self, example_ply):
         with open(example_ply, 'rb') as f:
@@ -51,12 +51,13 @@ class Mesh():
             target_array[vert][2][file_number] = v[2]
         return target_array
 
-    def get_vertex_postions(self, target_array):
+    def get_vertex_postions(self, target_array, no_progress=False):
         """
         Extracts vertex postions for all ply files
         """
 
-        for file_number, file in tqdm(enumerate(self.ply_files)):
+        for file_number, file in tqdm(enumerate(self.ply_files), 
+                                      disable=no_progress):
             if file_number == target_array.shape[2]:
                 break
             with open(file, 'rb') as f:
