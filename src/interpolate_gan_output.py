@@ -59,7 +59,7 @@ if __name__ == "__main__":
 
     # Collect the vertices for the root mesh, and populate it
     root_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
-    root_mesh.get_vertex_postions(root_vertices)
+    root_mesh.get_vertex_postions(root_vertices, no_progress=True)
 
     # Convert the vertices into 2d representation
     root_vertices = root_mesh.vertices_to_2d(root_vertices)
