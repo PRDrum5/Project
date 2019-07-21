@@ -185,24 +185,24 @@ class Mesh():
         diff = vertices - root_vertices
         return diff
     
-    def _apply_procrustes(self, matrix1, matrix2):
+    def _apply_procrustes(self, matrix1, submatrix1, matrix2, submatrix2):
         # Translate centroids of matricies to origin
-        mean1 = np.mean(matrix1, 0)
-        mean2 = np.mean(matrix2, 0)
+        mean1 = np.mean(submatrix1, 0)
+        mean2 = np.mean(submatrix2, 0)
         matrix1 -= mean1
         matrix2 -= mean2
 
         # Scale the matrix the same
-        norm1 = la.norm(matrix1)
-        norm2 = la.norm(matrix2)
+        norm1 = la.norm(submatrix1)
+        norm2 = la.norm(submatrix2)
         matrix1 /= norm1
         matrix2 /= norm2
 
         # Rotate matrix 2
-        rotation, _ = la.orthogonal_procrustes(matrix1, matrix2)
-        matrix2 = (matrix2 @ rotation.T)
+        rotation, _ = la.orthogonal_procrustes(submatrix1, submatrix2)
+        matrix2_rotated = (matrix2 @ rotation.T)
 
-        return matrix1, matrix2
+        return matrix1, matrix2_rotated
     
     def procrustes(self, matrix1, matrix2, landmarks):
         """
@@ -218,19 +218,48 @@ class Mesh():
             submat1[i] = matrix1[landmark_idx]
             submat2[i] = matrix2[landmark_idx]
         
-        matrix1, matrix2 = self._apply_procrustes(matrix1, matrix2)
+        matrix1, matrix2 = self._apply_procrustes(matrix1, submat1,
+                                                  matrix2, submat2)
 
         diff = np.sum(np.square(matrix1 - matrix2))
 
         return matrix1, matrix2, diff
     
     def mesh_alignment(self, verts, root_mesh):
-        landmarks = [3365, 2433, 3150, 1402, 1417, 4336, 4892]#, 338, 27]
-        #[nose, out R eye, in R eye, out L eye, in L eye, back R eye, back L eye]#, R brow, L brow]
+        landmarks_dict = {'nose': 3365,
+                          'outside_r_eye': 2433,
+                          'inside_r_eye': 3150,
+                          'outside_l_eye': 1402,
+                          'inside_l_eye': 1417,
+                          'back_r_eye': 4336,
+                          'back_l_eye': 4892,
+                          'head_top_centre': 3559,
+                          'head_top_r_1': 2958,
+                          'head_top_r_2': 3782,
+                          'head_top_l_1': 3894,
+                          'head_top_l_2': 3908,
+                          'temple_l': 2022,
+                          'temple_r': 3061,
+                          'cheek_l': 591,
+                          'cheek_r': 3127,
+                          'head_back': 3523,
+                          'head_top_back': 3525,
+                          'forehead_centre': 3495,
+                          'forehead_r_1': 2000,
+                          'forehead_r_2': 3068,
+                          'forehead_l_1': 573,
+                          'forehead_l_2': 2030,
+                          'centre_brow': 3572,
+                         }
+
+        landmarks = list(landmarks_dict.values()) 
+        
         mat1 = root_mesh[:,:,0]
+        diff_sum = 0
         for mesh in range(0, self.num_files):
             mat2 = verts[:,:,mesh]
             mat1, mat2, diff = self.procrustes(mat1, mat2, landmarks)
+            verts[:,:,mesh] = mat2
 
     def morph_mesh(self, vertices, blendshapes, shape_params):
         """

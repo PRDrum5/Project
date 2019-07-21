@@ -69,17 +69,14 @@ if __name__ == "__main__":
     blendshape_axis = np.load(blendshape_axis_path)
     total_axis = blendshape_axis.shape[1]
 
+
     ## Load generated blendshape parameters
     shape_params = np.load(shape_params_path)
-
-    params_used = shape_params.shape[0]
-    shape_params = np.delete(shape_params, range(1, params_used), axis=0)
     params_used = shape_params.shape[0]
 
     # Remove blendshape axis not used.
     params_not_used = range(params_used, total_axis)
     blendshape_axis = np.delete(blendshape_axis, params_not_used, axis=1)
-
 
     ## Interpolate and export the root mesh for each frame in params
     for frame in range(shape_params.shape[1]):
