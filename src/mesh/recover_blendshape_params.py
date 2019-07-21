@@ -13,8 +13,9 @@ if __name__ == "__main__":
     parser.add_argument('--n_params', default='10')
     parser.add_argument('--params_dir', default='shape_params')
     parser.add_argument('--params_name', default='shape_params')
-    parser.add_argument('--root_mesh_dir', default='root_meshes/Subject01/')
-    parser.add_argument('--recover_from_dir', default='aligned/Subject01/')
+    parser.add_argument('--root_mesh_dir', 
+                        default='root_meshes/Subject01_aligned/')
+    parser.add_argument('--recover_from_dir', default='all_aligned/Subject01/')
 
     args = parser.parse_args()
 
