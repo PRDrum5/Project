@@ -69,7 +69,6 @@ if __name__ == "__main__":
     blendshape_axis = np.load(blendshape_axis_path)
     total_axis = blendshape_axis.shape[1]
 
-
     ## Load generated blendshape parameters
     shape_params = np.load(shape_params_path)
     params_used = shape_params.shape[0]
