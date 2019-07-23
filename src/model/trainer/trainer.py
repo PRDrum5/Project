@@ -459,6 +459,7 @@ class MFCCShapeTrainer(BaseMultiTrainer):
     def save_sample(self, noise, mfcc, epoch):
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
         gen_sample = gen_sample.squeeze(0).squeeze(0)
+        gen_sample = gen_sample.squeeze(1)
         gen_sample = gen_sample.numpy()
         gen_sample = self.vis_loader.dataset.denorm(gen_sample)
         
