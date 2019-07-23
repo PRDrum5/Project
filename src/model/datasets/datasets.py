@@ -6,6 +6,7 @@ import numpy as np
 from scipy.io import wavfile
 import librosa
 import numpy as np
+from tqdm import tqdm
 
 class WavBlendshapesDataset(Dataset):
     """
@@ -64,7 +65,8 @@ class WavBlendshapesDataset(Dataset):
         """
         Finds max and min values for blendshape params and mfcc for dataset.
         """
-        for idx in range(self.__len__()):
+        print("Collecting dataset statistics...\n")
+        for idx in tqdm(range(self.__len__())):
             mfcc, shape_param = self._get_data_pair(idx)
 
             idx_mfcc_min = mfcc.min()
