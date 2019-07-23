@@ -28,7 +28,9 @@ class Mesh():
 
     def _get_root_mesh(self, root_ply):
         self.root_mesh = self.get_empty_vertices(1)
-        self.get_vertex_postions(self.root_mesh, no_progress=True)
+        with open(root_ply, 'rb') as f:
+            plydata = PlyData.read(f)
+            self._get_vertex_postions(plydata, self.root_mesh, 0)
 
     def _get_mesh_metadata(self, example_ply):
         with open(example_ply, 'rb') as f:
@@ -55,7 +57,6 @@ class Mesh():
         """
         Extracts vertex postions for all ply files
         """
-
         for file_number, file in tqdm(enumerate(self.ply_files), 
                                       disable=no_progress):
             if file_number == target_array.shape[2]:
@@ -153,6 +154,7 @@ class Mesh():
 
     def new_create_blendshapes(self, vertices, n_components=None):
         pca = PCA(n_components=n_components, whiten=True)
+        print("Performing PCA on data")
         pca.fit(vertices)
         eigenvectors = pca.components_
 

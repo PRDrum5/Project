@@ -2,13 +2,14 @@ import os
 import numpy as np
 from mesh import Mesh
 from mesh import gen_file_list
+from tqdm import tqdm
 
 if __name__ == "__main__":
 
     dir_path = os.path.dirname(os.path.realpath(__file__))
 
     # Import root mesh to align onto
-    root_mesh_dir = 'root_meshes/Subject01_unaligned'
+    root_mesh_dir = 'root_meshes/voca_root'
     root_mesh_path = os.path.join(dir_path, root_mesh_dir)
 
     root_mesh_list = gen_file_list(root_mesh_path, ext='.ply')
@@ -30,10 +31,18 @@ if __name__ == "__main__":
             sentence_path = os.path.join(subject_path, sentence)
             sentence_list.append(sentence_path)
 
-    for sentence in sentence_list:
+    for sentence in tqdm(sentence_list):
         path_split = sentence.split('/')
         subject_name = path_split[-2]
         sentence_name = path_split[-1]
+
+        save_path = os.path.join(dir_path, 'all_aligned', 
+                                 subject_name, sentence_name)
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+        else:
+            continue
 
         f_list = gen_file_list(sentence, ext='.ply')
 
@@ -45,10 +54,5 @@ if __name__ == "__main__":
 
         mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-        save_path = os.path.join(dir_path, 'all_aligned', 
-                                 subject_name, sentence_name)
-
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-        file_name = 'aligned'
+        file_name = 'aligned_w_voca'
         mesh.export_all_meshes(mesh_vertices, save_path, file_name)
