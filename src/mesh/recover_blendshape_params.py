@@ -45,6 +45,19 @@ if __name__ == "__main__":
         for sentence in sentence_list:
             ply_files = os.path.join(subject_path, sentence)
 
+            params_dir = args.params_dir
+            params_name = args.params_name
+            save_dir = os.path.join(params_dir, 
+                                    params_name + '_' + str(n_shapes),
+                                    subject)
+            save_path = os.path.join(dir_path, save_dir)
+            if not os.path.exists(save_path):
+                os.makedirs(save_path)
+
+            file_save_path = os.path.join(save_path, sentence)
+            if os.path.exists(file_save_path + '.npy'):
+                continue
+
             # instantiate Mesh class with lsit of ply files
             f_list = gen_file_list(ply_files)
             mesh = Mesh(f_list)
@@ -61,14 +74,14 @@ if __name__ == "__main__":
                 params[:,v] = mesh.recover_blendshape_parameters(
                     mesh_vertices[:,v], shapes)
 
-            params_dir = args.params_dir
-            params_name = args.params_name
-            save_dir = os.path.join(params_dir, 
-                                    params_name + '_' + str(n_shapes),
-                                    subject)
-            save_path = os.path.join(dir_path, save_dir)
-            if not os.path.exists(save_path):
-                os.makedirs(save_path)
+            #params_dir = args.params_dir
+            #params_name = args.params_name
+            #save_dir = os.path.join(params_dir, 
+            #                        params_name + '_' + str(n_shapes),
+            #                        subject)
+            #save_path = os.path.join(dir_path, save_dir)
+            #if not os.path.exists(save_path):
+            #    os.makedirs(save_path)
 
-            file_save_path = os.path.join(save_path, sentence)
+            #file_save_path = os.path.join(save_path, sentence)
             np.save(file_save_path, params)
