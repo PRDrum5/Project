@@ -4,7 +4,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 LRW_VIDEO_DIR="$DIR/lipread_mp4"
-LRW_AUDIO_DIR="$DIR/lrw_audio"
+LRW_AUDIO_DIR="$DIR/lrw_video"
 
 for DIR in $LRW_VIDEO_DIR/*
 do
@@ -13,7 +13,6 @@ do
     read -ra ADDR <<< "$DIR"
     WORDNAME=${ADDR[-1]}
     IFS=' '
-    echo $WORDNAME
 
     SAVE_PATH="$LRW_AUDIO_DIR/$WORDNAME"
 
@@ -32,21 +31,26 @@ do
             read -ra ADDR <<< "$VIDEO"
             VIDEO_NAME=${ADDR[-1]}
             IFS=' '
+            echo $VIDEO_NAME
 
             VIDEO_NAME="${VIDEO_NAME%.*}"
             VIDEO_NAME="${VIDEO_NAME##*/}"
 
             VIDEO_IN="$VIDEO"
-            AUDIO_OUT_PATH="$SAVE_PATH/$MODE_NAME"
-            mkdir -p $AUDIO_OUT_PATH
-            AUDIO_OUT="$AUDIO_OUT_PATH/$VIDEO_NAME.wav"
-            if test -f $AUDIO_OUT;
+            FRAMES_OUT_PATH="$SAVE_PATH/$MODE_NAME/$VIDEO_NAME"
+            mkdir -p $FRAMES_OUT_PATH
+
+            if test -f $FRAMES_OUT_PATH;
             then
                 :
             else
-                ffmpeg -i $VIDEO_IN -vn -acodec pcm_s16le -ar 22000 -ac 2 $AUDIO_OUT -hide_banner -loglevel panic
+                ffmpeg -i $VIDEO_IN $FRAMES_OUT_PATH/frame%02d.png -hide_banner -loglevel panic
+                rm $FRAMES_OUT_PATH/frame01.png
+                rm $FRAMES_OUT_PATH/frame02.png
+                rm $FRAMES_OUT_PATH/frame27.png
+                rm $FRAMES_OUT_PATH/frame28.png
+                rm $FRAMES_OUT_PATH/frame29.png
             fi
         done
     done
-
 done

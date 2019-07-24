@@ -60,5 +60,5 @@ if os.path.exists(audio_fname):
 video_name = ''.join([args.video_name, '.mp4'])
 
 out_video_fname = os.path.join(out_path, video_name)
-cmd = ['ffmpeg', '-framerate', '60', '-pattern_type', 'glob', '-i', os.path.join(img_path, '*.png')] + cmd_audio + [out_video_fname]
+cmd = ['ffmpeg', '-framerate', '43', '-pattern_type', 'glob', '-i', os.path.join(img_path, '*.png')] + cmd_audio + [out_video_fname]
 call(cmd)
