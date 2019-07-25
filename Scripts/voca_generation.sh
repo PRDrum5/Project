@@ -14,6 +14,7 @@ do
     read -ra ADDR <<< "$WORD"
     WORDNAME=${ADDR[-1]}
     IFS=' '
+    echo $WORDNAME
 
     WORD_SAVE_PATH="$OUTPUT_PATH/$WORDNAME"
 
@@ -24,16 +25,29 @@ do
         read -ra ADDR <<< "$MODE"
         MODE_NAME=${ADDR[-1]}
         IFS=' '
+        
+        MODE_SAVE_PATH="$WORD_SAVE_PATH/$MODE_NAME"
 
-        for $AUDIO in $MODE/*.wav
+        for AUDIO in $MODE/*.wav
         do
             # Get audio clip name
             IFS='/'
             read -ra ADDR <<< "$AUDIO"
             AUDIO_NAME=${ADDR[-1]}
             IFS=' '
-            echo $AUDIO_NAME
-            sleep 300
+
+            AUDIO_NAME="${AUDIO_NAME%.*}"
+            AUDIO_NAME="${AUDIO_NAME##*/}"
+
+            CLIP_MESH_SAVE_PATH="$MODE_SAVE_PATH/$AUDIO_NAME"
+
+            if test -d $CLIP_MESH_SAVE_PATH;
+            then
+                :
+            else
+                mkdir -p $CLIP_MESH_SAVE_PATH
+                python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH
+            fi
         done
     done
 done
