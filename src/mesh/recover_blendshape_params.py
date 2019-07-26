@@ -46,13 +46,13 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Recover Blendshape Params')
     parser.add_argument('--blendshape_axis_dir', default='blendshape_axis/')
-    parser.add_argument('--axis_file', default='shape_axis_100.npy')
-    parser.add_argument('--n_params', default='2')
+    parser.add_argument('--axis_file', default='shape_axis_lrw_ff_100.npy')
+    parser.add_argument('--n_params', default='4')
     parser.add_argument('--params_dir', default='shape_params')
     parser.add_argument('--params_name', default='shape_params')
     parser.add_argument('--root_mesh_dir', 
                         default='root_meshes/voca_root/')
-    parser.add_argument('--recover_from_dir', default='all_aligned/')
+    parser.add_argument('--recover_from_dir', default='lrw_subset_meshes/')
 
     args = parser.parse_args()
 

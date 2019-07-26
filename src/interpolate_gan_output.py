@@ -9,19 +9,19 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Gan Output Interpolation')
 
     parser.add_argument('--root_mesh_dir', 
-                        default='mesh/root_meshes/Subject01_aligned')
+                        default='mesh/root_meshes/voca_root')
 
     parser.add_argument('--blendshape_axis_dir', 
                         default='mesh/blendshape_axis')
 
     parser.add_argument('--blendshape_axis_file', 
-                        default='shape_axis_100.npy')
+                        default='shape_axis_lrw_ff_100.npy')
 
     parser.add_argument('--shape_params_dir', 
-                        default='mesh/shape_params/shape_params_10')
+                        default='mesh/shape_params/shape_params_4/train')
 
     parser.add_argument('--shape_params_file', 
-                        default='sentence01.npy')
+                        default='ABOUT_00001.npy')
 
     parser.add_argument('--out_path', 
                         default='interpolation')

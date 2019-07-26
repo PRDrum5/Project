@@ -10,13 +10,14 @@ if __name__ == "__main__":
 
     # Import root mesh to align onto
     root_mesh_dir = 'root_meshes/voca_root'
+    #root_mesh_dir = 'root_meshes/Subject01_aligned'
     root_mesh_path = os.path.join(dir_path, root_mesh_dir)
 
     root_mesh_list = gen_file_list(root_mesh_path, ext='.ply')
 
     root_mesh = Mesh(root_mesh_list)
     root_mesh_vertices = root_mesh.get_empty_vertices(root_mesh.num_files)
-    root_mesh.get_vertex_postions(root_mesh_vertices)
+    root_mesh.get_vertex_postions(root_mesh_vertices, no_progress=True)
 
     unaligned_dir = 'unaligned/'
     unaligned_path = os.path.join(dir_path, unaligned_dir)
@@ -36,7 +37,7 @@ if __name__ == "__main__":
         subject_name = path_split[-2]
         sentence_name = path_split[-1]
 
-        save_path = os.path.join(dir_path, 'all_aligned', 
+        save_path = os.path.join(dir_path, 'aligned_to_voca_root', 
                                  subject_name, sentence_name)
 
         if not os.path.exists(save_path):
@@ -48,11 +49,11 @@ if __name__ == "__main__":
 
         mesh = Mesh(f_list)
         mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
-        mesh.get_vertex_postions(mesh_vertices)
+        mesh.get_vertex_postions(mesh_vertices, no_progress=True)
 
         mesh.mesh_alignment(mesh_vertices, root_mesh_vertices)
 
         mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
 
-        file_name = 'aligned_w_voca'
+        file_name = 'aligned'
         mesh.export_all_meshes(mesh_vertices, save_path, file_name)

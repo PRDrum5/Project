@@ -17,7 +17,7 @@ parser.add_argument('--sequence_path',
                     help='Path to motion sequence')
 
 parser.add_argument('--audio_fname', 
-                    default='audio/all_samples/sentence001.wav', 
+                    default='audio/lrw/lrw_audio/ABOUT/train/ABOUT_00001.wav', 
                     help='Path of speech sequence')
 
 parser.add_argument('--out_path', 

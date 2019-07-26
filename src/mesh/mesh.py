@@ -154,7 +154,6 @@ class Mesh():
 
     def new_create_blendshapes(self, vertices, n_components=None):
         pca = PCA(n_components=n_components, whiten=True)
-        print("Performing PCA on data")
         pca.fit(vertices)
         eigenvectors = pca.components_
 

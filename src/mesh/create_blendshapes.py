@@ -7,10 +7,10 @@ from mesh import gen_file_list
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Blendshape Generation')
-    parser.add_argument('--ply_dir', default='all_aligned/')
-    parser.add_argument('--use_delta', default=True)
+    parser.add_argument('--ply_dir', default='lrw_subset_meshes/')
+    parser.add_argument('--use_delta', default=False)
     parser.add_argument('--n_components', default='100')
-    parser.add_argument('--shapes_name', default='shape_axis')
+    parser.add_argument('--shapes_name', default='shape_axis_lrw_ff')
 
     args = parser.parse_args()
 
