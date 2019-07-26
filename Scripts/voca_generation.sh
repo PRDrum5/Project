@@ -46,7 +46,11 @@ do
                 :
             else
                 mkdir -p $CLIP_MESH_SAVE_PATH
-                python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH
+                echo $CLIP_MESH_SAVE_PATH
+                sleep 300
+                #python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH
+
+                #python3 recover_blendshape_params.py --recover_from_dir $CLIP_MESH_SAVE_PATH
             fi
         done
     done
