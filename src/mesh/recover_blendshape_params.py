@@ -6,44 +6,6 @@ from mesh import gen_file_list
 from tqdm import tqdm
 import shutil
 
-
-def recover_for_subject(subject, subject_path):
-    """
-    Given a path to a subject directory, 
-    recover the blendshapes for all sentences under that subject path.
-    """
-    sentence_list = sorted(os.listdir(subject_path))
-    for sentence_num, sentence in enumerate(sentence_list):
-        ply_files = os.path.join(subject_path, sentence)
-        params_dir = args.params_dir
-        params_name = args.params_name
-        save_dir = os.path.join(params_dir, 
-                                params_name + '_' + str(n_shapes),
-                                subject)
-        save_path = os.path.join(dir_path, save_dir)
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-
-        file_save_path = os.path.join(save_path, sentence)
-        if os.path.exists(file_save_path + '.npy'):
-            continue
-
-        # instantiate Mesh class with lsit of ply files
-        f_list = gen_file_list(ply_files)
-        mesh = Mesh(f_list)
-
-        # Overwrite default root mesh
-        mesh.root_mesh = root_mesh.root_mesh
-        mesh_vertices = mesh.get_empty_vertices(mesh.num_files)
-        mesh.get_vertex_postions(mesh_vertices, no_progress=True)
-        mesh_vertices = mesh.vertices_to_2d(mesh_vertices)
-        params = np.empty((n_shapes, mesh.num_files))
-        for v in range(mesh.num_files):
-            params[:,v] = mesh.recover_blendshape_parameters(
-                mesh_vertices[:,v], shapes)
-
-        np.save(file_save_path, params)
-
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Recover Blendshape Params')
@@ -76,8 +38,8 @@ if __name__ == "__main__":
 
     dir_plys = args.recover_from_dir
     dir_plys_path = os.path.join(dir_path, dir_plys)
-    file_name = dir_plys.split('/')[-1]
-    save_dir_name = dir_plys.split('/')[-3]
+    file_name = dir_plys.split('/')[-2]
+    save_dir_name = dir_plys.split('/')[-4]
 
     params_dir = args.params_dir
     params_name = args.params_name
@@ -107,6 +69,8 @@ if __name__ == "__main__":
 
         np.save(file_save_path, params)
         #shutil.rmtree(dir_plys_path)
+    else:
+        print("File exists")
 
 
 
