@@ -16,6 +16,7 @@ do
     WORDNAME=${ADDR[-1]}
     IFS=' '
     echo $WORDNAME
+    echo ''
 
     WORD_SAVE_PATH="$OUTPUT_PATH/$WORDNAME"
 
@@ -45,14 +46,25 @@ do
             # The path to where the meshes will be saved
             CLIP_MESH_SAVE_PATH="$MODE_SAVE_PATH/$AUDIO_NAME"
 
-            echo $CLIP_MESH_SAVE_PATH
-            echo $AUDIO
-            #mkdir -p $CLIP_MESH_SAVE_PATH
-            #python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH \
-            #&& python3 recover_blendshape_params.py --recover_from_dir $CLIP_MESH_SAVE_PATH \
-            #&&rm -r $CLIP_MESH_SAVE_PATH \
-            #%% rm -r $AUDIO
-            sleep 300
+            mkdir -p $CLIP_MESH_SAVE_PATH
+            python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH \
+            && python3 ~/Project/src/mesh/recover_blendshape_params.py --recover_from_dir $CLIP_MESH_SAVE_PATH
+            && rm -r $CLIP_MESH_SAVE_PATH \
+            && rm -r $AUDIO
+            echo "$AUDIO_NAME created"
+            echo "$CLIP_MESH_SAVE_PATH deleted"
+            echo "$AUDIO deleted"
         done
+
+        if [ -z "$(ls -A $MODE)" ];
+        then
+            rm -r $MODE
+            echo "$MODE deleted"
+        fi
     done
+    if [ -z "$(ls -A $WORD)" ];
+    then
+        rm -r $WORD
+        echo "$WORD deleted"
+    fi
 done
