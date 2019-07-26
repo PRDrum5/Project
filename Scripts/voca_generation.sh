@@ -7,6 +7,7 @@ AUDIO_PATH="$DIR/audio/lrw_audio_subset"
 
 OUTPUT_PATH="$DIR/lrw_subset_meshes"
 
+# For each word in the dir of audio files
 for WORD in $AUDIO_PATH/*
 do
     # Get word name
@@ -18,6 +19,7 @@ do
 
     WORD_SAVE_PATH="$OUTPUT_PATH/$WORDNAME"
 
+    # Each word dir can contain 'train' 'test' or 'validation'
     for MODE in $AUDIO_PATH/$WORDNAME/*
     do
         # Get mode name
@@ -28,6 +30,7 @@ do
         
         MODE_SAVE_PATH="$WORD_SAVE_PATH/$MODE_NAME"
 
+        # for each sample of the given word
         for AUDIO in $MODE/*.wav
         do
             # Get audio clip name
@@ -39,19 +42,17 @@ do
             AUDIO_NAME="${AUDIO_NAME%.*}"
             AUDIO_NAME="${AUDIO_NAME##*/}"
 
+            # The path to where the meshes will be saved
             CLIP_MESH_SAVE_PATH="$MODE_SAVE_PATH/$AUDIO_NAME"
 
-            if test -d $CLIP_MESH_SAVE_PATH;
-            then
-                :
-            else
-                mkdir -p $CLIP_MESH_SAVE_PATH
-                echo $CLIP_MESH_SAVE_PATH
-                sleep 300
-                #python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH
-
-                #python3 recover_blendshape_params.py --recover_from_dir $CLIP_MESH_SAVE_PATH
-            fi
+            echo $CLIP_MESH_SAVE_PATH
+            echo $AUDIO
+            #mkdir -p $CLIP_MESH_SAVE_PATH
+            #python run_voca.py --audio_fname $AUDIO --out_path $CLIP_MESH_SAVE_PATH \
+            #&& python3 recover_blendshape_params.py --recover_from_dir $CLIP_MESH_SAVE_PATH \
+            #&&rm -r $CLIP_MESH_SAVE_PATH \
+            #%% rm -r $AUDIO
+            sleep 300
         done
     done
 done
