@@ -445,3 +445,59 @@ class MFCC_Shape_Critic(BaseModel):
         x = self.lrelu8(self.conv8(x))
         x = self.lin9(self.conv9(x))
         return x
+
+class Lrw_Shape_Classifier(BaseModel):
+    def __init__(self):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=2)
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=2)
+        self.relu2 = nn.ReLU()
+
+        self.conv3 = nn.Conv2d(32, 64, kernel_size=2)
+        self.relu3 = nn.ReLU()
+
+        self.conv4 = nn.Conv1d(64, 128, kernel_size=6)
+        self.relu4 = nn.ReLU()
+
+        self.conv5 = nn.Conv1d(128, 256, kernel_size=6)
+        self.relu5 = nn.ReLU()
+
+        self.conv6 = nn.Conv1d(256, 256, kernel_size=6)
+        self.relu6 = nn.ReLU()
+
+        self.conv7 = nn.Conv1d(256, 256, kernel_size=6)
+        self.relu7 = nn.ReLU()
+
+        self.conv8 = nn.Conv1d(256, 256, kernel_size=6)
+        self.relu8 = nn.ReLU()
+
+        self.conv9 = nn.Conv1d(256, 256, kernel_size=6)
+        self.relu9 = nn.ReLU()
+
+        self.linear10 = nn.Linear(2560, 500)
+        self.softmax10 = nn.functional.softmax
+
+
+    
+    def forward(self, shapes):
+        batch_size = shapes.size(0)
+
+        x = self.relu1(self.conv1(shapes))
+        x = self.relu2(self.conv2(x))
+        x = self.relu3(self.conv3(x))
+
+        x = x.squeeze(2)
+        x = self.relu4(self.conv4(x))
+        x = self.relu5(self.conv5(x))
+        x = self.relu6(self.conv6(x))
+        x = self.relu7(self.conv7(x))
+        x = self.relu8(self.conv8(x))
+        x = self.relu9(self.conv9(x))
+
+        x = x.view(batch_size, -1)
+        x = self.softmax10(self.linear10(x), dim=1)
+
+        return x

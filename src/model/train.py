@@ -1,7 +1,7 @@
 import torch
 from model import losses, models
 from data_loader import data_loaders
-from trainer import MFCCShapeTrainer, CGANTrainer
+from trainer import MFCCShapeTrainer, LrwShapeTrainer
 from get_config import GetConfig
 from utils import fix_seed
 import torch.optim as optim
@@ -39,9 +39,32 @@ def gan_main(config):
                          gen_model, gen_loss, gen_optimizer)
     trainer.train()
 
+def classify_main(config):
+    logger = config.get_logger('train')
+
+    train_loader = config.get('data_loader', data_loaders)
+    val_loader = train_loader.val_split()
+
+    model = config.get('arch', models)
+
+    logger.info(model)
+
+    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
+
+    optimizer = config.get('optimizer', optim, trainable_params)
+
+    loss = config.get_func('loss_func', losses)
+
+    #TODO add Trainer selection to config
+    trainer = LrwShapeTrainer(config, train_loader, model,
+                              loss, optimizer, val_loader)
+    trainer.train()
+
 if __name__ == "__main__":
     fix_seed(0)
 
-    config = GetConfig('./config/mfcc_shape_gan/config.json')
+    #config = GetConfig('./config/mfcc_shape_gan/config.json')
+    #gan_main(config)
 
-    gan_main(config)
+    config = GetConfig('./config/lrw_shape_classifier/config.json')
+    classify_main(config)

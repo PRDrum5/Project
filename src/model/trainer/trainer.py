@@ -1,6 +1,6 @@
 import torch
 import numpy as np
-from base import BaseMultiTrainer
+from base import BaseMultiTrainer, BaseTrainer
 from logger import TensorboardWriter
 from torchvision.utils import save_image
 from model.losses import gradient_penalty
@@ -345,7 +345,7 @@ class MFCCShapeTrainer(BaseMultiTrainer):
 
         self.data_loader = data_loader
         self.vis_loader = vis_loader
-        self.batch_size = data_loader.batch_size
+        self.batch_size = self.data_loader.batch_size
         self.vis_batch_size = vis_loader.batch_size
         self.len_epoch = len(self.data_loader)
 
@@ -466,3 +466,115 @@ class MFCCShapeTrainer(BaseMultiTrainer):
         sample_name = 'generated_sample_epoch_%03d' % epoch
         save_dir = self.config.samples_dir / sample_name
         np.save(save_dir, gen_sample)
+
+class LrwShapeTrainer(BaseTrainer):
+    def __init__(self, config, train_loader,
+                 model, loss_func, optimizer, val_loader=None):
+    
+        self.train_loader = train_loader
+        self.val_loader = val_loader
+
+        self.batch_size = self.train_loader.batch_size
+
+        self.len_train_epoch = len(self.train_loader)
+
+        if val_loader:
+            self.val_step = True
+            self.len_val_epoch = len(self.val_loader)
+        else:
+            self.val_step = False
+
+        self.log_step = int(np.sqrt(self.batch_size))
+
+        super().__init__(config, model, loss_func, optimizer)
+    
+    def train(self):
+        for epoch in range(1, self.epochs+1):
+            log = self._training_epoch(epoch)
+
+            print(log['train_loss'])
+            print(log['val_loss'])
+
+            if epoch % self.save_period == 0:
+                self._save_checkpoint(epoch)
+    
+    def _training_epoch(self, epoch):
+        self.model.train()
+
+        total_loss = 0
+        correct = 0
+
+        for batch_idx, sample in enumerate(self.train_loader):
+            step = (epoch-1) * self.len_train_epoch + batch_idx
+
+            label = sample['label']
+            label = label.to(self.device)
+
+            shape_params = sample['shape_params']
+            shape_params = shape_params.to(self.device)
+
+            self.optimizer.zero_grad()
+            output = self.model(shape_params)
+            preds = output.argmax(dim=1, keepdim=True)
+            correct += preds.eq(label.view_as(preds)).sum().item()
+            loss = self.loss_func(output, label)
+            loss.backward()
+            self.optimizer.step()
+
+            self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
+            self.writer.add_scalar('loss', loss)
+
+            acc = correct / ((batch_idx+1) * self.batch_size)
+            #self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
+            self.writer.add_scalar('accuracy', loss)
+
+            total_loss += loss
+
+            if batch_idx % self.log_step == 0:
+                self.logger.info(
+                    'Train Epoch: {} '
+                    'Batch: {} '
+                    'Loss: {:.6f} '
+                    'Accuracy: {:.6f}'.format(epoch, batch_idx, loss, acc))
+
+        train_loss = total_loss / self.len_train_epoch
+        train_accuracy = correct / self.len_train_epoch
+        print("Train Accuracy: {:.4f}".format(train_accuracy))
+
+        if self.val_step:
+            val_loss = self._val_epoch(epoch)
+        
+        return {'train_loss': train_loss, 'val_loss': val_loss}
+
+    def _val_epoch(self, epoch):
+        total_loss = 0
+        correct = 0
+
+        with torch.no_grad():
+            for batch_idx, sample in enumerate(self.train_loader):
+                step = (epoch-1) * self.len_train_epoch + batch_idx
+
+                label = sample['label']
+                label = label.to(self.device)
+
+                shape_params = sample['shape_params']
+                shape_params = shape_params.to(self.device)
+
+                output = self.model(shape_params)
+                preds = output.argmax(dim=1, keepdim=True)
+                correct += preds.eq(label.view_as(preds)).sum().item()
+                loss = self.loss_func(output, label)
+                total_loss += loss
+
+                acc = correct / ((batch_idx+1) * self.batch_size)
+
+                if batch_idx % self.log_step == 0:
+                    print('Val Epoch: {} Batch: {} '
+                          'Loss: {:.6f} Accuracy: {:.6f}'.format(
+                              epoch, batch_idx, loss, acc))
+
+
+        val_loss = total_loss / self.len_val_epoch
+        val_accuracy = correct / self.len_val_epoch
+        print("Validation Accuracy: {:.4f}".format(val_accuracy))
+        return val_loss

@@ -1,4 +1,5 @@
 import torch
+import torch.tensor as tensor
 from torch.utils.data import Dataset
 import os
 import math
@@ -7,6 +8,89 @@ from scipy.io import wavfile
 import librosa
 import numpy as np
 from tqdm import tqdm
+
+
+class LrwBlendshapesDataset(Dataset):
+    """
+    Blendshape Parameters for audio clips from the BBC LRW words dataset,
+    processed by the VOCA model.
+
+    500 words (labels), 43 frames for 1 second, 4 shape parameters per frame.
+    """
+    def __init__(self, blendshapes_path, transform=None):
+        self.blendshapes_path = blendshapes_path
+        self.blendshapes_list = sorted(os.listdir(self.blendshapes_path))
+        self.transform = transform
+
+        self.stats = {'shape_min': np.inf,
+                      'shape_max': -np.inf}
+
+        self._collect_stats()
+
+    def __len__(self):
+        return len(self.blendshapes_list)
+    
+    def __getitem__(self, idx):
+        """
+        idx references the sample number
+        """
+        shape_params, label = self._get_sample(idx)
+
+        sample = {'shape_params': shape_params.astype(np.float32),
+                  'label': label.astype(np.int64)}
+
+        sample = self._normalize(sample)
+
+        if self.transform:
+            sample = self.transform(sample)
+        
+        return sample
+    
+    def _get_sample(self, idx):
+        """
+        fetches the relevant sample
+        """
+        sample_file = self.blendshapes_list[idx]
+        sample_name = sample_file.split('.')[0]
+        word_label, word_id = sample_name.split('_')
+        word_label = np.array(int(word_label))
+        shape_params = np.load(os.path.join(self.blendshapes_path, sample_file))
+        return shape_params, word_label
+
+
+    def _collect_stats(self):
+        """
+        Finds max and min values for blendshape params for dataset.
+        """
+        print("Collecting dataset statistics...\n")
+        for idx in tqdm(range(self.__len__())):
+            shape_param, _label = self._get_sample(idx)
+
+            idx_shape_min = shape_param.min()
+            idx_shape_max = shape_param.max()
+
+            if idx_shape_min < self.stats['shape_min']: 
+                self.stats['shape_min'] = idx_shape_min
+            if idx_shape_max > self.stats['shape_max']: 
+                self.stats['shape_max'] = idx_shape_max
+
+    def _normalize(self, sample):
+        """
+        normalizes blendshape parameters based on max and
+        min values of the dataset.
+        """
+        label = sample['label']
+        shape_params = sample['shape_params']
+
+        norm = lambda array, min_v, max_v: (array - min_v) / (max_v - min_v)
+
+        shape_params = norm(shape_params, 
+                           self.stats['shape_min'], 
+                           self.stats['shape_max'])
+
+        return {'shape_params': shape_params,
+                'label': label}
+    
 
 class WavBlendshapesDataset(Dataset):
     """
@@ -301,16 +385,33 @@ class SpecShapesToTensor(object):
 
         return {'mfcc': mfcc, 'shape_param': shape_param}
 
+class LrwShapesToTensor(object):
+    """
+    Transforms blendshape params to Tensors
+    """
+    def __call__(self, sample):
+        label = sample['label']
+        shape_params = sample['shape_params']
+
+        n_labels = 500
+        label = torch.from_numpy(label)
+        #label = torch.nn.functional.one_hot(label, n_labels)
+
+        shape_params = torch.from_numpy(shape_params).unsqueeze(0)
+
+        return {'label': label, 'shape_params': shape_params}
+
 if __name__ == "__main__":
-    data_path = '/home/peter/Documents/Uni/Project/src/model/data'
-    wav_dir = 'wavs'
-    shape_dir = 'blendshapes'
-    wav_path = os.path.join(data_path, wav_dir)
+    data_path = '/home/peter/Documents/Uni/Project/src/mesh/shape_params/'
+    shape_dir = 'shape_params_4'
     shape_path = os.path.join(data_path, shape_dir)
 
-    dataset = WavBlendshapesDataset(wav_path, shape_path)
+    dataset = LrwBlendshapesDataset(shape_path)
 
     for idx in range(len(dataset)):
-        sample = dataset[idx]
-        print(idx, sample['mfcc'].shape, sample['shape_param'].shape)
+        sample = dataset.__getitem__(idx)
+        print(idx, sample['label'], sample['shape_params'].shape)
+        print(sample['label'])
+        print(sample['shape_params'])
+        1/0
         

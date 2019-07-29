@@ -1,6 +1,6 @@
 import numpy as np
 from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SequentialSampler
+from torch.utils.data.sampler import SequentialSampler, RandomSampler
 
 class BaseDataLoader(DataLoader):
     def __init__(self, dataset, batch_size, shuffle, 
@@ -29,14 +29,13 @@ class BaseDataLoader(DataLoader):
 
         all_idx = np.arange(self.n_samples)
         if self.shuffle:
-            np.random.seed(0)
             np.random.shuffle(all_idx)
         
         val_idx = all_idx[0:self.n_val]
         train_idx = np.delete(all_idx, np.arange(0, self.n_val))
 
-        train_sampler = SequentialSampler(train_idx)
-        val_sampler = SequentialSampler(val_idx)
+        train_sampler = RandomSampler(train_idx)
+        val_sampler = RandomSampler(val_idx)
 
         self.shuffle = False
 

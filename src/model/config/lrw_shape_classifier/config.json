@@ -1,0 +1,39 @@
+{
+    "experiment_name": "LRW_SHAPE_CLASSIFER",
+    "n_gpu": 1,
+    "resume": true,
+
+    "arch": {
+        "spec": "Lrw_Shape_Classifier",
+        "args": {}
+    },
+    "optimizer": {
+        "spec": "Adam",
+        "args": {
+            "lr": 0.1,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss_func": {
+        "spec": "nll_loss"
+    },
+    "data_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params/",
+            "batch_size": 128,
+            "shuffle": true,
+            "train_split": 0.9,
+            "n_workers": 0,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "trainer": {
+        "epochs": 5,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "level": 2,
+        "tensorboard": true
+    }
+}

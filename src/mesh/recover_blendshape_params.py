@@ -4,7 +4,6 @@ import argparse
 from mesh import Mesh
 from mesh import gen_file_list
 from tqdm import tqdm
-import shutil
 
 if __name__ == "__main__":
 
@@ -16,7 +15,7 @@ if __name__ == "__main__":
     parser.add_argument('--params_name', default='shape_params')
     parser.add_argument('--root_mesh_dir', 
                         default='root_meshes/voca_root/')
-    parser.add_argument('--recover_from_dir', default='lrw_subset_meshes/ABOUT/train/ABOUT_00001')
+    parser.add_argument('--recover_from_dir', default='lrw_subset_meshes/')
 
     args = parser.parse_args()
 
@@ -36,6 +35,7 @@ if __name__ == "__main__":
     root_mesh_list = gen_file_list(root_mesh_path, ext='.ply')
     root_mesh = Mesh(root_mesh_list)
 
+    """
     dir_plys = args.recover_from_dir
     dir_plys_path = os.path.join(dir_path, dir_plys)
     file_name = dir_plys.split('/')[-2]
@@ -68,20 +68,18 @@ if __name__ == "__main__":
                 mesh_vertices[:,v], shapes)
 
         np.save(file_save_path, params)
-        #shutil.rmtree(dir_plys_path)
     else:
         print("File exists")
-
-
-
-
     """
+
+
+
     dir_plys = args.recover_from_dir
     all_subjects_path = os.path.join(dir_path, dir_plys)
     subjects_list = sorted(os.listdir(all_subjects_path))
 
     for subject in tqdm(subjects_list):
-        subject_path = os.path.join(all_subjects_path, subject)
+        subject_path = os.path.join(all_subjects_path, subject, 'train')
         sentence_list = sorted(os.listdir(subject_path))
         for sentence_num, sentence in enumerate(sentence_list):
             ply_files = os.path.join(subject_path, sentence)
@@ -113,4 +111,3 @@ if __name__ == "__main__":
                     mesh_vertices[:,v], shapes)
 
             np.save(file_save_path, params)
-    """
