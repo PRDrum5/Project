@@ -492,9 +492,6 @@ class LrwShapeTrainer(BaseTrainer):
         for epoch in range(1, self.epochs+1):
             log = self._training_epoch(epoch)
 
-            print(log['train_loss'])
-            print(log['val_loss'])
-
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
     
@@ -503,6 +500,7 @@ class LrwShapeTrainer(BaseTrainer):
 
         total_loss = 0
         correct = 0
+        val_loss = 0
 
         for batch_idx, sample in enumerate(self.train_loader):
             step = (epoch-1) * self.len_train_epoch + batch_idx
@@ -538,8 +536,6 @@ class LrwShapeTrainer(BaseTrainer):
                     'Accuracy: {:.6f}'.format(epoch, batch_idx, loss, acc))
 
         train_loss = total_loss / self.len_train_epoch
-        train_accuracy = correct / self.len_train_epoch
-        print("Train Accuracy: {:.4f}".format(train_accuracy))
 
         if self.val_step:
             val_loss = self._val_epoch(epoch)
@@ -573,8 +569,5 @@ class LrwShapeTrainer(BaseTrainer):
                           'Loss: {:.6f} Accuracy: {:.6f}'.format(
                               epoch, batch_idx, loss, acc))
 
-
         val_loss = total_loss / self.len_val_epoch
-        val_accuracy = correct / self.len_val_epoch
-        print("Validation Accuracy: {:.4f}".format(val_accuracy))
         return val_loss

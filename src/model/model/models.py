@@ -477,7 +477,7 @@ class Lrw_Shape_Classifier(BaseModel):
         self.conv9 = nn.Conv1d(256, 256, kernel_size=6)
         self.relu9 = nn.ReLU()
 
-        self.linear10 = nn.Linear(2560, 500)
+        self.linear10 = nn.Linear(2560, 2)
         self.softmax10 = nn.functional.softmax
 
 
