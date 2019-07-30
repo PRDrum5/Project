@@ -237,8 +237,8 @@ The use of gradient penalty is proposed in \cite{Gulrajani2017} in order to sati
 
 \begin{equation} \label{eq:wgan_gp}
     \min_{G} \max_{D \in \mathcal{D}} W(\Pd{r}, \Pd{g}) 
-        = \E{\bm{x} \sim \Pd{r}} [D(\bm{x})]
-        - \E{\bm{\tilde{x}} \sim \Pd{g}} [D(\tilde{{\bm{x}}})]
+        = \E{\bm{\tilde{x}} \sim \Pd{g}} [D(\tilde{{\bm{x}}})]
+        - \E{\bm{x} \sim \Pd{r}} [D(\bm{x})]
         + \lambda \E{\bm{\hat{x}} \sim \Pd{\bm{\hat{x}}}} 
             [(\| \nabla_{\bm{\hat{x}}} D(\bm{\hat{x}}) \| - 1)^2]
 \end{equation}
