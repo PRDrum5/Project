@@ -31,15 +31,20 @@ class BaseDataLoader(DataLoader):
         if self.shuffle:
             np.random.shuffle(all_idx)
         
-        val_idx = all_idx[0:self.n_val]
-        train_idx = np.delete(all_idx, np.arange(0, self.n_val))
+        if self.n_val > 0:
+            val_idx = all_idx[0:self.n_val]
+            train_idx = np.delete(all_idx, np.arange(0, self.n_val))
 
-        train_sampler = RandomSampler(train_idx)
-        val_sampler = RandomSampler(val_idx)
+            train_sampler = RandomSampler(train_idx)
+            val_sampler = RandomSampler(val_idx)
+            samplers = (train_sampler, val_sampler)
+        else:
+            sampler = RandomSampler(all_idx)
+            samplers = (sampler, None)
 
         self.shuffle = False
 
-        return train_sampler, val_sampler
+        return samplers
     
     def val_split(self):
         return DataLoader(dataset=self.dataset, batch_size=self.batch_size, 

@@ -5,12 +5,12 @@
     "data_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio/",
+            "wav_path": "data/lrw_audio_micro/",
             "blendshapes_path": "data/lrw_shape_params/",
-            "batch_size": 16,
+            "batch_size": 128,
             "shuffle": true,
-            "train_split": 0.999,
-            "n_workers": 0,
+            "train_split": 1.0,
+            "n_workers": 6,
             "drop_last": true,
             "tsfm": ["SpecShapesToTensor"]
         }
@@ -18,14 +18,14 @@
     "vis_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio/",
+            "wav_path": "data/lrw_audio_micro/",
             "blendshapes_path": "data/lrw_shape_params/",
-            "batch_size": 128,
+            "batch_size": 1,
             "shuffle": false,
             "train_split": 1.00,
-            "n_workers": 1,
+            "n_workers": 0,
             "drop_last": false,
-            "tsfm": ["MergeFrameToMfccDuration", "OneSecondMfccCrop", "SpecShapesToTensor"]
+            "tsfm": ["SpecShapesToTensor"]
         }
     },
     "trainer": {

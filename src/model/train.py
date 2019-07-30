@@ -12,8 +12,8 @@ def gan_main(config):
     logger = config.get_logger('train')
 
     data_loader = config.get('data_loader', data_loaders)
-    vis_loader = data_loader.val_split()
-    #vis_loader = config.get('vis_loader', data_loaders)
+    #vis_loader = data_loader.val_split()
+    vis_loader = config.get('vis_loader', data_loaders)
 
     disc_model = config.get('discriminator,arch', models)
 
