@@ -31,3 +31,6 @@ src/mesh/all_aligned_backup/
 src/mesh/unaligned/
 src/model/data/
 src/model/saved/
+*.png
+*.npy
+*.txt

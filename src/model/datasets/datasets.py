@@ -8,6 +8,7 @@ from scipy.io import wavfile
 import librosa
 import numpy as np
 from tqdm import tqdm
+import pickle
 
 
 class LrwBlendshapesDataset(Dataset):
@@ -91,7 +92,6 @@ class LrwBlendshapesDataset(Dataset):
         return {'shape_params': shape_params,
                 'label': label}
     
-
 class WavBlendshapesDataset(Dataset):
     """
     Raw Wav files (variable length)
@@ -100,7 +100,7 @@ class WavBlendshapesDataset(Dataset):
     This is currently using all blendshape parameters
     """
 
-    def __init__(self, wav_path, blendshapes_path, n_shapes=10, transform=None):
+    def __init__(self, wav_path, blendshapes_path, n_shapes=4, transform=None):
         self.wav_path = wav_path
         self.blendshapes_path = blendshapes_path
         self.n_shapes = n_shapes
@@ -136,6 +136,10 @@ class WavBlendshapesDataset(Dataset):
         shape_name = item_name + '.npy'
 
         sr, audio_data = wavfile.read(os.path.join(self.wav_path, wav_name))
+
+        if len(audio_data.shape) > 1:
+            audio_data = np.delete(audio_data, 1, 1).reshape(-1,)
+
         audio_data = audio_data / audio_data.max() 
         mfcc = self._mfcc(audio_data, sr)
 
@@ -149,24 +153,31 @@ class WavBlendshapesDataset(Dataset):
         """
         Finds max and min values for blendshape params and mfcc for dataset.
         """
-        print("Collecting dataset statistics...\n")
-        for idx in tqdm(range(self.__len__())):
-            mfcc, shape_param = self._get_data_pair(idx)
+        try:
+            with open('data/lrw_audio_stats.pkl', 'rb') as f:
+                self.stats = pickle.load(f)
+        except:
+            print("Collecting dataset statistics...\n")
+            for idx in tqdm(range(self.__len__())):
+                mfcc, shape_param = self._get_data_pair(idx)
 
-            idx_mfcc_min = mfcc.min()
-            idx_mfcc_max = mfcc.max()
-            idx_shape_min = shape_param.min()
-            idx_shape_max = shape_param.max()
+                idx_mfcc_min = mfcc.min()
+                idx_mfcc_max = mfcc.max()
+                idx_shape_min = shape_param.min()
+                idx_shape_max = shape_param.max()
 
-            if idx_mfcc_min < self.stats['mfcc_min']: 
-                self.stats['mfcc_min'] = idx_mfcc_min
-            if idx_mfcc_max > self.stats['mfcc_max']: 
-                self.stats['mfcc_max'] = idx_mfcc_max
-            if idx_shape_min < self.stats['shape_min']: 
-                self.stats['shape_min'] = idx_shape_min
-            if idx_shape_max > self.stats['shape_max']: 
-                self.stats['shape_max'] = idx_shape_max
-    
+                if idx_mfcc_min < self.stats['mfcc_min']: 
+                    self.stats['mfcc_min'] = idx_mfcc_min
+                if idx_mfcc_max > self.stats['mfcc_max']: 
+                    self.stats['mfcc_max'] = idx_mfcc_max
+                if idx_shape_min < self.stats['shape_min']: 
+                    self.stats['shape_min'] = idx_shape_min
+                if idx_shape_max > self.stats['shape_max']: 
+                    self.stats['shape_max'] = idx_shape_max
+
+            with open('data/lrw_audio_stats.pkl', 'wb') as f:
+                pickle.dump(self.stats, f, pickle.HIGHEST_PROTOCOL)
+
     def _mfcc(self, audio_data, sample_rate, n_mfcc=50):
         """
         Returns the mfcc of an audio signal.

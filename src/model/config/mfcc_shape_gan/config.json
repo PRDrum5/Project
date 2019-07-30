@@ -5,31 +5,31 @@
     "data_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/wavs/",
-            "blendshapes_path": "data/2_blendshapes/",
-            "batch_size": 32,
-            "shuffle": false,
-            "train_split": 1.00,
-            "n_workers": 32,
+            "wav_path": "data/lrw_audio/",
+            "blendshapes_path": "data/lrw_shape_params/",
+            "batch_size": 16,
+            "shuffle": true,
+            "train_split": 0.999,
+            "n_workers": 0,
             "drop_last": true,
-            "tsfm": ["MergeFrameToMfccDuration", "RandomOneSecondMfccCrop", "SpecShapesToTensor"]
+            "tsfm": ["SpecShapesToTensor"]
         }
     },
     "vis_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/wavs",
-            "blendshapes_path": "data/2_blendshapes/",
-            "batch_size": 1,
+            "wav_path": "data/lrw_audio/",
+            "blendshapes_path": "data/lrw_shape_params/",
+            "batch_size": 128,
             "shuffle": false,
             "train_split": 1.00,
-            "n_workers": 0,
+            "n_workers": 1,
             "drop_last": false,
             "tsfm": ["MergeFrameToMfccDuration", "OneSecondMfccCrop", "SpecShapesToTensor"]
         }
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 2,
         "disc_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
@@ -41,7 +41,7 @@
             "spec": "MFCC_Shape_Gen",
             "args": {
                 "z_dim": 10,
-                "shapes_dim": 2
+                "shapes_dim": 4
             }
         },
         "optimizer": {
@@ -60,7 +60,7 @@
         "arch": {
             "spec": "MFCC_Shape_Critic",
             "args": {
-                "shapes_dim": 2
+                "shapes_dim": 4
             }
         },
         "optimizer": {

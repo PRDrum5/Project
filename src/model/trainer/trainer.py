@@ -453,8 +453,8 @@ class MFCCShapeTrainer(BaseMultiTrainer):
                              'Gen Loss: {}'.format(disc_loss, gen_loss))
 
             self.save_sample(fixed_noise, fixed_mfcc, epoch)
-            #if epoch % self.save_period == 0:
-            #    self._save_checkpoint(epoch)
+            if epoch % self.save_period == 0:
+                self._save_checkpoint(epoch)
     
     def save_sample(self, noise, mfcc, epoch):
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')

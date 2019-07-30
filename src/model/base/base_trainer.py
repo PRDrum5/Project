@@ -53,6 +53,29 @@ class BaseMultiTrainer(BaseDiscriminator, BaseGenerator):
             self.disc_model = torch.nn.DataParallel(self.disc_model, 
                                                     device_ids=device_ids)
 
+    def _save_checkpoint(self, epoch):
+        disc_arch = type(self.disc_model).__name__
+        disc_state = {
+            'arch': disc_arch,
+            'epoch': epoch,
+            'state_dict': self.disc_model.state_dict(),
+            'optimizer': self.disc_optimizer.state_dict(),
+            'config': self.config
+        }
+        disc_filename = f'{self.checkpoint_dir}/disc_checkpoint-{epoch}.pth'
+        torch.save(disc_state, disc_filename)
+
+        gen_arch = type(self.gen_model).__name__
+        gen_state = {
+            'arch': gen_arch,
+            'epoch': epoch,
+            'state_dict': self.gen_model.state_dict(),
+            'optimizer': self.gen_optimizer.state_dict(),
+            'config': self.config
+        }
+        gen_filename = f'{self.checkpoint_dir}/gen_checkpoint-{epoch}.pth'
+        torch.save(gen_state, gen_filename)
+
     def _prepare_device(self, n_gpu_use):
         n_gpu = torch.cuda.device_count()
         if n_gpu_use > 0 and n_gpu == 0:
