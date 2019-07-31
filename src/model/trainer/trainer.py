@@ -465,16 +465,17 @@ class MFCCShapeTrainer(BaseMultiTrainer):
     def save_sample(self, noise, mfcc, epoch):
 
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
+        gen_sample = gen_sample.squeeze(2)
         gen_sample = gen_sample.numpy()
         gen_sample = self.vis_loader.dataset.denorm(gen_sample)
 
         gen_sample_batch_size = gen_sample.shape[0]
-        for sample_num in gen_sample_batch_size:
+        for sample_num in range(gen_sample_batch_size):
             gen_sample_num = gen_sample[sample_num,:,:]
 
             sample_name = f'gen_sample_{sample_num:03}'
 
-            save_dir = os.path.join(self.config.samples_dir, epoch)
+            save_dir = os.path.join(self.config.samples_dir, str(epoch))
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
 

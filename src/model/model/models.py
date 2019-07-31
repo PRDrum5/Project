@@ -206,7 +206,7 @@ class MFCC_Shape_Gen(BaseModel):
         self.conv7 = nn.Conv2d(64, 32, kernel_size=(3,3), stride=(1,1))
         self.relu7 = nn.ReLU()
 
-        self.convt8 = nn.ConvTranspose1d(32, 4, kernel_size=3, stride=2)
+        self.convt8 = nn.ConvTranspose2d(32, 4, kernel_size=(1,3), stride=(1,2))
         self.tanh8 = nn.Tanh()
 
 
@@ -219,7 +219,6 @@ class MFCC_Shape_Gen(BaseModel):
         x = self.relu5(self.conv5(x))
         x = self.relu6(self.conv6(x))
         x = self.relu7(self.conv7(x))
-        x = x.squeeze(2)
         x = self.tanh8(self.convt8(x))
         return x
 
@@ -258,7 +257,6 @@ class MFCC_Shape_Critic(BaseModel):
 
     
     def forward(self, shapes, mfcc):
-
         # Expand shapes to same shape as mfcc
         height, width = mfcc.size(2), mfcc.size(3)
         ones = torch.ones(height, width, device=shapes.device)

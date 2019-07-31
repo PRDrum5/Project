@@ -20,7 +20,7 @@
         "args":{
             "wav_path": "data/lrw_audio/",
             "blendshapes_path": "data/lrw_shape_params/",
-            "batch_size": 1,
+            "batch_size": 4,
             "shuffle": false,
             "train_split": 1.00,
             "n_workers": 0,
