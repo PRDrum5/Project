@@ -123,7 +123,7 @@ class Voca_Shape_Critic(BaseModel):
 
         return out
 
-class MFCC_Shape_Gen(BaseModel):
+class old_MFCC_Shape_Gen(BaseModel):
     def __init__(self, z_dim, shapes_dim):
         super().__init__()
 
@@ -177,6 +177,50 @@ class MFCC_Shape_Gen(BaseModel):
         x = self.relu8(self.conv8(x))
         x = self.relu9(self.conv9(x))
         x = self.tanh10(self.conv10(x))
+        return x
+
+class MFCC_Shape_Gen(BaseModel):
+    def __init__(self, z_dim, shapes_dim):
+        super().__init__()
+
+        in_dim = z_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 32, kernel_size=(4,5), stride=(2,1))
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=(4,5), stride=(2,1))
+        self.relu2 = nn.ReLU()
+
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=(3,5), stride=(1,1))
+        self.relu3 = nn.ReLU()
+
+        self.conv4 = nn.Conv2d(128, 128, kernel_size=(3,4), stride=(1,1))
+        self.relu4 = nn.ReLU()
+
+        self.conv5 = nn.Conv2d(128, 128, kernel_size=(3,4), stride=(1,1))
+        self.relu5 = nn.ReLU()
+
+        self.conv6 = nn.Conv2d(128, 64, kernel_size=(3,3), stride=(1,1))
+        self.relu6 = nn.ReLU()
+
+        self.conv7 = nn.Conv2d(64, 32, kernel_size=(3,3), stride=(1,1))
+        self.relu7 = nn.ReLU()
+
+        self.convt8 = nn.ConvTranspose1d(32, 4, kernel_size=3, stride=2)
+        self.tanh8 = nn.Tanh()
+
+
+    def forward(self, noise, mfcc):
+        x = torch.cat((noise, mfcc), dim=1)
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.relu3(self.conv3(x))
+        x = self.relu4(self.conv4(x))
+        x = self.relu5(self.conv5(x))
+        x = self.relu6(self.conv6(x))
+        x = self.relu7(self.conv7(x))
+        x = x.squeeze(2)
+        x = self.tanh8(self.convt8(x))
         return x
 
 class MFCC_Shape_Critic(BaseModel):

@@ -1,3 +1,4 @@
+import os
 import torch
 import numpy as np
 from base import BaseMultiTrainer, BaseTrainer
@@ -462,15 +463,23 @@ class MFCCShapeTrainer(BaseMultiTrainer):
                 self._save_checkpoint(epoch)
     
     def save_sample(self, noise, mfcc, epoch):
+
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
-        gen_sample = gen_sample.squeeze(0).squeeze(0)
-        gen_sample = gen_sample.squeeze(1)
         gen_sample = gen_sample.numpy()
         gen_sample = self.vis_loader.dataset.denorm(gen_sample)
-        
-        sample_name = 'generated_sample_epoch_%03d' % epoch
-        save_dir = self.config.samples_dir / sample_name
-        np.save(save_dir, gen_sample)
+
+        gen_sample_batch_size = gen_sample.shape[0]
+        for sample_num in gen_sample_batch_size:
+            gen_sample_num = gen_sample[sample_num,:,:]
+
+            sample_name = f'gen_sample_{sample_num:03}'
+
+            save_dir = os.path.join(self.config.samples_dir, epoch)
+            if not os.path.exists(save_dir):
+                os.mkdir(save_dir)
+
+            save_path = os.path.join(save_dir, sample_name)
+            np.save(save_path, gen_sample_num)
 
 class LrwShapeTrainer(BaseTrainer):
     def __init__(self, config, train_loader,
