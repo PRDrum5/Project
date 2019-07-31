@@ -207,7 +207,7 @@ class MFCC_Shape_Gen(BaseModel):
         self.relu7 = nn.ReLU()
 
         self.convt8 = nn.ConvTranspose2d(32, 4, kernel_size=(1,3), stride=(1,2))
-        self.tanh8 = nn.Tanh()
+        self.clip8 = nn.Handtanh(min_val=0, max_val=1)
 
 
     def forward(self, noise, mfcc):
@@ -219,7 +219,7 @@ class MFCC_Shape_Gen(BaseModel):
         x = self.relu5(self.conv5(x))
         x = self.relu6(self.conv6(x))
         x = self.relu7(self.conv7(x))
-        x = self.tanh8(self.convt8(x))
+        x = self.clip8(self.convt8(x))
         return x
 
 class MFCC_Shape_Critic(BaseModel):
