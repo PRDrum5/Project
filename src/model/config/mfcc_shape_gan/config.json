@@ -5,7 +5,7 @@
     "data_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio_micro/",
+            "wav_path": "data/lrw_audio/",
             "blendshapes_path": "data/lrw_shape_params/",
             "batch_size": 128,
             "shuffle": true,
@@ -18,7 +18,7 @@
     "vis_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio_micro/",
+            "wav_path": "data/lrw_audio/",
             "blendshapes_path": "data/lrw_shape_params/",
             "batch_size": 1,
             "shuffle": false,
@@ -29,7 +29,7 @@
         }
     },
     "trainer": {
-        "epochs": 2,
+        "epochs": 20,
         "disc_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
@@ -40,16 +40,14 @@
         "arch": {
             "spec": "MFCC_Shape_Gen",
             "args": {
-                "z_dim": 10,
+                "z_dim": 2,
                 "shapes_dim": 4
             }
         },
         "optimizer": {
-            "spec": "Adam",
+            "spec": "RMSprop",
             "args": {
-                "lr": 0.001,
-                "weight_decay": 0,
-                "amsgrad": true
+                "lr": 0.00005
             }
         },
         "loss_func": {
@@ -64,16 +62,14 @@
             }
         },
         "optimizer": {
-            "spec": "Adam",
+            "spec": "RMSprop",
             "args": {
-                "lr": 0.001,
-                "weight_decay": 0,
-                "amsgrad": true
+                "lr": 0.00005
             }
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
-            "gradient_penalty": 10
+            "gradient_penalty": 5
         }
     }
 }
