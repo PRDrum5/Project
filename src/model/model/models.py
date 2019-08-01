@@ -281,24 +281,6 @@ class MFCC_Shape_Critic(BaseModel):
         self.conv4 = nn.Conv2d(256, 256, kernel_size=(3,1), stride=(2,1))
         self.lrelu4 = nn.LeakyReLU(0.2)
 
-class MFCC_Shape_Critic(BaseModel):
-    def __init__(self, shapes_dim):
-        super().__init__()
-
-        in_dim = shapes_dim + 1
-
-        self.conv1 = nn.Conv2d(in_dim, 64, kernel_size=(4,1), stride=(2,1))
-        self.lrelu1 = nn.LeakyReLU(0.2)
-
-        self.conv2 = nn.Conv2d(64, 128, kernel_size=(4,1), stride=(2,1))
-        self.lrelu2 = nn.LeakyReLU(0.2)
-
-        self.conv3 = nn.Conv2d(128, 256, kernel_size=(3,1), stride=(2,1))
-        self.lrelu3 = nn.LeakyReLU(0.2)
-
-        self.conv4 = nn.Conv2d(256, 256, kernel_size=(3,1), stride=(2,1))
-        self.lrelu4 = nn.LeakyReLU(0.2)
-
         self.conv5 = nn.Conv2d(256, 256, kernel_size=(2,1))
         self.lrelu5 = nn.LeakyReLU(0.2)
 
@@ -312,7 +294,7 @@ class MFCC_Shape_Critic(BaseModel):
         self.lrelu8 = nn.LeakyReLU(0.2)
 
         self.conv9 = nn.Conv1d(256, 256, kernel_size=4)
-        self.lin9 = nn.Linear(1, 1)
+        self.tanh9 = nn.Tanh()
 
     
     def forward(self, shapes, mfcc):
@@ -331,7 +313,7 @@ class MFCC_Shape_Critic(BaseModel):
         x = self.lrelu6(self.conv6(x))
         x = self.lrelu7(self.conv7(x))
         x = self.lrelu8(self.conv8(x))
-        x = self.lin9(self.conv9(x))
+        x = self.tanh9(self.conv9(x))
         return x
 
 class Lrw_Shape_Classifier(BaseModel):
