@@ -10,7 +10,7 @@
             "batch_size": 128,
             "shuffle": true,
             "train_split": 1.0,
-            "n_workers": 6,
+            "n_workers": 0,
             "drop_last": true,
             "tsfm": ["SpecShapesToTensor"]
         }
@@ -20,8 +20,8 @@
         "args":{
             "wav_path": "data/lrw_audio/",
             "blendshapes_path": "data/lrw_shape_params/",
-            "batch_size": 4,
-            "shuffle": false,
+            "batch_size": 32,
+            "shuffle": true,
             "train_split": 1.00,
             "n_workers": 0,
             "drop_last": false,
@@ -29,7 +29,7 @@
         }
     },
     "trainer": {
-        "epochs": 20,
+        "epochs": 100,
         "disc_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
@@ -69,7 +69,7 @@
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
-            "gradient_penalty": 5
+            "gradient_penalty": 10
         }
     }
 }

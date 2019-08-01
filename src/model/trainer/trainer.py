@@ -416,6 +416,7 @@ class MFCCShapeTrainer(BaseMultiTrainer):
         fixed_noise = torch.randn(self.vis_batch_size, self.z_dim, 
                                   height, width)
         fixed_noise = fixed_noise.to(self.device)
+        fixed_item_names = fixed_sample['item_name']
 
         for epoch in range(1, self.epochs+1):
             total_disc_loss = 0
@@ -458,22 +459,19 @@ class MFCCShapeTrainer(BaseMultiTrainer):
             self.logger.info('Critic Loss: {} '
                              'Gen Loss: {}'.format(disc_loss, gen_loss))
 
-            self.save_sample(fixed_noise, fixed_mfcc, epoch)
+            self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
     
-    def save_sample(self, noise, mfcc, epoch):
+    def save_sample(self, noise, mfcc, sample_names, epoch):
 
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
         gen_sample = gen_sample.squeeze(2)
         gen_sample = gen_sample.numpy()
         gen_sample = self.vis_loader.dataset.denorm(gen_sample)
 
-        gen_sample_batch_size = gen_sample.shape[0]
-        for sample_num in range(gen_sample_batch_size):
+        for sample_num, sample_name in enumerate(sample_names):
             gen_sample_num = gen_sample[sample_num,:,:]
-
-            sample_name = f'gen_sample_{sample_num:03}'
 
             save_dir = os.path.join(self.config.samples_dir, str(epoch))
             if not os.path.exists(save_dir):
