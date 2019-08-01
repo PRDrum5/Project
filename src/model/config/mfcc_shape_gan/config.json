@@ -10,7 +10,7 @@
             "batch_size": 128,
             "shuffle": true,
             "train_split": 1.0,
-            "n_workers": 0,
+            "n_workers": 6,
             "drop_last": true,
             "tsfm": ["SpecShapesToTensor"]
         }
@@ -23,7 +23,7 @@
             "batch_size": 32,
             "shuffle": true,
             "train_split": 1.00,
-            "n_workers": 0,
+            "n_workers": 6,
             "drop_last": false,
             "tsfm": ["SpecShapesToTensor"]
         }
