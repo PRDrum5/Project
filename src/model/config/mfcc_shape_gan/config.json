@@ -69,7 +69,7 @@
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
-            "gradient_penalty": 10
+            "gradient_penalty": 5
         }
     }
 }
