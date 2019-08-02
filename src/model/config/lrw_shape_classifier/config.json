@@ -10,7 +10,7 @@
     "optimizer": {
         "spec": "Adam",
         "args": {
-            "lr": 0.00002,
+            "lr": 0.000005,
             "weight_decay": 0,
             "amsgrad": true
         }
@@ -22,7 +22,7 @@
         "spec": "DataLoaderLrwShapes",
         "args":{
             "blendshapes_dir": "data/lrw_shape_params/",
-            "batch_size": 256,
+            "batch_size": 128,
             "shuffle": true,
             "train_split": 0.8,
             "n_workers": 6,
@@ -30,9 +30,9 @@
         }
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 500,
         "save_dir": "saved/",
-        "save_period": 5,
+        "save_period": 100,
         "level": 2,
         "tensorboard": true
     }
