@@ -12,7 +12,6 @@ def gan_main(config):
     logger = config.get_logger('train')
 
     data_loader = config.get('data_loader', data_loaders)
-    #vis_loader = data_loader.val_split()
     vis_loader = config.get('vis_loader', data_loaders)
 
     disc_model = config.get('discriminator,arch', models)
@@ -64,8 +63,8 @@ def classify_main(config):
 if __name__ == "__main__":
     fix_seed(0)
 
-    config = GetConfig('./config/mfcc_shape_gan/config.json')
-    gan_main(config)
+    #config = GetConfig('./config/mfcc_shape_gan/config.json')
+    #gan_main(config)
 
-    #config = GetConfig('./config/lrw_shape_classifier/config.json')
-    #classify_main(config)
+    config = GetConfig('./config/lrw_shape_classifier/config.json')
+    classify_main(config)

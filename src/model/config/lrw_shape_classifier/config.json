@@ -21,11 +21,11 @@
     "data_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
-            "blendshapes_dir": "data/lrw_shape_params_2/",
-            "batch_size": 16,
+            "blendshapes_dir": "data/lrw_shape_params/",
+            "batch_size": 128,
             "shuffle": true,
             "train_split": 0.9,
-            "n_workers": 0,
+            "n_workers": 6,
             "tsfm": ["LrwShapesToTensor"]
         }
     },

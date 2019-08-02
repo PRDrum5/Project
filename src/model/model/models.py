@@ -320,54 +320,53 @@ class Lrw_Shape_Classifier(BaseModel):
     def __init__(self):
         super().__init__()
 
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=2)
+        self.conv1 = nn.Conv1d(4, 16, kernel_size=3)
+        self.bn1 = nn.BatchNorm1d(16)
         self.relu1 = nn.ReLU()
 
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=2)
+        self.conv2 = nn.Conv1d(16, 32, kernel_size=3)
+        self.bn2 = nn.BatchNorm1d(32)
         self.relu2 = nn.ReLU()
 
-        self.conv3 = nn.Conv2d(32, 64, kernel_size=2)
+        self.conv3 = nn.Conv1d(32, 64, kernel_size=3)
+        self.bn3 = nn.BatchNorm1d(64)
         self.relu3 = nn.ReLU()
+        self.max_pool3 = nn.MaxPool1d(kernel_size=3, padding=1, stride=2)
 
-        self.conv4 = nn.Conv1d(64, 128, kernel_size=6)
+        self.conv4 = nn.Conv1d(64, 128, kernel_size=3)
+        self.bn4 = nn.BatchNorm1d(128)
         self.relu4 = nn.ReLU()
 
-        self.conv5 = nn.Conv1d(128, 256, kernel_size=6)
+        self.conv5 = nn.Conv1d(128, 256, kernel_size=3)
+        self.bn5 = nn.BatchNorm1d(256)
         self.relu5 = nn.ReLU()
+        self.max_pool5 = nn.MaxPool1d(kernel_size=3, padding=1, stride=2)
 
-        self.conv6 = nn.Conv1d(256, 256, kernel_size=6)
+        self.conv6 = nn.Conv1d(256, 128, kernel_size=3)
         self.relu6 = nn.ReLU()
 
-        self.conv7 = nn.Conv1d(256, 256, kernel_size=6)
-        self.relu7 = nn.ReLU()
-
-        self.conv8 = nn.Conv1d(256, 256, kernel_size=6)
-        self.relu8 = nn.ReLU()
-
-        self.conv9 = nn.Conv1d(256, 256, kernel_size=6)
-        self.relu9 = nn.ReLU()
-
-        self.linear10 = nn.Linear(2560, 2)
-        self.softmax10 = nn.functional.softmax
-
+        self.lin7 = nn.Linear(768, 500)
+        self.softmax7 = nn.Softmax()
 
     
     def forward(self, shapes):
+        """
+        shapes: channel = n_params, length = n_frames
+        shapes: [batch_size, 4, 43]
+        """
         batch_size = shapes.size(0)
 
-        x = self.relu1(self.conv1(shapes))
-        x = self.relu2(self.conv2(x))
-        x = self.relu3(self.conv3(x))
+        x = self.relu1(self.bn1(self.conv1(shapes)))
+        x = self.relu2(self.bn2(self.conv2(x)))
+        x = self.relu3(self.bn3(self.conv3(x)))
+        x = self.max_pool3(x)
 
-        x = x.squeeze(2)
-        x = self.relu4(self.conv4(x))
-        x = self.relu5(self.conv5(x))
+        x = self.relu4(self.bn4(self.conv4(x)))
+        x = self.relu5(self.bn5(self.conv5(x)))
+        x = self.max_pool5(x)
+
         x = self.relu6(self.conv6(x))
-        x = self.relu7(self.conv7(x))
-        x = self.relu8(self.conv8(x))
-        x = self.relu9(self.conv9(x))
-
         x = x.view(batch_size, -1)
-        x = self.softmax10(self.linear10(x), dim=1)
+        x = self.softmax7(self.lin7(x))
 
         return x

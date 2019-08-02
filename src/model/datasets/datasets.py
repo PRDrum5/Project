@@ -63,7 +63,7 @@ class LrwBlendshapesDataset(Dataset):
         """
         Finds max and min values for blendshape params for dataset.
         """
-        print("Collecting dataset statistics...\n")
+        print("Collecting dataset statistics LRW...\n")
         for idx in tqdm(range(self.__len__())):
             shape_param, _label = self._get_sample(idx)
 
@@ -414,9 +414,8 @@ class LrwShapesToTensor(object):
 
         n_labels = 500
         label = torch.from_numpy(label)
-        #label = torch.nn.functional.one_hot(label, n_labels)
 
-        shape_params = torch.from_numpy(shape_params).unsqueeze(0)
+        shape_params = torch.from_numpy(shape_params)#.unsqueeze(0)
 
         return {'label': label, 'shape_params': shape_params}
 
