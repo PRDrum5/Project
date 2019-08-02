@@ -123,7 +123,7 @@ class Voca_Shape_Critic(BaseModel):
 
         return out
 
-class old_MFCC_Shape_Gen(BaseModel):
+class old_Mfcc_Shape_Gen(BaseModel):
     def __init__(self, z_dim, shapes_dim):
         super().__init__()
 
@@ -179,7 +179,7 @@ class old_MFCC_Shape_Gen(BaseModel):
         x = self.tanh10(self.conv10(x))
         return x
 
-class old2_MFCC_Shape_Gen(BaseModel):
+class old2_Mfcc_Shape_Gen(BaseModel):
     def __init__(self, z_dim, shapes_dim):
         super().__init__()
 
@@ -222,7 +222,7 @@ class old2_MFCC_Shape_Gen(BaseModel):
         x = self.clip8(self.convt8(x))
         return x
 
-class MFCC_Shape_Gen(BaseModel):
+class Mfcc_Shape_Gen(BaseModel):
     def __init__(self, z_dim, shapes_dim):
         super().__init__()
 
@@ -263,7 +263,7 @@ class MFCC_Shape_Gen(BaseModel):
         x = self.sig7(self.conv7(x))
         return x
 
-class MFCC_Shape_Critic(BaseModel):
+class Mfcc_Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
 
@@ -310,6 +310,51 @@ class MFCC_Shape_Critic(BaseModel):
         x = self.lrelu4(self.conv4(x))
         x = self.lrelu5(self.conv5(x))
         x = x.squeeze(2)
+        x = self.lrelu6(self.conv6(x))
+        x = self.lrelu7(self.conv7(x))
+        x = self.lrelu8(self.conv8(x))
+        x = self.tanh9(self.conv9(x))
+        return x
+
+class Shape_Critic(BaseModel):
+    def __init__(self, shapes_dim):
+        super().__init__()
+
+        self.conv1 = nn.Conv1d(shapes_dim, 32, kernel_size=3)
+        self.lrelu1 = nn.LeakyReLU(0.2)
+
+        self.conv2 = nn.Conv1d(32, 64, kernel_size=3)
+        self.lrelu2 = nn.LeakyReLU(0.2)
+
+        self.conv3 = nn.Conv1d(64, 128, kernel_size=3)
+        self.lrelu3 = nn.LeakyReLU(0.2)
+
+        self.conv4 = nn.Conv1d(128, 256, kernel_size=3, stride=2)
+        self.lrelu4 = nn.LeakyReLU(0.2)
+
+        self.conv5 = nn.Conv1d(256, 512, kernel_size=3)
+        self.lrelu5 = nn.LeakyReLU(0.2)
+
+        self.conv6 = nn.Conv1d(512, 256, kernel_size=3)
+        self.lrelu6 = nn.LeakyReLU(0.2)
+
+        self.conv7 = nn.Conv1d(256, 128, kernel_size=4, stride=2)
+        self.lrelu7 = nn.LeakyReLU(0.2)
+
+        self.conv8 = nn.Conv1d(128, 64, kernel_size=3)
+        self.lrelu8 = nn.LeakyReLU(0.2)
+
+        self.conv9 = nn.Conv1d(64, 1, kernel_size=4)
+        self.tanh9 = nn.Tanh()
+
+    def forward(self, shapes):
+        x = shapes.squeeze(2)
+
+        x = self.lrelu1(self.conv1(x))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = self.lrelu4(self.conv4(x))
+        x = self.lrelu5(self.conv5(x))
         x = self.lrelu6(self.conv6(x))
         x = self.lrelu7(self.conv7(x))
         x = self.lrelu8(self.conv8(x))
