@@ -323,12 +323,10 @@ class Lrw_Shape_Classifier(BaseModel):
         self.conv1 = nn.Conv1d(4, 32, kernel_size=3)
         self.bn1 = nn.BatchNorm1d(32)
         self.relu1 = nn.ReLU()
-        self.drop1 = nn.Dropout(0.05)
 
         self.conv2 = nn.Conv1d(32, 64, kernel_size=3)
         self.bn2 = nn.BatchNorm1d(64)
         self.relu2 = nn.ReLU()
-        self.drop2 = nn.Dropout(0.05)
 
         self.conv3 = nn.Conv1d(64, 128, kernel_size=3)
         self.bn3 = nn.BatchNorm1d(128)
@@ -338,18 +336,17 @@ class Lrw_Shape_Classifier(BaseModel):
         self.conv4 = nn.Conv1d(128, 256, kernel_size=3)
         self.bn4 = nn.BatchNorm1d(256)
         self.relu4 = nn.ReLU()
-        self.drop4 = nn.Dropout(0.05)
 
         self.conv5 = nn.Conv1d(256, 512, kernel_size=3)
         self.bn5 = nn.BatchNorm1d(512)
         self.relu5 = nn.ReLU()
         self.max_pool5 = nn.MaxPool1d(kernel_size=3, padding=1, stride=2)
 
-        self.conv6 = nn.Conv1d(512, 256, kernel_size=3)
+        self.conv6 = nn.Conv1d(512, 512, kernel_size=3)
         self.relu6 = nn.ReLU()
-        self.drop6 = nn.Dropout(0.05)
+        self.drop6 = nn.Dropout(0.1)
 
-        self.lin7 = nn.Linear(1536, 500)
+        self.lin7 = nn.Linear(3072, 500)
         self.softmax7 = nn.Softmax()
 
     
@@ -361,14 +358,11 @@ class Lrw_Shape_Classifier(BaseModel):
         batch_size = shapes.size(0)
 
         x = self.relu1(self.bn1(self.conv1(shapes)))
-        x = self.drop1(x)
         x = self.relu2(self.bn2(self.conv2(x)))
-        x = self.drop2(x)
         x = self.relu3(self.bn3(self.conv3(x)))
         x = self.max_pool3(x)
 
         x = self.relu4(self.bn4(self.conv4(x)))
-        x = self.drop4(x)
         x = self.relu5(self.bn5(self.conv5(x)))
         x = self.max_pool5(x)
 
