@@ -109,8 +109,8 @@ class WavBlendshapesDataset(Dataset):
 
         self.stats = {'mfcc_min': np.inf,
                       'mfcc_max': -np.inf,
-                      'shape_min': [np.inf] * self.n_shapes,
-                      'shape_max': [-np.inf] * self.n_shapes}
+                      'shape_min': np.inf,
+                      'shape_max': -np.inf}
 
         self._collect_stats()
 
@@ -165,28 +165,22 @@ class WavBlendshapesDataset(Dataset):
 
                 idx_mfcc_min = mfcc.min()
                 idx_mfcc_max = mfcc.max()
-                idx_shape_min = [i for i in range(self.n_shapes)]
-                idx_shape_max = [i for i in range(self.n_shapes)]
-                for n in range(self.n_shapes):
-                    idx_shape_min[n] = shape_param[n,:].min()
-                    idx_shape_max[n] = shape_param[n,:].max()
+                idx_shape_min = shape_param.min()
+                idx_shape_max = shape_param.max()
 
                 if idx_mfcc_min < self.stats['mfcc_min']: 
                     self.stats['mfcc_min'] = idx_mfcc_min
                 if idx_mfcc_max > self.stats['mfcc_max']: 
                     self.stats['mfcc_max'] = idx_mfcc_max
 
-                for n in range(self.n_shapes):
-                    if idx_shape_min[n] < self.stats['shape_min'][n]: 
-                        self.stats['shape_min'][n] = idx_shape_min[n]
-                    if idx_shape_max[n] > self.stats['shape_max'][n]: 
-                        self.stats['shape_max'][n] = idx_shape_max[n]
+                if idx_shape_min < self.stats['shape_min']: 
+                    self.stats['shape_min'] = idx_shape_min
+                if idx_shape_max > self.stats['shape_max']: 
+                    self.stats['shape_max'] = idx_shape_max
 
             with open('data/lrw_audio_stats.pkl', 'wb') as f:
                 pickle.dump(self.stats, f, pickle.HIGHEST_PROTOCOL)
             
-            print(self.stats)
-
     def _mfcc(self, audio_data, sample_rate, n_mfcc=50):
         """
         Returns the mfcc of an audio signal.
@@ -229,12 +223,9 @@ class WavBlendshapesDataset(Dataset):
                     self.stats['mfcc_min'], 
                     self.stats['mfcc_max'])
         
-        min_vals = self.stats['shape_min']
-        max_vals = self.stats['shape_max']
-        for idx in range(self.n_shapes):
-            shape_param[idx,:] = norm(shape_param[idx,:],
-                                      min_vals[idx],
-                                      max_vals[idx])
+        shape_param = norm(shape_param,
+                           self.stats['shape_min'],
+                           self.stats['shape_max'])
 
         return {'mfcc': mfcc, 'shape_param': shape_param}
     
@@ -247,10 +238,9 @@ class WavBlendshapesDataset(Dataset):
 
         min_vals = self.stats['shape_min']
         max_vals = self.stats['shape_max']
-        for idx in range(self.n_shapes):
-            shape_param[idx,:] = _denorm(shape_param[idx,:],
-                                         min_vals[idx],
-                                         max_vals[idx])
+        shape_param = _denorm(shape_param,
+                              self.stats['shape_min'],
+                              self.stats['shape_max'])
 
         return shape_param
 
