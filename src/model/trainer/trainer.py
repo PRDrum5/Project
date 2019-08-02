@@ -558,7 +558,7 @@ class LrwShapeTrainer(BaseTrainer):
         correct = 0
 
         with torch.no_grad():
-            for batch_idx, sample in enumerate(self.train_loader):
+            for batch_idx, sample in enumerate(self.val_loader):
                 step = (epoch-1) * self.len_train_epoch + batch_idx
 
                 label = sample['label']
