@@ -503,7 +503,7 @@ class LrwShapeTrainer(BaseTrainer):
     
     def train(self):
         for epoch in range(1, self.epochs+1):
-            log = self._training_epoch(epoch)
+            self._training_epoch(epoch)
 
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
@@ -533,27 +533,25 @@ class LrwShapeTrainer(BaseTrainer):
             self.optimizer.step()
 
             self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
-            self.writer.add_scalar('loss', loss)
+            self.writer.add_scalar('train/loss', loss)
 
             acc = correct / ((batch_idx+1) * self.batch_size)
-            #self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
-            self.writer.add_scalar('accuracy', loss)
+            self.writer.add_scalar('train/accuracy', acc)
 
             total_loss += loss
 
             if batch_idx % self.log_step == 0:
+                mean_loss = total_loss / ((batch_idx+1) * self.batch_size)
                 self.logger.info(
                     'Train Epoch: {} '
                     'Batch: {} '
                     'Loss: {:.6f} '
-                    'Accuracy: {:.6f}'.format(epoch, batch_idx, loss, acc))
+                    'Accuracy: {:.6f}'.format(epoch, batch_idx, mean_loss, acc))
 
         train_loss = total_loss / self.len_train_epoch
 
         if self.val_step:
-            val_loss = self._val_epoch(epoch)
-        
-        return {'train_loss': train_loss, 'val_loss': val_loss}
+            self._val_epoch(epoch)
 
     def _val_epoch(self, epoch):
         total_loss = 0
@@ -578,9 +576,15 @@ class LrwShapeTrainer(BaseTrainer):
                 acc = correct / ((batch_idx+1) * self.batch_size)
 
                 if batch_idx % self.log_step == 0:
-                    print('Val Epoch: {} Batch: {} '
-                          'Loss: {:.6f} Accuracy: {:.6f}'.format(
-                              epoch, batch_idx, loss, acc))
+                    mean_loss = total_loss / ((batch_idx+1) * self.batch_size)
+                    self.logger.info(
+                        'Val Epoch: {} '
+                        'Batch: {} '
+                        'Loss: {:.6f} '
+                        'Accuracy: {:.6f}'.format(
+                            epoch, batch_idx, mean_loss, acc))
 
-        val_loss = total_loss / self.len_val_epoch
-        return val_loss
+                self.writer.set_step(
+                    (epoch-1) * self.len_train_epoch + batch_idx)
+                self.writer.add_scalar('val/loss', loss)
+                self.writer.add_scalar('val/accuracy', acc)
