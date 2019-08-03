@@ -31,8 +31,8 @@
     "trainer": {
         "epochs": 100,
         "critic_1_train": 1,
-        "critic_2_train": 2,
-        "gen_train": 4,
+        "critic_2_train": 1,
+        "gen_train": 5,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
@@ -84,7 +84,7 @@
         "optimizer": {
             "spec": "RMSprop",
             "args": {
-                "lr": 0.00005
+                "lr": 0.0001
             }
         },
         "loss_func": {
