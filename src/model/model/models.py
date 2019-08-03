@@ -398,6 +398,37 @@ class Shape_Critic_2(BaseModel):
         x = self.tanh7(self.conv7(x))
         return x
 
+class Shape_Critic_3(BaseModel):
+    def __init__(self, shapes_dim):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(shapes_dim, 32, kernel_size=(2,3), stride=(1,2))
+        self.lrelu1 = nn.LeakyReLU(0.2)
+
+        self.conv2 = nn.Conv2d(32, 64, kernel_size=(2,3), stride=(1,2))
+        self.lrelu2 = nn.LeakyReLU(0.2)
+
+        self.conv3 = nn.Conv1d(64, 128, kernel_size=(2,3))
+        self.lrelu3 = nn.LeakyReLU(0.2)
+
+        self.conv4 = nn.Conv1d(128, 256, kernel_size=(1,3))
+        self.lrelu4 = nn.LeakyReLU(0.2)
+
+        self.linear5 = nn.Linear(768, 400)
+        self.lrelu5 = nn.LeakyReLU(0.2)
+
+        self.linear6 = nn.Linear(400, 1)
+        self.tanh6 = nn.Tanh()
+
+    def forward(self, shapes):
+        x = self.lrelu1(self.conv1(shapes))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = self.lrelu4(self.conv4(x))
+        x = self.lrelu5(self.linear5(x))
+        x = self.tanh6(self.linear6(x))
+        return x
+
 class Lrw_Shape_Classifier(BaseModel):
     def __init__(self):
         super().__init__()

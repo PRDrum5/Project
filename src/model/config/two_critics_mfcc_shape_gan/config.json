@@ -76,7 +76,7 @@
     },
     "shape_critic": {
         "arch": {
-            "spec": "Shape_Critic_2",
+            "spec": "Shape_Critic_3",
             "args": {
                 "shapes_dim": 4
             }
