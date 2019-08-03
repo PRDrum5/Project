@@ -20,7 +20,7 @@
         "args":{
             "wav_path": "data/lrw_audio/",
             "blendshapes_path": "data/lrw_shape_params/",
-            "batch_size": 32,
+            "batch_size": 16,
             "shuffle": true,
             "train_split": 1.00,
             "n_workers": 0,
@@ -32,7 +32,7 @@
         "epochs": 100,
         "critic_1_train": 1,
         "critic_2_train": 2,
-        "gen_train": 5,
+        "gen_train": 4,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
@@ -82,14 +82,14 @@
             }
         },
         "optimizer": {
-            "spec": "RMSprop",
+            "spec": "Adam",
             "args": {
-                "lr": 0.00005
+                "lr": 0.000005
             }
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
-            "gradient_penalty": 5
+            "gradient_penalty": 10
         }
     }
 }

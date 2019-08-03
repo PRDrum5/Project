@@ -320,31 +320,31 @@ class Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
 
-        self.conv1 = nn.Conv1d(shapes_dim, 64, kernel_size=3)
+        self.conv1 = nn.Conv1d(shapes_dim, 16, kernel_size=3)
         self.lrelu1 = nn.LeakyReLU(0.2)
 
-        self.conv2 = nn.Conv1d(64, 128, kernel_size=3)
+        self.conv2 = nn.Conv1d(16, 32, kernel_size=3)
         self.lrelu2 = nn.LeakyReLU(0.2)
 
-        self.conv3 = nn.Conv1d(128, 256, kernel_size=3)
+        self.conv3 = nn.Conv1d(32, 64, kernel_size=3)
         self.lrelu3 = nn.LeakyReLU(0.2)
 
-        self.conv4 = nn.Conv1d(256, 256, kernel_size=3, stride=2)
+        self.conv4 = nn.Conv1d(64, 128, kernel_size=3, stride=2)
         self.lrelu4 = nn.LeakyReLU(0.2)
 
-        self.conv5 = nn.Conv1d(256, 256, kernel_size=3)
+        self.conv5 = nn.Conv1d(128, 128, kernel_size=3)
         self.lrelu5 = nn.LeakyReLU(0.2)
 
-        self.conv6 = nn.Conv1d(256, 256, kernel_size=3)
+        self.conv6 = nn.Conv1d(128, 64, kernel_size=3)
         self.lrelu6 = nn.LeakyReLU(0.2)
 
-        self.conv7 = nn.Conv1d(256, 128, kernel_size=4, stride=2)
+        self.conv7 = nn.Conv1d(64, 32, kernel_size=4, stride=2)
         self.lrelu7 = nn.LeakyReLU(0.2)
 
-        self.conv8 = nn.Conv1d(128, 64, kernel_size=3)
+        self.conv8 = nn.Conv1d(32, 16, kernel_size=3)
         self.lrelu8 = nn.LeakyReLU(0.2)
 
-        self.conv9 = nn.Conv1d(64, 1, kernel_size=4)
+        self.conv9 = nn.Conv1d(16, 1, kernel_size=4)
         self.tanh9 = nn.Tanh()
 
     def forward(self, shapes):
