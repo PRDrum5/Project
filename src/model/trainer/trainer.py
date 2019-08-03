@@ -649,14 +649,19 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                             'Gen Loss: {:.6f} '.format(
                                 epoch, batch_idx+1, gen_loss))
 
-                self.writer.add_scalar('critics/total_loss', critics_loss)
-                self.writer.add_scalar('gen/total_loss', gen_loss)
+                self.writer.add_scalar('gen/loss', gen_loss)
             
-            critics_loss = total_critics_loss / self.len_epoch
-            gen_loss = self.critics_gen_ratio * (total_gen_loss
-                                                 / self.len_epoch)
-            self.logger.info('Critics Loss: {} '
-                             'Gen Loss: {}'.format(critics_loss, gen_loss))
+            critic_1_loss = total_critic_1_loss * (self.len_epoch 
+                                                   / self.critic_1_train)
+            critic_2_loss = total_critic_2_loss * (self.len_epoch 
+                                                   / self.critic_2_train)
+            gen_loss = total_gen_loss * (self.len_epoch / self.gen_train)
+
+            self.logger.info('Mfcc-Shape Critic Loss: {} '
+                             'Shape Critic Loss: {}'
+                             'Gen Loss: {}'.format(critic_1_loss, 
+                                                   critic_2_loss, 
+                                                   gen_loss))
 
             self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
             if epoch % self.save_period == 0:
