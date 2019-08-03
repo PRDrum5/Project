@@ -371,9 +371,8 @@ class Shape_Critic_2(BaseModel):
         self.conv2 = nn.Conv1d(32, 64, kernel_size=5)
         self.lrelu2 = nn.LeakyReLU(0.2)
 
-        self.conv3 = nn.Conv1d(64, 128, kernel_size=5)
+        self.conv3 = nn.Conv1d(64, 128, kernel_size=5, stride=2)
         self.lrelu3 = nn.LeakyReLU(0.2)
-        self.maxpool3 = nn.MaxPool1d(kernel_size=3, stride=2)
 
         self.conv4 = nn.Conv1d(128, 256, kernel_size=5)
         self.lrelu4 = nn.LeakyReLU(0.2)
@@ -381,7 +380,7 @@ class Shape_Critic_2(BaseModel):
         self.conv5 = nn.Conv1d(256, 128, kernel_size=5)
         self.lrelu5 = nn.LeakyReLU(0.2)
 
-        self.conv6 = nn.Conv1d(128, 64, kernel_size=4)
+        self.conv6 = nn.Conv1d(128, 64, kernel_size=5)
         self.lrelu6 = nn.LeakyReLU(0.2)
 
         self.conv7 = nn.Conv1d(64, 1, kernel_size=4)
@@ -393,8 +392,6 @@ class Shape_Critic_2(BaseModel):
         x = self.lrelu1(self.conv1(x))
         x = self.lrelu2(self.conv2(x))
         x = self.lrelu3(self.conv3(x))
-        x = self.maxpool3(x)
-
         x = self.lrelu4(self.conv4(x))
         x = self.lrelu5(self.conv5(x))
         x = self.lrelu6(self.conv6(x))
