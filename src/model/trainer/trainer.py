@@ -504,9 +504,42 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                          critic_1_model, critic_1_loss_f, critic_1_optimizer,
                          critic_2_model, critic_2_loss_f, critic_2_optimizer,
                          gen_model, gen_loss, gen_optimizer)
-    
-    def _critics_training_epoch(self, epoch, mfcc, shape_param):
+        
+    def _critic_1_training_epoch(self, epoch, mfcc, shape_param):
         self.critic_1_model.train()
+        height, width = mfcc.size(2), mfcc.size(3)
+
+        noise = torch.randn(self.batch_size, self.z_dim, height, width)
+        noise = noise.to(self.device)
+
+        fake_shapes = self.gen_model(noise, mfcc).detach()
+
+        real_logit = self.critic_1_model(shape_param, mfcc)
+        fake_logit = self.critic_1_model(fake_shapes, mfcc)
+        real_loss, fake_loss = self.critic_1_loss_f(real_logit, fake_logit)
+
+        if self.penalty_1:
+            gp = self.penalty_1 * gradient_penalty(self.critic_1_model, 
+                                                   real=shape_param,
+                                                   fake=fake_shapes,
+                                                   conditional=mfcc)
+            self.writer.add_scalar('critic_1/gradient_penalty', gp)
+
+            loss = real_loss + fake_loss + gp
+        else:
+            loss = real_loss + fake_loss
+
+        self.writer.add_scalar('critic_1/real_loss', real_loss)
+        self.writer.add_scalar('critic_1/fake_loss', fake_loss)
+        self.writer.add_scalar('critic_1/total_loss', loss)
+
+        self.critic_1_model.zero_grad()
+        loss.backward()
+        self.critic_1_optimizer.step()
+        
+        return loss
+    
+    def _critic_2_training_epoch(self, epoch, mfcc, shape_param):
         self.critic_2_model.train()
         height, width = mfcc.size(2), mfcc.size(3)
 
@@ -515,57 +548,29 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
 
         fake_shapes = self.gen_model(noise, mfcc).detach()
 
-        real_logit_1 = self.critic_1_model(shape_param, mfcc)
-        fake_logit_1 = self.critic_1_model(fake_shapes, mfcc)
-        critic_1_loss_values = self.critic_1_loss_f(real_logit_1, fake_logit_1)
-        critic_1_real_loss, critic_1_fake_loss = critic_1_loss_values
-
-        real_logit_2 = self.critic_2_model(shape_param)
-        fake_logit_2 = self.critic_2_model(fake_shapes)
-        critic_2_loss_values = self.critic_2_loss_f(real_logit_2, fake_logit_2)
-        critic_2_real_loss, critic_2_fake_loss = critic_2_loss_values
-
-
-        if self.penalty_1:
-            gp_1 = self.penalty_1 * gradient_penalty(self.critic_1_model, 
-                                                     real=shape_param,
-                                                     fake=fake_shapes,
-                                                     conditional=mfcc)
-            self.writer.add_scalar('critic_1/gradient_penalty', gp_1)
-
-            critic_1_loss = critic_1_real_loss + critic_1_fake_loss + gp_1
-        else:
-            critic_1_loss = critic_1_real_loss + critic_1_fake_loss
-
-        self.writer.add_scalar('critic_1/real_loss', critic_1_real_loss)
-        self.writer.add_scalar('critic_1/fake_loss', critic_1_fake_loss)
-        self.writer.add_scalar('critic_1/total_loss', critic_1_loss)
+        real_logit = self.critic_2_model(shape_param)
+        fake_logit = self.critic_2_model(fake_shapes)
+        real_loss, fake_loss = self.critic_2_loss_f(real_logit, fake_logit)
 
         if self.penalty_2:
-            gp_2 = self.penalty_2 * gradient_penalty(self.critic_2_model, 
-                                                     real=shape_param,
-                                                     fake=fake_shapes)
-            self.writer.add_scalar('critic_2/gradient_penalty', gp_2)
+            gp = self.penalty_2 * gradient_penalty(self.critic_2_model, 
+                                                   real=shape_param,
+                                                   fake=fake_shapes)
+            self.writer.add_scalar('critic_2/gradient_penalty', gp)
 
-            critic_2_loss = critic_2_real_loss + critic_2_fake_loss + gp_2
+            loss = real_loss + fake_loss + gp
         else:
-            critic_2_loss = critic_2_real_loss + critic_2_fake_loss
+            loss = real_loss + fake_loss
 
-        self.writer.add_scalar('critic_2/real_loss', critic_2_real_loss)
-        self.writer.add_scalar('critic_2/fake_loss', critic_2_fake_loss)
-        self.writer.add_scalar('critic_2/total_loss', critic_2_loss)
-
-        self.critic_1_model.zero_grad()
-        critic_1_loss.backward()
-        self.critic_1_optimizer.step()
+        self.writer.add_scalar('critic_2/real_loss', real_loss)
+        self.writer.add_scalar('critic_2/fake_loss', fake_loss)
+        self.writer.add_scalar('critic_2/total_loss', loss)
 
         self.critic_2_model.zero_grad()
-        critic_2_loss.backward()
+        loss.backward()
         self.critic_2_optimizer.step()
 
-        total_critic_losses = critic_1_loss + critic_2_loss
-
-        return total_critic_losses
+        return loss
     
     def _gen_training_epoch(self, epoch, mfcc):
         self.gen_model.train()
@@ -597,7 +602,8 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
         fixed_item_names = fixed_sample['item_name']
 
         for epoch in range(1, self.epochs+1):
-            total_critics_loss = 0
+            total_critic_1_loss = 0
+            total_critic_2_loss = 0
             total_gen_loss = 0
             for batch_idx, sample in enumerate(self.data_loader):
                 step = (epoch-1) * self.len_train_epoch + batch_idx
@@ -606,20 +612,34 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                 mfcc = sample['mfcc'].to(self.device)
                 shape_param = sample['shape_param'].to(self.device)
 
-                # Train Critics
-                critics_loss = self._critics_training_epoch(epoch, 
-                                                            mfcc, 
-                                                            shape_param)
-                total_critics_loss += critics_loss
-                if batch_idx % self.log_step == 0:
-                    self.logger.info(
-                        'Train Epoch: {} '
-                        'Batch: {} '
-                        'Joint Critics Loss: {:.6f} '.format(
-                            epoch, batch_idx+1, critics_loss))
+                # Train Critic 1
+                if batch_idx % self.critic_1_train == 0:
+                    critic_1_loss = self._critic_1_training_epoch(epoch,
+                                                                  mfcc,
+                                                                  shape_param)
+                    total_critic_1_loss += critic_1_loss
+                    if batch_idx % self.log_step == 0:
+                        self.logger.info(
+                            'Train Epoch: {} '
+                            'Batch: {} '
+                            'Mfcc-Shape Critic Loss: {:.6f} '.format(
+                                epoch, batch_idx+1, critic_1_loss))
+
+                # Train Critic 2
+                if batch_idx % self.critic_2_train == 0:
+                    critic_2_loss = self._critic_2_training_epoch(epoch,
+                                                                  mfcc,
+                                                                  shape_param)
+                    total_critic_2_loss += critic_2_loss
+                    if batch_idx % self.log_step == 0:
+                        self.logger.info(
+                            'Train Epoch: {} '
+                            'Batch: {} '
+                            'Shape Critic Loss: {:.6f} '.format(
+                                epoch, batch_idx+1, critic_2_loss))
 
                 # Train Generator
-                if batch_idx % self.critics_gen_ratio == 0:
+                if batch_idx % self.gen_train == 0:
                     gen_loss = self._gen_training_epoch(epoch, mfcc)
                     total_gen_loss += gen_loss
                     if batch_idx % self.log_step == 0:
