@@ -651,7 +651,10 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                             'Gen Loss: {:.6f} '.format(
                                 epoch, batch_idx+1, gen_loss))
 
-                self.writer.add_scalar('gen/loss', gen_loss)
+                if use_c_id == 1:
+                    self.writer.add_scalar('gen/loss_critic_1', gen_loss)
+                else:
+                    self.writer.add_scalar('gen/loss_critic_2', gen_loss)
             
             self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
             if epoch % self.save_period == 0:
