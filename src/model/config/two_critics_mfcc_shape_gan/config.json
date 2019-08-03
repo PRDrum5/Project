@@ -30,7 +30,9 @@
     },
     "trainer": {
         "epochs": 100,
-        "critics_gen_ratio": 5,
+        "critic_1_train": 1,
+        "critic_2_train": 2,
+        "gen_train": 5,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
