@@ -572,19 +572,20 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
 
         return loss
     
-    def _gen_training_epoch(self, epoch, mfcc):
+    def _gen_training_epoch(self, epoch, mfcc, critic_id):
         self.gen_model.train()
         height, width = mfcc.size(2), mfcc.size(3)
         noise = torch.randn(self.batch_size, self.z_dim, height, width)
         noise = noise.to(self.device)
 
         fake_shapes = self.gen_model(noise, mfcc)
-        fake_logit_1 = self.critic_1_model(fake_shapes, mfcc)
-        fake_logit_2 = self.critic_2_model(fake_shapes)
 
-        joint_fake_logit = fake_logit_1 + fake_logit_2
+        if critic_id == 1:
+            fake_logit = self.critic_1_model(fake_shapes, mfcc)
+        else:
+            fake_logit = self.critic_2_model(fake_shapes)
 
-        gen_loss = self.gen_loss(joint_fake_logit)
+        gen_loss = self.gen_loss(fake_logit)
 
         self.gen_model.zero_grad()
         gen_loss.backward()
@@ -602,9 +603,6 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
         fixed_item_names = fixed_sample['item_name']
 
         for epoch in range(1, self.epochs+1):
-            total_critic_1_loss = 0
-            total_critic_2_loss = 0
-            total_gen_loss = 0
             for batch_idx, sample in enumerate(self.data_loader):
                 step = (epoch-1) * self.len_train_epoch + batch_idx
                 self.writer.set_step(step)
@@ -617,7 +615,6 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                     critic_1_loss = self._critic_1_training_epoch(epoch,
                                                                   mfcc,
                                                                   shape_param)
-                    total_critic_1_loss += critic_1_loss
                     if batch_idx % self.log_step == 0:
                         self.logger.info(
                             'Train Epoch: {} '
@@ -630,7 +627,6 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                     critic_2_loss = self._critic_2_training_epoch(epoch,
                                                                   mfcc,
                                                                   shape_param)
-                    total_critic_2_loss += critic_2_loss
                     if batch_idx % self.log_step == 0:
                         self.logger.info(
                             'Train Epoch: {} '
@@ -640,8 +636,14 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
 
                 # Train Generator
                 if batch_idx % self.gen_train == 0:
-                    gen_loss = self._gen_training_epoch(epoch, mfcc)
-                    total_gen_loss += gen_loss
+                    
+                    if batch_idx % 2 == 0:
+                        use_c_id = 1
+                    else:
+                        use_c_id = 2
+
+                    gen_loss = self._gen_training_epoch(epoch, mfcc, use_c_id)
+
                     if batch_idx % self.log_step == 0:
                         self.logger.info(
                             'Train Epoch: {} '
@@ -651,18 +653,6 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
 
                 self.writer.add_scalar('gen/loss', gen_loss)
             
-            critic_1_loss = total_critic_1_loss * (self.len_epoch 
-                                                   / self.critic_1_train)
-            critic_2_loss = total_critic_2_loss * (self.len_epoch 
-                                                   / self.critic_2_train)
-            gen_loss = total_gen_loss * (self.len_epoch / self.gen_train)
-
-            self.logger.info('Mfcc-Shape Critic Loss: {} '
-                             'Shape Critic Loss: {}'
-                             'Gen Loss: {}'.format(critic_1_loss, 
-                                                   critic_2_loss, 
-                                                   gen_loss))
-
             self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
