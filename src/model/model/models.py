@@ -263,6 +263,47 @@ class Mfcc_Shape_Gen(BaseModel):
         x = self.sig7(self.conv7(x))
         return x
 
+class Mfcc_Shape_Gen_2(BaseModel):
+    def __init__(self, z_dim, shapes_dim):
+        super().__init__()
+
+        in_dim = z_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 1024, kernel_size=(4,3), 
+                                             stride=(2,1), 
+                                             padding=(0,7))
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(1024, 512, kernel_size=(4,3), stride=(2,1))
+        self.relu2 = nn.ReLU()
+
+        self.conv3 = nn.Conv2d(512, 256, kernel_size=(3,3), stride=(1,1))
+        self.relu3 = nn.ReLU()
+
+        self.conv4 = nn.Conv2d(256, 128, kernel_size=(3,3), stride=(1,1))
+        self.relu4 = nn.ReLU()
+
+        self.conv5 = nn.Conv2d(128, 64, kernel_size=(3,3), stride=(1,1))
+        self.relu5 = nn.ReLU()
+
+        self.conv6 = nn.Conv2d(64, 32, kernel_size=(3,3), stride=(1,1))
+        self.relu6 = nn.ReLU()
+
+        self.conv7 = nn.Conv2d(32, 4, kernel_size=(3,3), stride=(1,1))
+        self.sig7 = nn.Sigmoid()
+
+
+    def forward(self, noise, mfcc):
+        x = torch.cat((noise, mfcc), dim=1)
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.relu3(self.conv3(x))
+        x = self.relu4(self.conv4(x))
+        x = self.relu5(self.conv5(x))
+        x = self.relu6(self.conv6(x))
+        x = self.sig7(self.conv7(x))
+        return x
+
 class Mfcc_Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
@@ -377,6 +418,64 @@ class Mfcc_Shape_Critic_2(BaseModel):
         x = self.tanh10(self.lin10(x))
         return x
 
+class Mfcc_Shape_Critic_3(BaseModel):
+    def __init__(self, shapes_dim):
+        super().__init__()
+
+        in_dim = shapes_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 2048, kernel_size=(4,1), stride=(2,1))
+        self.lrelu1 = nn.LeakyReLU(0.2)
+
+        self.conv2 = nn.Conv2d(2048, 1024, kernel_size=(4,1), stride=(2,1))
+        self.lrelu2 = nn.LeakyReLU(0.2)
+
+        self.conv3 = nn.Conv2d(1024, 512, kernel_size=(3,1), stride=(2,1))
+        self.lrelu3 = nn.LeakyReLU(0.2)
+
+        self.conv4 = nn.Conv2d(512, 256, kernel_size=(3,1))
+        self.lrelu4 = nn.LeakyReLU(0.2)
+
+        self.conv5 = nn.Conv2d(256, 128, kernel_size=(3,1))
+        self.lrelu5 = nn.LeakyReLU(0.2)
+
+        self.conv6 = nn.Conv1d(128, 64, kernel_size=3, stride=2)
+        self.lrelu6 = nn.LeakyReLU(0.2)
+
+        self.conv7 = nn.Conv1d(64, 32, kernel_size=3, stride=2)
+        self.lrelu7 = nn.LeakyReLU(0.2)
+
+        self.conv8 = nn.Conv1d(32, 16, kernel_size=4, stride=2)
+        self.lrelu8 = nn.LeakyReLU(0.2)
+
+        self.lin9 = nn.Linear(64, 1)
+        self.tanh9 = nn.Tanh()
+
+    
+    def forward(self, shapes, mfcc):
+        batch_size = mfcc.size(0)
+
+        # Expand shapes to same shape as mfcc
+        height, width = mfcc.size(2), mfcc.size(3)
+        ones = torch.ones(height, width, device=shapes.device)
+        shapes = shapes * ones
+
+        x = torch.cat((shapes, mfcc), dim=1)
+        x = self.lrelu1(self.conv1(x))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = self.lrelu4(self.conv4(x))
+        x = self.lrelu5(self.conv5(x))
+        x = x.squeeze(2)
+        x = self.lrelu6(self.conv6(x))
+        x = self.lrelu7(self.conv7(x))
+        x = self.lrelu8(self.conv8(x))
+
+        x = x.view(batch_size, -1)
+        x = self.tanh9(self.lin9(x))
+        return x
+
+
 class Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
@@ -480,6 +579,39 @@ class Shape_Critic_3(BaseModel):
 
         self.linear6 = nn.Linear(400, 1)
         self.tanh6 = nn.Tanh()
+
+    def forward(self, shapes):
+        batch_size = shapes.size(0)
+        x = shapes.view(batch_size, 1, 4, 43)
+
+        x = self.lrelu1(self.conv1(x))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = self.lrelu4(self.conv4(x))
+
+        x = x.view(batch_size, -1)
+        x = self.lrelu5(self.linear5(x))
+        x = self.tanh6(self.linear6(x))
+        return x
+
+class Shape_Critic_4(BaseModel):
+    def __init__(self, shapes_dim):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(1, 256, kernel_size=(2,3), stride=(1,2))
+        self.lrelu1 = nn.LeakyReLU(0.2)
+
+        self.conv2 = nn.Conv2d(128, 64, kernel_size=(2,3), stride=(1,2))
+        self.lrelu2 = nn.LeakyReLU(0.2)
+
+        self.conv3 = nn.Conv2d(64, 32, kernel_size=(2,3))
+        self.lrelu3 = nn.LeakyReLU(0.2)
+
+        self.conv4 = nn.Conv2d(32, 16, kernel_size=(1,3))
+        self.lrelu4 = nn.LeakyReLU(0.2)
+
+        self.linear5 = nn.Linear(64, 1)
+        self.tanh5 = nn.Tanh()
 
     def forward(self, shapes):
         batch_size = shapes.size(0)

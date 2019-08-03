@@ -637,6 +637,7 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                 # Train Generator
                 if batch_idx % self.gen_train == 0:
                     
+                    # gen_train must be an odd number of this to work...
                     if batch_idx % 2 == 0:
                         use_c_id = 1
                     else:

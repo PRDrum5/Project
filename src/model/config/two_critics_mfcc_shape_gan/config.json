@@ -40,7 +40,7 @@
     },
     "generator": {
         "arch": {
-            "spec": "Mfcc_Shape_Gen",
+            "spec": "Mfcc_Shape_Gen_2",
             "args": {
                 "z_dim": 2,
                 "shapes_dim": 4
@@ -58,7 +58,7 @@
     },
     "mfcc_critic": {
         "arch": {
-            "spec": "Mfcc_Shape_Critic_2",
+            "spec": "Mfcc_Shape_Critic_3",
             "args": {
                 "shapes_dim": 4
             }
@@ -76,7 +76,7 @@
     },
     "shape_critic": {
         "arch": {
-            "spec": "Shape_Critic_3",
+            "spec": "Shape_Critic_4",
             "args": {
                 "shapes_dim": 4
             }
