@@ -76,20 +76,20 @@
     },
     "shape_critic": {
         "arch": {
-            "spec": "Shape_Critic",
+            "spec": "Shape_Critic_2",
             "args": {
                 "shapes_dim": 4
             }
         },
         "optimizer": {
-            "spec": "Adam",
+            "spec": "RMSprop",
             "args": {
-                "lr": 0.000005
+                "lr": 0.00005
             }
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
-            "gradient_penalty": 10
+            "gradient_penalty": 5
         }
     }
 }
