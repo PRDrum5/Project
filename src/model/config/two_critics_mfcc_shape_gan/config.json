@@ -32,7 +32,7 @@
         "epochs": 100,
         "critic_1_train": 1,
         "critic_2_train": 1,
-        "gen_train": 5,
+        "gen_train": 3,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
@@ -58,7 +58,7 @@
     },
     "mfcc_critic": {
         "arch": {
-            "spec": "Mfcc_Shape_Critic",
+            "spec": "Mfcc_Shape_Critic_2",
             "args": {
                 "shapes_dim": 4
             }

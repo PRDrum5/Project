@@ -316,6 +316,67 @@ class Mfcc_Shape_Critic(BaseModel):
         x = self.tanh9(self.conv9(x))
         return x
 
+class Mfcc_Shape_Critic_2(BaseModel):
+    def __init__(self, shapes_dim):
+        super().__init__()
+
+        in_dim = shapes_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 64, kernel_size=(4,1), stride=(2,1))
+        self.lrelu1 = nn.LeakyReLU(0.2)
+
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=(4,1), stride=(2,1))
+        self.lrelu2 = nn.LeakyReLU(0.2)
+
+        self.conv3 = nn.Conv2d(128, 256, kernel_size=(3,1), stride=(2,1))
+        self.lrelu3 = nn.LeakyReLU(0.2)
+
+        self.conv4 = nn.Conv2d(256, 256, kernel_size=(3,1))
+        self.lrelu4 = nn.LeakyReLU(0.2)
+
+        self.conv5 = nn.Conv2d(256, 512, kernel_size=(3,1))
+        self.lrelu5 = nn.LeakyReLU(0.2)
+
+        self.conv6 = nn.Conv1d(512, 256, kernel_size=3, stride=2)
+        self.lrelu6 = nn.LeakyReLU(0.2)
+
+        self.conv7 = nn.Conv1d(256, 256, kernel_size=3, stride=2)
+        self.lrelu7 = nn.LeakyReLU(0.2)
+
+        self.conv8 = nn.Conv1d(256, 128, kernel_size=4, stride=2)
+        self.lrelu8 = nn.LeakyReLU(0.2)
+
+        self.lin9 = nn.Linear(512, 128)
+        self.lrelu9 = nn.LeakyReLU(0.2)
+
+        self.lin10 = nn.Linear(128, 1)
+        self.tanh10 = nn.Tanh()
+
+    
+    def forward(self, shapes, mfcc):
+        batch_size = mfcc.size(0)
+
+        # Expand shapes to same shape as mfcc
+        height, width = mfcc.size(2), mfcc.size(3)
+        ones = torch.ones(height, width, device=shapes.device)
+        shapes = shapes * ones
+
+        x = torch.cat((shapes, mfcc), dim=1)
+        x = self.lrelu1(self.conv1(x))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = self.lrelu4(self.conv4(x))
+        x = self.lrelu5(self.conv5(x))
+        x = x.squeeze(2)
+        x = self.lrelu6(self.conv6(x))
+        x = self.lrelu7(self.conv7(x))
+        x = self.lrelu8(self.conv8(x))
+
+        x = x.view(batch_size, -1)
+        x = self.lrelu9(self.lin9(x))
+        x = self.tanh10(self.lin10(x))
+        return x
+
 class Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
