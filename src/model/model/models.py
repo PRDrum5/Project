@@ -328,13 +328,13 @@ class Mfcc_Shape_Critic(BaseModel):
         self.conv6 = nn.Conv1d(256, 256, kernel_size=5, stride=2)
         self.lrelu6 = nn.LeakyReLU(0.2)
 
-        self.conv7 = nn.Conv1d(256, 256, kernel_size=4, stride=2)
+        self.conv7 = nn.Conv1d(256, 128, kernel_size=4, stride=2)
         self.lrelu7 = nn.LeakyReLU(0.2)
 
-        self.conv8 = nn.Conv1d(256, 256, kernel_size=3, stride=2)
+        self.conv8 = nn.Conv1d(128, 64, kernel_size=3, stride=2)
         self.lrelu8 = nn.LeakyReLU(0.2)
 
-        self.conv9 = nn.Conv1d(256, 256, kernel_size=4)
+        self.conv9 = nn.Conv1d(64, 1, kernel_size=4)
         self.tanh9 = nn.Tanh()
 
     
@@ -474,7 +474,6 @@ class Mfcc_Shape_Critic_3(BaseModel):
         x = x.view(batch_size, -1)
         x = self.tanh9(self.lin9(x))
         return x
-
 
 class Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):

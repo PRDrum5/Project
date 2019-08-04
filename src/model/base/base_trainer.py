@@ -102,17 +102,15 @@ class BaseTwoCriticsGanTrainer():
         self.critic_1_model = critic_1_model
         self.critic_1_loss_f = critic_1_loss_f
         self.critic_1_optimizer = critic_1_optimizer
-        self.critic_1_train = config['trainer']['critic_1_train']
 
         self.critic_2_model = critic_2_model
         self.critic_2_loss_f = critic_2_loss_f
         self.critic_2_optimizer = critic_2_optimizer
-        self.critic_2_train = config['trainer']['critic_2_train']
 
         self.gen_model = gen_model
         self.gen_loss = gen_loss
         self.gen_optimizer = gen_optimizer
-        self.gen_train = config['trainer']['gen_train']
+        self.critic_gen_ratio = config['trainer']['critic_gen_ratio']
 
         self.device, device_ids = self._prepare_device(config['n_gpu'])
         self.epochs = config['trainer']['epochs']
