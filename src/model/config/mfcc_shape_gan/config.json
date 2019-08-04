@@ -20,7 +20,7 @@
         "args":{
             "wav_path": "data/lrw_audio/",
             "blendshapes_path": "data/lrw_shape_params/",
-            "batch_size": 32,
+            "batch_size": 8,
             "shuffle": true,
             "train_split": 1.00,
             "n_workers": 6,
@@ -30,7 +30,7 @@
     },
     "trainer": {
         "epochs": 100,
-        "disc_gen_ratio": 5,
+        "disc_gen_ratio": 2,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
@@ -40,14 +40,14 @@
         "arch": {
             "spec": "Mfcc_Shape_Gen_2",
             "args": {
-                "z_dim": 2,
+                "z_dim": 10,
                 "shapes_dim": 4
             }
         },
         "optimizer": {
             "spec": "RMSprop",
             "args": {
-                "lr": 0.00005
+                "lr": 0.0001
             }
         },
         "loss_func": {

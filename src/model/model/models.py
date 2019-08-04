@@ -269,18 +269,18 @@ class Mfcc_Shape_Gen_2(BaseModel):
 
         in_dim = z_dim + 1
 
-        self.conv1 = nn.Conv2d(in_dim, 1024, kernel_size=(4,3), 
+        self.conv1 = nn.Conv2d(in_dim, 256, kernel_size=(4,3), 
                                              stride=(2,1), 
                                              padding=(0,7))
         self.relu1 = nn.ReLU()
 
-        self.conv2 = nn.Conv2d(1024, 512, kernel_size=(4,3), stride=(2,1))
+        self.conv2 = nn.Conv2d(256, 256, kernel_size=(4,3), stride=(2,1))
         self.relu2 = nn.ReLU()
 
-        self.conv3 = nn.Conv2d(512, 256, kernel_size=(3,3), stride=(1,1))
+        self.conv3 = nn.Conv2d(256, 128, kernel_size=(3,3), stride=(1,1))
         self.relu3 = nn.ReLU()
 
-        self.conv4 = nn.Conv2d(256, 128, kernel_size=(3,3), stride=(1,1))
+        self.conv4 = nn.Conv2d(128, 128, kernel_size=(3,3), stride=(1,1))
         self.relu4 = nn.ReLU()
 
         self.conv5 = nn.Conv2d(128, 64, kernel_size=(3,3), stride=(1,1))
@@ -424,19 +424,19 @@ class Mfcc_Shape_Critic_3(BaseModel):
 
         in_dim = shapes_dim + 1
 
-        self.conv1 = nn.Conv2d(in_dim, 2048, kernel_size=(4,1), stride=(2,1))
+        self.conv1 = nn.Conv2d(in_dim, 512, kernel_size=(4,1), stride=(2,1))
         self.lrelu1 = nn.LeakyReLU(0.2)
 
-        self.conv2 = nn.Conv2d(2048, 1024, kernel_size=(4,1), stride=(2,1))
+        self.conv2 = nn.Conv2d(512, 256, kernel_size=(4,1), stride=(2,1))
         self.lrelu2 = nn.LeakyReLU(0.2)
 
-        self.conv3 = nn.Conv2d(1024, 512, kernel_size=(3,1), stride=(2,1))
+        self.conv3 = nn.Conv2d(256, 128, kernel_size=(3,1), stride=(2,1))
         self.lrelu3 = nn.LeakyReLU(0.2)
 
-        self.conv4 = nn.Conv2d(512, 256, kernel_size=(3,1))
+        self.conv4 = nn.Conv2d(128, 128, kernel_size=(3,1))
         self.lrelu4 = nn.LeakyReLU(0.2)
 
-        self.conv5 = nn.Conv2d(256, 128, kernel_size=(3,1))
+        self.conv5 = nn.Conv2d(128, 128, kernel_size=(3,1))
         self.lrelu5 = nn.LeakyReLU(0.2)
 
         self.conv6 = nn.Conv1d(128, 64, kernel_size=3, stride=2)
@@ -445,10 +445,10 @@ class Mfcc_Shape_Critic_3(BaseModel):
         self.conv7 = nn.Conv1d(64, 32, kernel_size=3, stride=2)
         self.lrelu7 = nn.LeakyReLU(0.2)
 
-        self.conv8 = nn.Conv1d(32, 16, kernel_size=4, stride=2)
+        self.conv8 = nn.Conv1d(32, 32, kernel_size=4, stride=2)
         self.lrelu8 = nn.LeakyReLU(0.2)
 
-        self.lin9 = nn.Linear(64, 1)
+        self.lin9 = nn.Linear(128, 1)
         self.tanh9 = nn.Tanh()
 
     
