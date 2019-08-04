@@ -572,20 +572,19 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
 
         return loss
     
-    def _gen_training_epoch(self, epoch, mfcc, critic_id):
+    def _gen_training_epoch(self, epoch, mfcc):
         self.gen_model.train()
         height, width = mfcc.size(2), mfcc.size(3)
         noise = torch.randn(self.batch_size, self.z_dim, height, width)
         noise = noise.to(self.device)
 
         fake_shapes = self.gen_model(noise, mfcc)
+        fake_logit_1 = self.critic_1_model(fake_shapes, mfcc)
+        fake_logit_2 = self.critic_2_model(fake_shapes)
 
-        if critic_id == 1:
-            fake_logit = self.critic_1_model(fake_shapes, mfcc)
-        else:
-            fake_logit = self.critic_2_model(fake_shapes)
+        joint_fake_logit = fake_logit_1 + fake_logit_2
 
-        gen_loss = self.gen_loss(fake_logit)
+        gen_loss = self.gen_loss(joint_fake_logit)
 
         self.gen_model.zero_grad()
         gen_loss.backward()
@@ -611,39 +610,31 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                 shape_param = sample['shape_param'].to(self.device)
 
                 # Train Critic 1
-                if batch_idx % self.critic_1_train == 0:
-                    critic_1_loss = self._critic_1_training_epoch(epoch,
-                                                                  mfcc,
-                                                                  shape_param)
-                    if batch_idx % self.log_step == 0:
-                        self.logger.info(
-                            'Train Epoch: {} '
-                            'Batch: {} '
-                            'Mfcc-Shape Critic Loss: {:.6f} '.format(
-                                epoch, batch_idx+1, critic_1_loss))
+                critic_1_loss = self._critic_1_training_epoch(epoch,
+                                                              mfcc,
+                                                              shape_param)
+                if batch_idx % self.log_step == 0:
+                    self.logger.info(
+                        'Train Epoch: {} '
+                        'Batch: {} '
+                        'Mfcc-Shape Critic Loss: {:.6f} '.format(
+                            epoch, batch_idx+1, critic_1_loss))
 
                 # Train Critic 2
-                if batch_idx % self.critic_2_train == 0:
-                    critic_2_loss = self._critic_2_training_epoch(epoch,
-                                                                  mfcc,
-                                                                  shape_param)
-                    if batch_idx % self.log_step == 0:
-                        self.logger.info(
-                            'Train Epoch: {} '
-                            'Batch: {} '
-                            'Shape Critic Loss: {:.6f} '.format(
-                                epoch, batch_idx+1, critic_2_loss))
+                critic_2_loss = self._critic_2_training_epoch(epoch,
+                                                              mfcc,
+                                                              shape_param)
+                if batch_idx % self.log_step == 0:
+                    self.logger.info(
+                        'Train Epoch: {} '
+                        'Batch: {} '
+                        'Shape Critic Loss: {:.6f} '.format(
+                            epoch, batch_idx+1, critic_2_loss))
 
                 # Train Generator
-                if batch_idx % self.gen_train == 0:
+                if batch_idx % self.critic_gen_ratio == 0:
                     
-                    # gen_train must be an odd number of this to work...
-                    if batch_idx % 2 == 0:
-                        use_c_id = 1
-                    else:
-                        use_c_id = 2
-
-                    gen_loss = self._gen_training_epoch(epoch, mfcc, use_c_id)
+                    gen_loss = self._gen_training_epoch(epoch, mfcc)
 
                     if batch_idx % self.log_step == 0:
                         self.logger.info(
@@ -652,10 +643,7 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
                             'Gen Loss: {:.6f} '.format(
                                 epoch, batch_idx+1, gen_loss))
 
-                if use_c_id == 1:
-                    self.writer.add_scalar('gen/loss_critic_1', gen_loss)
-                else:
-                    self.writer.add_scalar('gen/loss_critic_2', gen_loss)
+                self.writer.add_scalar('gen/loss', gen_loss)
             
             self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
             if epoch % self.save_period == 0:

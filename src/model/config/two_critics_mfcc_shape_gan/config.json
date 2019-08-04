@@ -30,9 +30,7 @@
     },
     "trainer": {
         "epochs": 100,
-        "critic_1_train": 1,
-        "critic_2_train": 1,
-        "gen_train": 3,
+        "critic_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
         "level": 2,
@@ -40,7 +38,7 @@
     },
     "generator": {
         "arch": {
-            "spec": "Mfcc_Shape_Gen_2",
+            "spec": "Mfcc_Shape_Gen",
             "args": {
                 "z_dim": 2,
                 "shapes_dim": 4
@@ -58,7 +56,7 @@
     },
     "mfcc_critic": {
         "arch": {
-            "spec": "Mfcc_Shape_Critic_3",
+            "spec": "Mfcc_Shape_Critic",
             "args": {
                 "shapes_dim": 4
             }
@@ -76,7 +74,7 @@
     },
     "shape_critic": {
         "arch": {
-            "spec": "Shape_Critic_4",
+            "spec": "Shape_Critic_3",
             "args": {
                 "shapes_dim": 4
             }
