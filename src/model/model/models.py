@@ -287,17 +287,19 @@ class Mfcc_Shape_Critic(BaseModel):
         self.conv6 = nn.Conv1d(256, 256, kernel_size=5, stride=2)
         self.lrelu6 = nn.LeakyReLU(0.2)
 
-        self.conv7 = nn.Conv1d(256, 256, kernel_size=4, stride=2)
+        self.conv7 = nn.Conv1d(256, 128, kernel_size=4, stride=2)
         self.lrelu7 = nn.LeakyReLU(0.2)
 
-        self.conv8 = nn.Conv1d(256, 256, kernel_size=3, stride=2)
+        self.conv8 = nn.Conv1d(128, 64, kernel_size=3, stride=2)
         self.lrelu8 = nn.LeakyReLU(0.2)
 
-        self.conv9 = nn.Conv1d(256, 256, kernel_size=4)
+        self.lin9 = nn.Linear(256, 16)
         self.tanh9 = nn.Tanh()
 
     
     def forward(self, shapes, mfcc):
+        batch_size = mfcc.size(0)
+
         # Expand shapes to same shape as mfcc
         height, width = mfcc.size(2), mfcc.size(3)
         ones = torch.ones(height, width, device=shapes.device)
@@ -313,7 +315,9 @@ class Mfcc_Shape_Critic(BaseModel):
         x = self.lrelu6(self.conv6(x))
         x = self.lrelu7(self.conv7(x))
         x = self.lrelu8(self.conv8(x))
-        x = self.tanh9(self.conv9(x))
+
+        x = x.view(batch_size, -1)
+        x = self.tanh9(self.lin9(x))
         return x
 
 class Shape_Critic(BaseModel):
@@ -332,10 +336,10 @@ class Shape_Critic(BaseModel):
         self.conv4 = nn.Conv1d(128, 256, kernel_size=3, stride=2)
         self.lrelu4 = nn.LeakyReLU(0.2)
 
-        self.conv5 = nn.Conv1d(256, 512, kernel_size=3)
+        self.conv5 = nn.Conv1d(256, 256, kernel_size=3)
         self.lrelu5 = nn.LeakyReLU(0.2)
 
-        self.conv6 = nn.Conv1d(512, 256, kernel_size=3)
+        self.conv6 = nn.Conv1d(256, 256, kernel_size=3)
         self.lrelu6 = nn.LeakyReLU(0.2)
 
         self.conv7 = nn.Conv1d(256, 128, kernel_size=4, stride=2)
@@ -344,10 +348,12 @@ class Shape_Critic(BaseModel):
         self.conv8 = nn.Conv1d(128, 64, kernel_size=3)
         self.lrelu8 = nn.LeakyReLU(0.2)
 
-        self.conv9 = nn.Conv1d(64, 1, kernel_size=4)
+        self.lin9 = nn.Linear(256, 16)
         self.tanh9 = nn.Tanh()
 
     def forward(self, shapes):
+        batch_size = shapes.size(0)
+
         x = shapes.squeeze(2)
 
         x = self.lrelu1(self.conv1(x))
@@ -358,7 +364,9 @@ class Shape_Critic(BaseModel):
         x = self.lrelu6(self.conv6(x))
         x = self.lrelu7(self.conv7(x))
         x = self.lrelu8(self.conv8(x))
-        x = self.tanh9(self.conv9(x))
+
+        x = x.view(batch_size, -1)
+        x = self.tanh9(self.lin9(x))
         return x
 
 class Lrw_Shape_Classifier(BaseModel):
