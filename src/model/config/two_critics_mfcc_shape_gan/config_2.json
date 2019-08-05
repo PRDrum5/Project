@@ -1,0 +1,93 @@
+{
+    "experiment_name": "Two_Critics_MFCC_Shape_Gan",
+    "n_gpu": 1,
+    "resume": true,
+    "data_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/",
+            "blendshapes_path": "data/lrw_shape_params/",
+            "batch_size": 128,
+            "shuffle": true,
+            "train_split": 1.0,
+            "n_workers": 0,
+            "drop_last": true,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    },
+    "vis_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/",
+            "blendshapes_path": "data/lrw_shape_params/",
+            "batch_size": 16,
+            "shuffle": true,
+            "train_split": 1.00,
+            "n_workers": 0,
+            "drop_last": false,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    },
+    "trainer": {
+        "epochs": 100,
+        "critics_gen_ratio": 5,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "level": 2,
+        "tensorboard": true
+    },
+    "generator": {
+        "arch": {
+            "spec": "Mfcc_Shape_Gen_Shrink",
+            "args": {
+                "z_dim": 10,
+                "shapes_dim": 4
+            }
+        },
+        "optimizer": {
+            "spec": "RMSprop",
+            "args": {
+                "lr": 0.00005
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_g_loss"
+        }
+    },
+    "mfcc_critic": {
+        "arch": {
+            "spec": "Mfcc_Shape_Critic",
+            "args": {
+                "shapes_dim": 4
+            }
+        },
+        "optimizer": {
+            "spec": "RMSprop",
+            "args": {
+                "lr": 0.00005
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_d_loss",
+            "gradient_penalty": 5
+        }
+    },
+    "shape_critic": {
+        "arch": {
+            "spec": "Shape_Critic",
+            "args": {
+                "shapes_dim": 4
+            }
+        },
+        "optimizer": {
+            "spec": "RMSprop",
+            "args": {
+                "lr": 0.00005
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_d_loss",
+            "gradient_penalty": 5
+        }
+    }
+}
