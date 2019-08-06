@@ -29,7 +29,7 @@
         }
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 200,
         "critics_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
