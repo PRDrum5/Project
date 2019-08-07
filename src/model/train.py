@@ -12,7 +12,7 @@ def gan_main(config):
     logger = config.get_logger('train')
 
     data_loader = config.get('data_loader', data_loaders)
-    vis_loader = config.get('vis_loader', data_loaders)
+    test_loader = config.get('test_loader', data_loaders)
 
     disc_model = config.get('discriminator,arch', models)
 
@@ -34,7 +34,7 @@ def gan_main(config):
     gen_loss = config.get_func('generator,loss_func', losses)
 
     #TODO add Trainer selection to config
-    trainer = MfccShapeTrainer(config, data_loader, vis_loader,
+    trainer = MfccShapeTrainer(config, data_loader, test_loader,
                          disc_model, disc_loss, disc_optimizer, 
                          gen_model, gen_loss, gen_optimizer)
     trainer.train()
@@ -43,7 +43,7 @@ def gan_two_critics_main(config):
     logger = config.get_logger('train')
 
     data_loader = config.get('data_loader', data_loaders)
-    vis_loader = config.get('vis_loader', data_loaders)
+    test_loader = config.get('test_loader', data_loaders)
 
     critic_1_model = config.get('mfcc_critic,arch', models)
     critic_2_model = config.get('shape_critic,arch', models)
@@ -74,7 +74,7 @@ def gan_two_critics_main(config):
 
     #TODO add Trainer selection to config
     trainer = TwoCriticsMfccShapeTrainer(
-        config, data_loader, vis_loader,
+        config, data_loader, test_loader,
         critic_1_model, critic_1_loss_f, critic_1_optimizer,
         critic_2_model, critic_2_loss_f, critic_2_optimizer,
         gen_model, gen_loss, gen_optimizer)
