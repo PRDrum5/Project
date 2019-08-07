@@ -222,9 +222,6 @@ class MfccShapeTrainer(BaseGanTrainer):
                 step = (epoch-1) * self.len_train_epoch + batch_idx
                 self.writer.set_step(step)
 
-                self.save_sample(test_noise, test_mfcc, test_item_names, epoch)
-                self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch, test=False)
-
                 mfcc = sample['mfcc'].to(self.device)
                 shape_param = sample['shape_param'].to(self.device)
 
