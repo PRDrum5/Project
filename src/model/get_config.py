@@ -22,7 +22,8 @@ class GetConfig:
 
         self.save_dir.mkdir(parents=True, exist_ok=True)
         self.log_dir.mkdir(parents=True, exist_ok=True)
-        self.samples_dir.mkdir(parents=True, exist_ok=True)
+        self.train_samples_dir.mkdir(parents=True, exist_ok=True)
+        self.test_samples_dir.mkdir(parents=True, exist_ok=True)
 
         configure_logging(self.log_dir)
         self.log_levels = {
