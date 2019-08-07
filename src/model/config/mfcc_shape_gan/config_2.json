@@ -15,7 +15,7 @@
             "tsfm": ["SpecShapesToTensor"]
         }
     },
-    "vis_loader": {
+    "test_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
             "wav_path": "data/lrw_audio/",
@@ -29,7 +29,7 @@
         }
     },
     "trainer": {
-        "epochs": 200,
+        "epochs": 100,
         "disc_gen_ratio": 5,
         "save_dir": "saved/",
         "save_period": 1,
