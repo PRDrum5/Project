@@ -202,7 +202,7 @@ class MfccShapeTrainer(BaseGanTrainer):
         fixed_sample = next(iter(self.data_loader))
         fixed_mfcc = fixed_sample['mfcc'].to(self.device)
         height, width = fixed_mfcc.size(2), fixed_mfcc.size(3)
-        fixed_noise = torch.randn(self.test_batch_size, self.z_dim, 
+        fixed_noise = torch.randn(self.batch_size, self.z_dim, 
                                   height, width)
         fixed_noise = fixed_noise.to(self.device)
         fixed_item_names = fixed_sample['item_name']
@@ -221,6 +221,9 @@ class MfccShapeTrainer(BaseGanTrainer):
             for batch_idx, sample in enumerate(self.data_loader):
                 step = (epoch-1) * self.len_train_epoch + batch_idx
                 self.writer.set_step(step)
+
+                self.save_sample(test_noise, test_mfcc, test_item_names, epoch)
+                self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch, test=False)
 
                 mfcc = sample['mfcc'].to(self.device)
                 shape_param = sample['shape_param'].to(self.device)
