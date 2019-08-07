@@ -91,6 +91,7 @@ class LrwBlendshapesDataset(Dataset):
 
         return {'shape_params': shape_params,
                 'label': label}
+
     
 class WavBlendshapesDataset(Dataset):
     """
@@ -244,6 +245,7 @@ class WavBlendshapesDataset(Dataset):
 
         return shape_param
 
+
 class DropFramesToMfccDuration(object):
     """
     Randomly drops frames from blendshape parameters so that MFCC and shape 
@@ -261,6 +263,7 @@ class DropFramesToMfccDuration(object):
         random_drop = torch.rand(1, len_diff)
         1/0
         return sample
+
 
 class MergeFrameToMfccDuration(object):
     """
@@ -306,6 +309,7 @@ class MergeFrameToMfccDuration(object):
         
         return current
     
+
 class RandomOneSecondMfccCrop(object):
     """
     Takes a random one second crop from the MFCC and corresponding shape params
@@ -333,6 +337,7 @@ class RandomOneSecondMfccCrop(object):
         sample = {'mfcc': mfcc, 'shape_param': shape_param}
         return sample
 
+
 class OneSecondMfccCrop(object):
     """
     Takes the first second of each clip
@@ -356,6 +361,7 @@ class OneSecondMfccCrop(object):
 
         sample = {'mfcc': mfcc, 'shape_param': shape_param}
         return sample
+
 
 class MFCCBlendshapesDataset(Dataset):
     """
@@ -388,6 +394,7 @@ class MFCCBlendshapesDataset(Dataset):
         
         return sample
 
+
 class SpecShapesToTensor(object):
     """
     Transforms mfcc ndarrays in sample to Tensors
@@ -404,6 +411,7 @@ class SpecShapesToTensor(object):
 
         return {'mfcc': mfcc, 'shape_param': shape_param}
 
+
 class LrwShapesToTensor(object):
     """
     Transforms blendshape params to Tensors
@@ -418,18 +426,3 @@ class LrwShapesToTensor(object):
         shape_params = torch.from_numpy(shape_params)#.unsqueeze(0)
 
         return {'label': label, 'shape_params': shape_params}
-
-if __name__ == "__main__":
-    data_path = '/home/peter/Documents/Uni/Project/src/mesh/shape_params/'
-    shape_dir = 'shape_params_4'
-    shape_path = os.path.join(data_path, shape_dir)
-
-    dataset = LrwBlendshapesDataset(shape_path)
-
-    for idx in range(len(dataset)):
-        sample = dataset.__getitem__(idx)
-        print(idx, sample['label'], sample['shape_params'].shape)
-        print(sample['label'])
-        print(sample['shape_params'])
-        1/0
-        

@@ -5,8 +5,8 @@
     "data_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio/",
-            "blendshapes_path": "data/lrw_shape_params/",
+            "wav_path": "data/lrw_audio/train",
+            "blendshapes_path": "data/lrw_shape_params/train",
             "batch_size": 128,
             "shuffle": true,
             "train_split": 1.0,
@@ -15,11 +15,11 @@
             "tsfm": ["SpecShapesToTensor"]
         }
     },
-    "vis_loader": {
+    "test_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio/",
-            "blendshapes_path": "data/lrw_shape_params/",
+            "wav_path": "data/lrw_audio/test",
+            "blendshapes_path": "data/lrw_shape_params/test",
             "batch_size": 16,
             "shuffle": true,
             "train_split": 1.00,

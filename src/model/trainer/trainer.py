@@ -129,14 +129,14 @@ class VocaShapeTrainer(BaseGanTrainer):
 
 
 class MfccShapeTrainer(BaseGanTrainer):
-    def __init__(self, config, data_loader, vis_loader,
+    def __init__(self, config, data_loader, test_loader,
                  disc_model, disc_loss, disc_optimizer,
                  gen_model, gen_loss, gen_optimizer):
 
         self.data_loader = data_loader
-        self.vis_loader = vis_loader
+        self.test_loader = test_loader
         self.batch_size = self.data_loader.batch_size
-        self.vis_batch_size = vis_loader.batch_size
+        self.test_batch_size = test_loader.batch_size
         self.len_epoch = len(self.data_loader)
 
         self.log_step = int(np.cbrt(self.batch_size))
@@ -199,13 +199,21 @@ class MfccShapeTrainer(BaseGanTrainer):
         return gen_loss
     
     def train(self):
-        fixed_sample = next(iter(self.vis_loader))
+        fixed_sample = next(iter(self.data_loader))
         fixed_mfcc = fixed_sample['mfcc'].to(self.device)
         height, width = fixed_mfcc.size(2), fixed_mfcc.size(3)
-        fixed_noise = torch.randn(self.vis_batch_size, self.z_dim, 
+        fixed_noise = torch.randn(self.test_batch_size, self.z_dim, 
                                   height, width)
         fixed_noise = fixed_noise.to(self.device)
         fixed_item_names = fixed_sample['item_name']
+
+        test_sample = next(iter(self.test_loader))
+        test_mfcc = test_sample['mfcc'].to(self.device)
+        height, width = test_mfcc.size(2), test_mfcc.size(3)
+        test_noise = torch.randn(self.test_batch_size, self.z_dim, 
+                                  height, width)
+        test_noise = test_noise.to(self.device)
+        test_item_names = test_sample['item_name']
 
         for epoch in range(1, self.epochs+1):
             total_disc_loss = 0
@@ -248,21 +256,29 @@ class MfccShapeTrainer(BaseGanTrainer):
             self.logger.info('Critic Loss: {} '
                              'Gen Loss: {}'.format(disc_loss, gen_loss))
 
-            self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
+            self.save_sample(test_noise, test_mfcc, test_item_names, epoch)
+            self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, 
+                             epoch, test=False)
+
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
     
-    def save_sample(self, noise, mfcc, sample_names, epoch):
+    def save_sample(self, noise, mfcc, sample_names, epoch, test=True):
 
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
         gen_sample = gen_sample.squeeze(2)
         gen_sample = gen_sample.numpy()
-        gen_sample = self.vis_loader.dataset.denorm(gen_sample)
+        gen_sample = self.test_loader.dataset.denorm(gen_sample)
 
         for sample_num, sample_name in enumerate(sample_names):
             gen_sample_num = gen_sample[sample_num,:,:]
 
-            save_dir = os.path.join(self.config.samples_dir, str(epoch))
+            if test:
+                save_dir = os.path.join(self.config.test_samples_dir, 
+                                        str(epoch))
+            else:
+                save_dir = os.path.join(self.config.train_samples_dir, 
+                                        str(epoch))
             if not os.path.exists(save_dir):
                 os.mkdir(save_dir)
 
@@ -271,15 +287,15 @@ class MfccShapeTrainer(BaseGanTrainer):
 
 
 class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
-    def __init__(self, config, data_loader, vis_loader,
+    def __init__(self, config, data_loader, test_loader,
                  critic_1_model, critic_1_loss_f, critic_1_optimizer,
                  critic_2_model, critic_2_loss_f, critic_2_optimizer,
                  gen_model, gen_loss, gen_optimizer):
 
         self.data_loader = data_loader
-        self.vis_loader = vis_loader
+        self.test_loader = test_loader
         self.batch_size = self.data_loader.batch_size
-        self.vis_batch_size = vis_loader.batch_size
+        self.test_batch_size = test_loader.batch_size
         self.len_epoch = len(self.data_loader)
 
         self.log_step = int(np.cbrt(self.batch_size))
@@ -377,10 +393,10 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
         return gen_loss
     
     def train(self):
-        fixed_sample = next(iter(self.vis_loader))
+        fixed_sample = next(iter(self.test_loader))
         fixed_mfcc = fixed_sample['mfcc'].to(self.device)
         height, width = fixed_mfcc.size(2), fixed_mfcc.size(3)
-        fixed_noise = torch.randn(self.vis_batch_size, self.z_dim, 
+        fixed_noise = torch.randn(self.test_batch_size, self.z_dim, 
                                   height, width)
         fixed_noise = fixed_noise.to(self.device)
         fixed_item_names = fixed_sample['item_name']
@@ -436,7 +452,7 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
         gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
         gen_sample = gen_sample.squeeze(2)
         gen_sample = gen_sample.numpy()
-        gen_sample = self.vis_loader.dataset.denorm(gen_sample)
+        gen_sample = self.test_loader.dataset.denorm(gen_sample)
 
         for sample_num, sample_name in enumerate(sample_names):
             gen_sample_num = gen_sample[sample_num,:,:]
