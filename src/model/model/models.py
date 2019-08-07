@@ -170,18 +170,18 @@ class Mfcc_Shape_Gen_Shrink(BaseModel):
 
         in_dim = z_dim + 1
 
-        self.conv1 = nn.Conv2d(in_dim, 64, kernel_size=(4,3), 
+        self.conv1 = nn.Conv2d(in_dim, 512, kernel_size=(4,3), 
                                            stride=(2,1), 
                                            padding=(0,7))
         self.relu1 = nn.ReLU()
 
-        self.conv2 = nn.Conv2d(64, 256, kernel_size=(4,3), stride=(2,1))
+        self.conv2 = nn.Conv2d(512, 256, kernel_size=(4,3), stride=(2,1))
         self.relu2 = nn.ReLU()
 
-        self.conv3 = nn.Conv2d(256, 256, kernel_size=(3,3), stride=(1,1))
+        self.conv3 = nn.Conv2d(256, 128, kernel_size=(3,3), stride=(1,1))
         self.relu3 = nn.ReLU()
 
-        self.conv4 = nn.Conv2d(256, 128, kernel_size=(3,3), stride=(1,1))
+        self.conv4 = nn.Conv2d(128, 128, kernel_size=(3,3), stride=(1,1))
         self.relu4 = nn.ReLU()
 
         self.conv5 = nn.Conv2d(128, 64, kernel_size=(3,3), stride=(1,1))
