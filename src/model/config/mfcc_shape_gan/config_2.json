@@ -29,7 +29,7 @@
         }
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 500,
         "disc_gen_ratio": 10,
         "save_dir": "saved/",
         "save_period": 1,
@@ -47,11 +47,17 @@
         "optimizer": {
             "spec": "RMSprop",
             "args": {
-                "lr": 0.00005
+                "lr": 0.0001
             }
         },
         "loss_func": {
             "spec": "wasserstein_g_loss"
+        },
+        "lr_scheduler": {
+            "spec": "ExponentialLR",
+            "args": {
+                "gamma": 0.95
+            }
         }
     },
     "discriminator": {
@@ -64,12 +70,18 @@
         "optimizer": {
             "spec": "RMSprop",
             "args": {
-                "lr": 0.00005
+                "lr": 0.0001
             }
         },
         "loss_func": {
             "spec": "wasserstein_d_loss",
             "gradient_penalty": 5
+        },
+        "lr_scheduler": {
+            "spec": "ExponentialLR",
+            "args": {
+                "gamma": 0.95
+            }
         }
     }
 }

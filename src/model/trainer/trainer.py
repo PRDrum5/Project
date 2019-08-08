@@ -130,14 +130,17 @@ class VocaShapeTrainer(BaseGanTrainer):
 
 class MfccShapeTrainer(BaseGanTrainer):
     def __init__(self, config, data_loader, test_loader,
-                 disc_model, disc_loss, disc_optimizer,
-                 gen_model, gen_loss, gen_optimizer):
+                 disc_model, disc_loss, disc_optimizer, disc_scheduler,
+                 gen_model, gen_loss, gen_optimizer, gen_scheduler):
 
         self.data_loader = data_loader
         self.test_loader = test_loader
         self.batch_size = self.data_loader.batch_size
         self.test_batch_size = test_loader.batch_size
         self.len_epoch = len(self.data_loader)
+
+        self.disc_scheduler = disc_scheduler
+        self.gen_scheduler = gen_scheduler
 
         self.log_step = int(np.cbrt(self.batch_size))
         self.len_train_epoch = len(self.data_loader)
@@ -250,11 +253,14 @@ class MfccShapeTrainer(BaseGanTrainer):
 
                 self.writer.add_scalar('critic/total_loss', disc_loss)
                 self.writer.add_scalar('gen/total_loss', gen_loss)
-            
+
             disc_loss = total_disc_loss / self.len_epoch
             gen_loss = (total_gen_loss / self.len_epoch) * self.disc_gen_ratio
             self.logger.info('Critic Loss: {} '
                              'Gen Loss: {}'.format(disc_loss, gen_loss))
+
+            self.disc_scheduler.step() 
+            self.gen_scheduler.step() 
 
             self.save_sample(test_noise, test_mfcc, test_item_names, epoch)
             self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, 
@@ -262,6 +268,7 @@ class MfccShapeTrainer(BaseGanTrainer):
 
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
+
     
     def save_sample(self, noise, mfcc, sample_names, epoch, test=True):
 

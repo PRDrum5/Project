@@ -33,10 +33,17 @@ def gan_main(config):
     disc_loss = config.get_func('discriminator,loss_func', losses)
     gen_loss = config.get_func('generator,loss_func', losses)
 
+    disc_scheduler = config.get('discriminator,lr_scheduler', 
+                               torch.optim.lr_scheduler, 
+                               disc_optimizer)
+    gen_scheduler = config.get('generator,lr_scheduler', 
+                              torch.optim.lr_scheduler, 
+                              gen_optimizer)
+
     #TODO add Trainer selection to config
     trainer = MfccShapeTrainer(config, data_loader, test_loader,
-                         disc_model, disc_loss, disc_optimizer, 
-                         gen_model, gen_loss, gen_optimizer)
+                         disc_model, disc_loss, disc_optimizer, disc_scheduler, 
+                         gen_model, gen_loss, gen_optimizer, gen_scheduler)
     trainer.train()
 
 def gan_two_critics_main(config):
