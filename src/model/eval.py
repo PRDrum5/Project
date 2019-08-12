@@ -7,7 +7,6 @@ from utils import fix_seed
 import numpy as np
 
 def gan_eval(config):
-    data_loader = config.get('data_loader', data_loaders)
     test_loader = config.get('test_loader', data_loaders)
 
     gen_model = config.get('generator,arch', models)
