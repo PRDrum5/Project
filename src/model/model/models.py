@@ -205,6 +205,53 @@ class Mfcc_Shape_Gen_Shrink(BaseModel):
         x = self.sig7(self.conv7(x))
         return x
 
+class Mfcc_Shape_Gen_Lin(BaseModel):
+    def __init__(self, z_dim, shapes_dim):
+        super().__init__()
+
+        in_dim = z_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 256, kernel_size=(4,3), 
+                                           stride=(2,1), 
+                                           padding=(0,7))
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(256, 256, kernel_size=(4,3), stride=(2,1))
+        self.relu2 = nn.ReLU()
+
+        self.conv3 = nn.Conv2d(256, 128, kernel_size=(3,3), stride=(1,1))
+        self.relu3 = nn.ReLU()
+
+        self.conv4 = nn.Conv2d(128, 128, kernel_size=(3,3), stride=(1,1))
+        self.relu4 = nn.ReLU()
+
+        self.conv5 = nn.Conv2d(128, 64, kernel_size=(3,3), stride=(1,1))
+        self.relu5 = nn.ReLU()
+
+        self.conv6 = nn.Conv2d(64, 32, kernel_size=(3,3), stride=(1,1))
+        self.relu6 = nn.ReLU()
+
+        self.lin7 = nn.Linear(4320, 172)
+        self.sig7 = nn.Sigmoid()
+
+
+    def forward(self, noise, mfcc):
+        batch_size = mfcc.size(0)
+        x = torch.cat((noise, mfcc), dim=1)
+    
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.relu3(self.conv3(x))
+        x = self.relu4(self.conv4(x))
+        x = self.relu5(self.conv5(x))
+        x = self.relu6(self.conv6(x))
+    
+        x = x.view(batch_size, 4320)
+        x = self.sig7(self.lin7(x))
+    
+        x = x.view(batch_size, 4, 1, 43)
+        return x
+
 class Mfcc_Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
