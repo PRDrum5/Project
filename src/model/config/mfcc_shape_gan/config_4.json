@@ -38,7 +38,7 @@
     },
     "generator": {
         "arch": {
-            "spec": "Mfcc_Shape_Gen_Small_Lin",
+            "spec": "Mfcc_Shape_Gen_Small_2",
             "args": {
                 "z_dim": 100,
                 "shapes_dim": 4
