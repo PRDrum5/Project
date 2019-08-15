@@ -307,7 +307,7 @@ class Mfcc_Shape_Gen_Small_Lin(BaseModel):
         x = self.relu2(self.conv2(x))
         x = self.relu3(self.conv3(x))
         x = self.relu4(self.conv4(x))
-        x = self.relu(self.conv5(x))
+        x = self.relu5(self.conv5(x))
 
         x = x.view(batch_size, 180)
         x = self.sig6(self.lin6(x))
