@@ -111,7 +111,7 @@ def classify_main(config):
 if __name__ == "__main__":
     fix_seed(0)
 
-    config = GetConfig('./config/mfcc_shape_gan/config_4.json')
+    config = GetConfig('./config/mfcc_shape_gan/config_5.json')
     gan_main(config)
 
     #config = GetConfig('./config/two_critics_mfcc_shape_gan/config_2.json')
