@@ -22,7 +22,8 @@
         "spec": "ExponentialLR",
         "args": {
             "gamma": 0.99
-        },
+        }
+    },
     "data_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
