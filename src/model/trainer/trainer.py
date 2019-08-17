@@ -474,10 +474,12 @@ class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
 
 class LrwShapeTrainer(BaseTrainer):
     def __init__(self, config, train_loader,
-                 model, loss_func, optimizer, val_loader=None):
+                 model, loss_func, optimizer, scheduler=None, val_loader=None):
     
         self.train_loader = train_loader
         self.val_loader = val_loader
+
+        self.scheduler = scheduler
 
         self.batch_size = self.train_loader.batch_size
 
@@ -544,6 +546,8 @@ class LrwShapeTrainer(BaseTrainer):
 
         if self.val_step:
             self._val_epoch(epoch)
+
+        self.scheduler.step() 
 
     def _val_epoch(self, epoch):
         total_loss = 0

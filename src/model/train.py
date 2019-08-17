@@ -103,9 +103,13 @@ def classify_main(config):
 
     loss = config.get_func('loss_func', losses)
 
+    scheduler = config.get('lr_scheduler', 
+                            torch.optim.lr_scheduler, 
+                            optimizer)
+
     #TODO add Trainer selection to config
     trainer = LrwShapeTrainer(config, train_loader, model,
-                              loss, optimizer, val_loader)
+                              loss, optimizer, scheduler, val_loader)
     trainer.train()
 
 if __name__ == "__main__":
