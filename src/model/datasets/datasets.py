@@ -110,8 +110,8 @@ class WavBlendshapesDataset(Dataset):
 
         self.stats = {'mfcc_min': np.inf,
                       'mfcc_max': -np.inf,
-                      'shape_min': 4*[np.inf],
-                      'shape_max': 4*[-np.inf]}
+                      'shape_min': np.inf,
+                      'shape_max': -np.inf}
 
         self._collect_stats()
 
@@ -157,40 +157,30 @@ class WavBlendshapesDataset(Dataset):
         Finds max and min values for blendshape params and mfcc for dataset.
         """
         try:
-            with open('data/lrw_audio_stats_seperate.pkl', 'rb') as f:
+            with open('data/lrw_audio_stats.pkl', 'rb') as f:
                 self.stats = pickle.load(f)
         except:
             print("Collecting dataset statistics...\n")
             for idx in tqdm(range(self.__len__())):
                 mfcc, shape_param, _item_name = self._get_data_pair(idx)
 
-                idx_shape_min = idx_shape_max = 4*[0]
-
                 idx_mfcc_min = mfcc.min()
                 idx_mfcc_max = mfcc.max()
 
-                idx_shape_min[0] = shape_param[0,:].min()
-                idx_shape_min[1] = shape_param[1,:].min()
-                idx_shape_min[2] = shape_param[2,:].min()
-                idx_shape_min[3] = shape_param[3,:].min()
-
-                idx_shape_max[0] = shape_param[0,:].max()
-                idx_shape_max[1] = shape_param[1,:].max()
-                idx_shape_max[2] = shape_param[2,:].max()
-                idx_shape_max[3] = shape_param[3,:].max()
+                idx_shape_min = shape_param.min()
+                idx_shape_max = shape_param.max()
 
                 if idx_mfcc_min < self.stats['mfcc_min']: 
                     self.stats['mfcc_min'] = idx_mfcc_min
                 if idx_mfcc_max > self.stats['mfcc_max']: 
                     self.stats['mfcc_max'] = idx_mfcc_max
 
-                for i in range(len(idx_shape_min)):
-                    if idx_shape_min[i] < self.stats['shape_min'][i]:
-                        self.stats['shape_min'][i] = idx_shape_min[i]
-                    if idx_shape_max[i] > self.stats['shape_max'][i]:
-                        self.stats['shape_max'][i] = idx_shape_max[i]
+                if idx_shape_min < self.stats['shape_min']:
+                    self.stats['shape_min'] = idx_shape_min
+                if idx_shape_max > self.stats['shape_max']:
+                    self.stats['shape_max'] = idx_shape_max
 
-            with open('data/lrw_audio_stats_seperate.pkl', 'wb') as f:
+            with open('data/lrw_audio_stats.pkl', 'wb') as f:
                 pickle.dump(self.stats, f, pickle.HIGHEST_PROTOCOL)
             
     def _mfcc(self, audio_data, sample_rate, n_mfcc=50):
@@ -235,10 +225,9 @@ class WavBlendshapesDataset(Dataset):
                     self.stats['mfcc_min'], 
                     self.stats['mfcc_max'])
         
-        for i in range(shape_param.shape[0]):
-            shape_param[i,:] = norm(shape_param[i,:],
-                                    self.stats['shape_min'][i],
-                                    self.stats['shape_max'][i])
+        shape_param = norm(shape_param,
+                           self.stats['shape_min'],
+                           self.stats['shape_max'])
 
         return {'mfcc': mfcc, 'shape_param': shape_param}
     
@@ -251,10 +240,9 @@ class WavBlendshapesDataset(Dataset):
 
         min_vals = self.stats['shape_min']
         max_vals = self.stats['shape_max']
-        for i in range(shape_param.shape[1]):
-            shape_param[i,:] = _denorm(shape_param[i,:],
-                                       min_vals[i],
-                                       max_vals[i])
+        shape_param = _denorm(shape_param,
+                              min_vals,
+                              max_vals)
 
         return shape_param
 
@@ -274,7 +262,6 @@ class DropFramesToMfccDuration(object):
         len_diff = shape_param_len - mfcc_len
 
         random_drop = torch.rand(1, len_diff)
-        1/0
         return sample
 
 
@@ -433,9 +420,8 @@ class LrwShapesToTensor(object):
         label = sample['label']
         shape_params = sample['shape_params']
 
-        n_labels = 500
         label = torch.from_numpy(label)
 
-        shape_params = torch.from_numpy(shape_params)#.unsqueeze(0)
+        shape_params = torch.from_numpy(shape_params).unsqueeze(0)
 
         return {'label': label, 'shape_params': shape_params}

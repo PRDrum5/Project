@@ -420,6 +420,66 @@ class Shape_Critic(BaseModel):
         x = self.tanh9(self.lin9(x))
         return x
 
+class Mfcc_Multi_Towers_Classifier(BaseModel):
+    def __init__(self):
+        super().__init__()
+
+        self.conv1 = nn.Conv2d(1, 512, kernel_size=(3,1))
+        self.bn1 = nn.BatchNorm2d(512)
+        self.relu1 = nn.ReLU()
+        self.drop1 = nn.Dropout(0.0)
+
+        self.conv2 = nn.Conv2d(512, 512, kernel_size=(2,1))
+        self.bn2 = nn.BatchNorm2d(512)
+        self.relu2 = nn.ReLU()
+        self.drop2 = nn.Dropout(0.0)
+
+        self.conv3 = nn.Conv1d(512, 256, kernel_size=3)
+        self.bn3 = nn.BatchNorm1d(256)
+        self.relu3 = nn.ReLU()
+        self.drop3 = nn.Dropout(0.0)
+        self.max_pool3 = nn.MaxPool1d(kernel_size=3, stride=2)
+
+        self.conv4 = nn.Conv1d(256, 128, kernel_size=3)
+        self.bn4 = nn.BatchNorm1d(128)
+        self.relu4 = nn.ReLU()
+        self.drop4 = nn.Dropout(0.0)
+        self.max_pool4 = nn.MaxPool1d(kernel_size=2, stride=2)
+
+        self.conv5 = nn.Conv1d(128, 64, kernel_size=3)
+        self.relu5 = nn.ReLU()
+
+        self.lin6 = nn.Linear(448, 500)
+        self.softmax6 = nn.LogSoftmax()
+
+    def forward(self, shapes):
+        """
+        shapes: channel = n_params, length = n_frames
+        shapes: [batch_size, 1, 4, 43]
+        """
+        batch_size = shapes.size(0)
+
+        x = self.relu1(self.bn1(self.conv1(shapes)))
+        x = self.drop1(x)
+        x = self.relu2(self.bn2(self.conv2(x)))
+        x = self.drop2(x)
+
+        x = x.squeeze(2)
+
+        x = self.relu3(self.bn3(self.conv3(x)))
+        x = self.max_pool3(x)
+
+        x = self.relu4(self.bn4(self.conv4(x)))
+        x = self.drop4(x)
+        x = self.max_pool4(x)
+
+        x = self.relu5(self.conv5(x))
+
+        x = x.view(batch_size, -1)
+        x = self.softmax6(self.lin6(x))
+
+        return x
+
 class Lrw_Shape_Classifier(BaseModel):
     def __init__(self):
         super().__init__()
@@ -427,42 +487,44 @@ class Lrw_Shape_Classifier(BaseModel):
         self.conv1 = nn.Conv1d(4, 32, kernel_size=3)
         self.bn1 = nn.BatchNorm1d(32)
         self.relu1 = nn.ReLU()
-        self.drop1 = nn.Dropout(0.05)
+        self.drop1 = nn.Dropout(0)
 
         self.conv2 = nn.Conv1d(32, 64, kernel_size=3)
         self.bn2 = nn.BatchNorm1d(64)
         self.relu2 = nn.ReLU()
-        self.drop2 = nn.Dropout(0.05)
+        self.drop2 = nn.Dropout(0)
 
         self.conv3 = nn.Conv1d(64, 128, kernel_size=3)
         self.bn3 = nn.BatchNorm1d(128)
         self.relu3 = nn.ReLU()
-        self.max_pool3 = nn.MaxPool1d(kernel_size=3, padding=1, stride=2)
+        self.max_pool3 = nn.MaxPool1d(kernel_size=3, stride=2)
 
         self.conv4 = nn.Conv1d(128, 256, kernel_size=3)
         self.bn4 = nn.BatchNorm1d(256)
         self.relu4 = nn.ReLU()
-        self.drop4 = nn.Dropout(0.05)
+        self.drop4 = nn.Dropout(0)
 
         self.conv5 = nn.Conv1d(256, 512, kernel_size=3)
         self.bn5 = nn.BatchNorm1d(512)
         self.relu5 = nn.ReLU()
-        self.max_pool5 = nn.MaxPool1d(kernel_size=3, padding=1, stride=2)
+        self.max_pool5 = nn.MaxPool1d(kernel_size=2, stride=2)
 
         self.conv6 = nn.Conv1d(512, 256, kernel_size=3)
         self.relu6 = nn.ReLU()
-        self.drop6 = nn.Dropout(0.05)
+        self.drop6 = nn.Dropout(0)
 
-        self.lin7 = nn.Linear(1536, 500)
+        self.lin7 = nn.Linear(1280, 500)
         self.softmax7 = nn.LogSoftmax()
 
     
     def forward(self, shapes):
         """
         shapes: channel = n_params, length = n_frames
-        shapes: [batch_size, 4, 43]
+        shapes: [batch_size, 1, 4, 43]
         """
         batch_size = shapes.size(0)
+
+        shapes = shapes.squeeze(1)
 
         x = self.relu1(self.bn1(self.conv1(shapes)))
         x = self.drop1(x)
