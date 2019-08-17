@@ -121,5 +121,5 @@ if __name__ == "__main__":
     #config = GetConfig('./config/two_critics_mfcc_shape_gan/config_2.json')
     #gan_two_critics_main(config)
 
-    config = GetConfig('./config/lrw_shape_classifier/config_2.json')
+    config = GetConfig('./config/lrw_shape_classifier/config.json')
     classify_main(config)
