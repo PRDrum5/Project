@@ -74,3 +74,12 @@ class DataLoaderLrwShapes(BaseDataLoader):
         super().__init__(self.dataset, self.batch_size, self.shuffle,
                          self.train_split, self.n_workers, 
                          drop_last=self.drop_last)
+
+if __name__ == "__main__":
+    wav_path = '../data/lrw_audio'
+    blendshapes_path = '../data/lrw_shape_params'
+    dl = DataLoaderWavShapes(wav_path, blendshapes_path, batch_size=1)
+    fixed_sample = next(iter(dl))
+    fixed_shapes = fixed_sample['shape_param']
+    shapes_denorm = dl.dataset.denorm(fixed_shapes)
+    print(shapes_denorm)
