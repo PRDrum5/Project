@@ -31,7 +31,7 @@
             "blendshapes_dir": "data/lrw_shape_params/train",
             "batch_size": 128,
             "shuffle": true,
-            "train_split": 0.625,
+            "train_split": [0.4, 0.3],
             "n_workers": 6,
             "tsfm": ["LrwShapesToTensor"]
         }

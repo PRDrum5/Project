@@ -39,7 +39,9 @@ def gan_eval(config):
             np.save(save_path, gen_sample_num)
 
 def classifer_eval(config):
-    test_loader = config.get('test_loader', data_loaders)
+    train_loader = config.get('test_loader', data_loaders)
+    val_loader = train_loader.val_split()
+    test_loader = train_loader.test_split()
 
     model = config.get('arch', models)
     model_path = config['model_path']
@@ -51,6 +53,38 @@ def classifer_eval(config):
 
     correct = 0
 
+    batch_size = config['test_loader']['args']['batch_size']
+
+    for batch_idx, sample in enumerate(train_loader):
+        label = sample['label']
+
+        shape_params = sample['shape_params']
+
+        output = model(shape_params)
+        preds = output.argmax(dim=1, keepdim=True)
+        correct += preds.eq(label.view_as(preds)).sum().item()
+
+    print(correct)
+    print(len(train_loader) * batch_size)
+    acc = correct / (len(train_loader) * batch_size)
+    print(acc)
+
+    correct = 0
+    for batch_idx, sample in enumerate(val_loader):
+        label = sample['label']
+
+        shape_params = sample['shape_params']
+
+        output = model(shape_params)
+        preds = output.argmax(dim=1, keepdim=True)
+        correct += preds.eq(label.view_as(preds)).sum().item()
+
+    print(correct)
+    print(len(val_loader) * batch_size)
+    acc = correct / (len(val_loader) * batch_size)
+    print(acc)
+
+    correct = 0
     for batch_idx, sample in enumerate(test_loader):
         label = sample['label']
 
@@ -61,8 +95,8 @@ def classifer_eval(config):
         correct += preds.eq(label.view_as(preds)).sum().item()
 
     print(correct)
-    print(len(test_loader))
-    acc = correct / len(test_loader)
+    print(len(test_loader) * batch_size)
+    acc = correct / (len(test_loader) * batch_size)
     print(acc)
 
 if __name__ == "__main__":
