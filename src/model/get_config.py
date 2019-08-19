@@ -11,26 +11,29 @@ class GetConfig:
 
         self.config = read_json(self.config_file)
 
-        experiment_name = self.config['experiment_name']
-        out_dir = Path(self.config['trainer']['save_dir'])
-        timestamp = datetime.now().strftime(r'%Y%m%d_%H%M%S')
+        train_model = self.config['train_mode']
 
-        self.save_dir = out_dir / 'models' / experiment_name / timestamp
-        self.log_dir = out_dir / 'log' / experiment_name / timestamp
-        self.train_samples_dir = out_dir / 'samples' / 'train' / experiment_name / timestamp
-        self.test_samples_dir = out_dir / 'samples' / 'test' / experiment_name / timestamp
+        if train_model:
+            experiment_name = self.config['experiment_name']
+            out_dir = Path(self.config['trainer']['save_dir'])
+            timestamp = datetime.now().strftime(r'%Y%m%d_%H%M%S')
 
-        self.save_dir.mkdir(parents=True, exist_ok=True)
-        self.log_dir.mkdir(parents=True, exist_ok=True)
-        self.train_samples_dir.mkdir(parents=True, exist_ok=True)
-        self.test_samples_dir.mkdir(parents=True, exist_ok=True)
+            self.save_dir = out_dir / 'models' / experiment_name / timestamp
+            self.log_dir = out_dir / 'log' / experiment_name / timestamp
+            self.train_samples_dir = out_dir / 'samples' / 'train' / experiment_name / timestamp
+            self.test_samples_dir = out_dir / 'samples' / 'test' / experiment_name / timestamp
 
-        configure_logging(self.log_dir)
-        self.log_levels = {
-            0: logging.WARNING,
-            1: logging.INFO,
-            2: logging.DEBUG,
-        }
+            self.save_dir.mkdir(parents=True, exist_ok=True)
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+            self.train_samples_dir.mkdir(parents=True, exist_ok=True)
+            self.test_samples_dir.mkdir(parents=True, exist_ok=True)
+
+            configure_logging(self.log_dir)
+            self.log_levels = {
+                0: logging.WARNING,
+                1: logging.INFO,
+                2: logging.DEBUG,
+            }
         
     def get(self, name, module, *args, **kwargs):
         if ',' in name:

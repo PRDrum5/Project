@@ -38,8 +38,35 @@ def gan_eval(config):
 
             np.save(save_path, gen_sample_num)
 
+def classifer_eval(config):
+    test_loader = config.get('test_loader', data_loaders)
+
+    model = config.get('arch', models)
+    model_path = config['model_path']
+
+    checkpoint = torch.load(model_path, map_location='cpu')
+
+    model.load_state_dict(checkpoint['state_dict'])
+    model.eval()
+
+    correct = 0
+
+    for batch_idx, sample in enumerate(test_loader):
+        label = sample['label']
+
+        shape_params = sample['shape_params']
+
+        output = model(shape_params)
+        preds = output.argmax(dim=1, keepdim=True)
+        correct += preds.eq(label.view_as(preds)).sum().item()
+
+    print(correct)
+    print(len(test_loader))
+    acc = correct / len(test_loader)
+    print(acc)
+
 if __name__ == "__main__":
     fix_seed(0)
 
-    config = GetConfig('./config/mfcc_shape_gan/config_2.json')
-    gan_eval(config)
+    config = GetConfig('./config/lrw_shape_classifier/config_eval.json')
+    classifer_eval(config)

@@ -2,6 +2,7 @@
     "experiment_name": "LRW_SHAPE_CLASSIFER",
     "n_gpu": 1,
     "resume": false,
+    "train_mode": true,
 
     "arch": {
         "spec": "Lrw_Shape_Classifier",
