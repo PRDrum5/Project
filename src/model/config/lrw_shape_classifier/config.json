@@ -1,7 +1,7 @@
 {
     "experiment_name": "LRW_SHAPE_CLASSIFER",
     "n_gpu": 1,
-    "resume": true,
+    "resume": false,
 
     "arch": {
         "spec": "Lrw_Shape_Classifier",
@@ -10,7 +10,7 @@
     "optimizer": {
         "spec": "Adam",
         "args": {
-            "lr": 0.00001,
+            "lr": 0.000005,
             "weight_decay": 0,
             "amsgrad": true
         }
@@ -21,7 +21,7 @@
     "lr_scheduler": {
         "spec": "ExponentialLR",
         "args": {
-            "gamma": 0.99
+            "gamma": 0.999
         }
     },
     "data_loader": {
@@ -36,7 +36,7 @@
         }
     },
     "trainer": {
-        "epochs": 500,
+        "epochs": 1000,
         "save_dir": "saved/",
         "save_period": 100,
         "level": 2,

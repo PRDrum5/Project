@@ -553,6 +553,8 @@ class LrwShapeTrainer(BaseTrainer):
         total_loss = 0
         correct = 0
 
+        self.model.eval()
+
         with torch.no_grad():
             for batch_idx, sample in enumerate(self.val_loader):
                 step = (epoch-1) * self.len_train_epoch + batch_idx
