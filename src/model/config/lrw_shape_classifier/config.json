@@ -28,7 +28,7 @@
     "data_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
-            "blendshapes_dir": "data/lrw_shape_params/train",
+            "blendshapes_dir": "data/lrw_shape_params/data",
             "batch_size": 128,
             "shuffle": true,
             "train_split": [0.4, 0.3],
