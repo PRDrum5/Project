@@ -1,0 +1,20 @@
+{
+    "experiment_name": "LRW_SHAPE_CLASSIFER_EVAL",
+    "n_gpu": 1,
+    "train_mode": false,
+    "model_path": "trained_models/lrw_shape_classifier/20190817_213423/model.path",
+
+    "arch": {
+        "spec": "Lrw_Shape_Classifier",
+        "args": {}
+    },
+    "test_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params/test",
+            "batch_size": 100,
+            "n_workers": 6,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    }
+}

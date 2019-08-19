@@ -63,17 +63,24 @@ class LrwBlendshapesDataset(Dataset):
         """
         Finds max and min values for blendshape params for dataset.
         """
-        print("Collecting dataset statistics LRW...\n")
-        for idx in tqdm(range(self.__len__())):
-            shape_param, _label = self._get_sample(idx)
+        try:
+            with open('data/lrw_shape_stats.pkl', 'rb') as f:
+                self.stats = pickle.load(f)
+        except:
+            print("Collecting dataset statistics LRW...\n")
+            for idx in tqdm(range(self.__len__())):
+                shape_param, _label = self._get_sample(idx)
 
-            idx_shape_min = shape_param.min()
-            idx_shape_max = shape_param.max()
+                idx_shape_min = shape_param.min()
+                idx_shape_max = shape_param.max()
 
-            if idx_shape_min < self.stats['shape_min']: 
-                self.stats['shape_min'] = idx_shape_min
-            if idx_shape_max > self.stats['shape_max']: 
-                self.stats['shape_max'] = idx_shape_max
+                if idx_shape_min < self.stats['shape_min']: 
+                    self.stats['shape_min'] = idx_shape_min
+                if idx_shape_max > self.stats['shape_max']: 
+                    self.stats['shape_max'] = idx_shape_max
+
+            with open('data/lrw_shape_stats.pkl', 'wb') as f:
+                pickle.dump(self.stats, f, pickle.HIGHEST_PROTOCOL)
 
     def _normalize(self, sample):
         """

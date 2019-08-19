@@ -542,6 +542,8 @@ class LrwShapeTrainer(BaseTrainer):
                     'Loss: {:.6f} '
                     'Accuracy: {:.6f}'.format(epoch, batch_idx, mean_loss, acc))
 
+        self.writer.add_scalar('train/correct', correct)
+
         train_loss = total_loss / self.len_train_epoch
 
         if self.val_step:
@@ -552,6 +554,8 @@ class LrwShapeTrainer(BaseTrainer):
     def _val_epoch(self, epoch):
         total_loss = 0
         correct = 0
+
+        self.model.eval()
 
         with torch.no_grad():
             for batch_idx, sample in enumerate(self.val_loader):
@@ -584,3 +588,4 @@ class LrwShapeTrainer(BaseTrainer):
                     (epoch-1) * self.len_train_epoch + batch_idx)
                 self.writer.add_scalar('val/loss', loss)
                 self.writer.add_scalar('val/accuracy', acc)
+        self.writer.add_scalar('val/correct', correct)

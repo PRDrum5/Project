@@ -2,6 +2,7 @@
     "experiment_name": "LRW_SHAPE_CLASSIFER",
     "n_gpu": 1,
     "resume": true,
+    "train_mode": true,
 
     "arch": {
         "spec": "Mfcc_Multi_Towers_Classifier",
