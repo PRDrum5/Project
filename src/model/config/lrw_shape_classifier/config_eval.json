@@ -2,7 +2,7 @@
     "experiment_name": "LRW_SHAPE_CLASSIFER_EVAL",
     "n_gpu": 1,
     "train_mode": false,
-    "model_path": "trained_models/lrw_shape_classifier/20190819_152252/model.pth",
+    "model_path": "trained_models/lrw_shape_classifier/20190819_200001/checkpoint-1000.pth",
 
     "arch": {
         "spec": "Lrw_Shape_Classifier",
@@ -11,10 +11,27 @@
     "test_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
-            "blendshapes_dir": "data/lrw_shape_params/data",
+            "blendshapes_dir": "data/lrw_shape_params/test",
             "batch_size": 100,
-            "train_split": [0.4, 0.3],
-            "n_workers": 6,
+            "n_workers": 0,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "train_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params/train",
+            "batch_size": 100,
+            "n_workers": 0,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "val_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params/val",
+            "batch_size": 100,
+            "n_workers": 0,
             "tsfm": ["LrwShapesToTensor"]
         }
     }

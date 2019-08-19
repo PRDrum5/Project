@@ -90,8 +90,8 @@ def gan_two_critics_main(config):
 def classify_main(config):
     logger = config.get_logger('train')
 
-    train_loader = config.get('data_loader', data_loaders)
-    val_loader = train_loader.val_split()
+    train_loader = config.get('train_loader', data_loaders)
+    val_loader = config.get('val_loader', data_loaders)
 
     model = config.get('arch', models)
 

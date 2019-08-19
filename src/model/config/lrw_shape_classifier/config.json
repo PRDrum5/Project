@@ -25,13 +25,22 @@
             "gamma": 0.999
         }
     },
-    "data_loader": {
+    "train_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
-            "blendshapes_dir": "data/lrw_shape_params/data",
+            "blendshapes_dir": "data/lrw_shape_params/train",
             "batch_size": 128,
             "shuffle": true,
-            "train_split": [0.4, 0.3],
+            "n_workers": 6,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "val_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params/test",
+            "batch_size": 128,
+            "shuffle": true,
             "n_workers": 6,
             "tsfm": ["LrwShapesToTensor"]
         }

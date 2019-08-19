@@ -39,9 +39,9 @@ def gan_eval(config):
             np.save(save_path, gen_sample_num)
 
 def classifer_eval(config):
-    train_loader = config.get('test_loader', data_loaders)
-    val_loader = train_loader.val_split()
-    test_loader = train_loader.test_split()
+    train_loader = config.get('train_loader', data_loaders)
+    test_loader = config.get('test_loader', data_loaders)
+    val_loader = config.get('val_loader', data_loaders)
 
     model = config.get('arch', models)
     model_path = config['model_path']

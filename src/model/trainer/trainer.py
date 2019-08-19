@@ -542,8 +542,6 @@ class LrwShapeTrainer(BaseTrainer):
                     'Loss: {:.6f} '
                     'Accuracy: {:.6f}'.format(epoch, batch_idx, mean_train_loss, train_acc))
 
-        self.writer.add_scalar('train/correct', train_correct)
-
         train_loss = total_train_loss / self.len_train_epoch
 
         if self.val_step:
@@ -588,4 +586,3 @@ class LrwShapeTrainer(BaseTrainer):
                     (epoch-1) * self.len_val_epoch + batch_idx, 'val')
                 self.writer.add_scalar('val/loss', val_loss)
                 self.writer.add_scalar('val/accuracy', val_acc)
-        self.writer.add_scalar('val/correct', val_correct)

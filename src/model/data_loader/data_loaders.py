@@ -51,13 +51,11 @@ class DataLoaderLrwShapes(BaseDataLoader):
     LRW Shape parameters DataLoader
     """
     def __init__(self, blendshapes_dir, batch_size, shuffle=True,
-                 train_split=1.0, n_workers=0, drop_last=True, 
-                 tsfm=None):
+                 n_workers=0, drop_last=True, tsfm=None):
                 
         self.blendshapes_dir = blendshapes_dir
         self.batch_size = batch_size
         self.shuffle = shuffle
-        self.train_split = train_split
         self.n_workers = n_workers
         self.drop_last = drop_last
 
@@ -72,5 +70,4 @@ class DataLoaderLrwShapes(BaseDataLoader):
                                              transform=transform)
 
         super().__init__(self.dataset, self.batch_size, self.shuffle,
-                         self.train_split, self.n_workers, 
-                         drop_last=self.drop_last)
+                         self.n_workers, drop_last=self.drop_last)
