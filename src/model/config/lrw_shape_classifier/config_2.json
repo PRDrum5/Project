@@ -11,7 +11,7 @@
     "optimizer": {
         "spec": "Adam",
         "args": {
-            "lr": 0.000005,
+            "lr": 0.000001,
             "weight_decay": 0,
             "amsgrad": true
         }
