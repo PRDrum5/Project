@@ -9,11 +9,10 @@
         "args": {}
     },
     "optimizer": {
-        "spec": "Adam",
+        "spec": "RMSprop",
         "args": {
-            "lr": 0.000005,
-            "weight_decay": 0,
-            "amsgrad": true
+            "lr": 0.00005,
+            "weight_decay": 0.005
         }
     },
     "loss_func": {
@@ -22,7 +21,7 @@
     "lr_scheduler": {
         "spec": "ExponentialLR",
         "args": {
-            "gamma": 0.999
+            "gamma": 0.99
         }
     },
     "train_loader": {
@@ -38,7 +37,7 @@
     "val_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
-            "blendshapes_dir": "data/lrw_shape_params/test",
+            "blendshapes_dir": "data/lrw_shape_params/val",
             "batch_size": 128,
             "shuffle": true,
             "n_workers": 6,
@@ -46,7 +45,7 @@
         }
     },
     "trainer": {
-        "epochs": 1000,
+        "epochs": 100,
         "save_dir": "saved/",
         "save_period": 100,
         "level": 2,
