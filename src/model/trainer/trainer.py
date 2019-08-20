@@ -505,6 +505,7 @@ class LrwShapeTrainer(BaseTrainer):
 
             # Early stopping
             if old_val_ave < running_ave_val_loss:
+                self._save_checkpoint(epoch)
                 break
             else:
                 old_val_ave = running_ave_val_loss
