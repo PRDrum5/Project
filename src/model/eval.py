@@ -4,6 +4,7 @@ from model import losses, models
 from data_loader import data_loaders
 from get_config import GetConfig
 from utils import fix_seed
+from tqdm import tqdm
 import numpy as np
 
 def gan_eval(config):
@@ -51,26 +52,19 @@ def classifer_eval(config):
     model.load_state_dict(checkpoint['state_dict'])
     model.eval()
 
-    correct = 0
 
     batch_size = config['test_loader']['args']['batch_size']
 
-    for batch_idx, sample in enumerate(train_loader):
-        label = sample['label']
+    train_acc = eval_classification_accuracy(model, train_loader, batch_size)
+    val_acc = eval_classification_accuracy(model, val_loader, batch_size)
+    test_acc = eval_classification_accuracy(model, test_loader, batch_size)
+    print(f'Training Accuracy: {train_acc}')
+    print(f'Validation Accuracy: {val_acc}')
+    print(f'Test Accuracy: {test_acc}')
 
-        shape_params = sample['shape_params']
-
-        output = model(shape_params)
-        preds = output.argmax(dim=1, keepdim=True)
-        correct += preds.eq(label.view_as(preds)).sum().item()
-
-    print(correct)
-    print(len(train_loader) * batch_size)
-    acc = correct / (len(train_loader) * batch_size)
-    print(acc)
-
+def eval_classification_accuracy(model, data_loader, batch_size):
     correct = 0
-    for batch_idx, sample in enumerate(val_loader):
+    for batch_idx, sample in tqdm(enumerate(data_loader)):
         label = sample['label']
 
         shape_params = sample['shape_params']
@@ -79,25 +73,9 @@ def classifer_eval(config):
         preds = output.argmax(dim=1, keepdim=True)
         correct += preds.eq(label.view_as(preds)).sum().item()
 
-    print(correct)
-    print(len(val_loader) * batch_size)
-    acc = correct / (len(val_loader) * batch_size)
-    print(acc)
-
-    correct = 0
-    for batch_idx, sample in enumerate(test_loader):
-        label = sample['label']
-
-        shape_params = sample['shape_params']
-
-        output = model(shape_params)
-        preds = output.argmax(dim=1, keepdim=True)
-        correct += preds.eq(label.view_as(preds)).sum().item()
-
-    print(correct)
-    print(len(test_loader) * batch_size)
-    acc = correct / (len(test_loader) * batch_size)
-    print(acc)
+    n_samples = len(data_loader) * batch_size
+    acc = correct / n_samples
+    return acc
 
 if __name__ == "__main__":
     fix_seed(0)
