@@ -508,6 +508,8 @@ class LrwShapeTrainer(BaseTrainer):
                 continue
             else:
                 old_val_ave = running_ave_val_loss
+                print(old_val_ave)
+                print(self.val_loss_hist)
 
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
@@ -604,6 +606,6 @@ class LrwShapeTrainer(BaseTrainer):
     def running_loss_ave(self, loss=None):
         if loss:
             del self.val_loss_hist[0]
-            self.val_loss_hist.append(loss)
+            self.val_loss_hist.append(loss.item())
         average = sum(self.val_loss_hist) / len(self.val_loss_hist)
         return average
