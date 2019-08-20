@@ -9,11 +9,10 @@
         "args": {}
     },
     "optimizer": {
-        "spec": "Adam",
+        "spec": "RMSprop",
         "args": {
-            "lr": 0.000001,
-            "weight_decay": 0,
-            "amsgrad": true
+            "lr": 0.0001,
+            "weight_decay": 0.0
         }
     },
     "loss_func": {
@@ -25,19 +24,28 @@
             "gamma": 0.99
     	}
     },
-    "data_loader": {
+    "train_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
             "blendshapes_dir": "data/lrw_shape_params/train",
             "batch_size": 128,
             "shuffle": true,
-            "train_split": 0.625,
-            "n_workers": 0,
+            "n_workers": 6,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "val_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params/val",
+            "batch_size": 128,
+            "shuffle": true,
+            "n_workers": 6,
             "tsfm": ["LrwShapesToTensor"]
         }
     },
     "trainer": {
-        "epochs": 500,
+        "epochs": 100,
         "save_dir": "saved/",
         "save_period": 100,
         "level": 2,

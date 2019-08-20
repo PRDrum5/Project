@@ -427,26 +427,26 @@ class Mfcc_Multi_Towers_Classifier(BaseModel):
         self.conv1 = nn.Conv2d(1, 512, kernel_size=(3,1))
         self.bn1 = nn.BatchNorm2d(512)
         self.relu1 = nn.ReLU()
-        self.drop1 = nn.Dropout(0.0)
+        self.drop1 = nn.Dropout(0.5)
 
         self.conv2 = nn.Conv2d(512, 256, kernel_size=(2,1))
         self.bn2 = nn.BatchNorm2d(256)
         self.relu2 = nn.ReLU()
-        self.drop2 = nn.Dropout(0.0)
+        self.drop2 = nn.Dropout(0.5)
 
-        self.conv3 = nn.Conv1d(256, 256, kernel_size=3)
-        self.bn3 = nn.BatchNorm1d(256)
+        self.conv3 = nn.Conv1d(256, 128, kernel_size=3)
+        self.bn3 = nn.BatchNorm1d(128)
         self.relu3 = nn.ReLU()
-        self.drop3 = nn.Dropout(0.0)
+        self.drop3 = nn.Dropout(0.5)
         self.max_pool3 = nn.MaxPool1d(kernel_size=3, stride=2)
 
-        self.conv4 = nn.Conv1d(256, 256, kernel_size=3)
-        self.bn4 = nn.BatchNorm1d(256)
+        self.conv4 = nn.Conv1d(128, 64, kernel_size=3)
+        self.bn4 = nn.BatchNorm1d(64)
         self.relu4 = nn.ReLU()
-        self.drop4 = nn.Dropout(0.0)
+        self.drop4 = nn.Dropout(0.5)
         self.max_pool4 = nn.MaxPool1d(kernel_size=2, stride=2)
 
-        self.conv5 = nn.Conv1d(256, 64, kernel_size=3)
+        self.conv5 = nn.Conv1d(64, 64, kernel_size=3)
         self.relu5 = nn.ReLU()
 
         self.lin6 = nn.Linear(448, 500)
@@ -487,12 +487,12 @@ class Lrw_Shape_Classifier(BaseModel):
         self.conv1 = nn.Conv1d(4, 32, kernel_size=3)
         self.bn1 = nn.BatchNorm1d(32)
         self.relu1 = nn.ReLU()
-        self.drop1 = nn.Dropout(0)
+        self.drop1 = nn.Dropout(0.0)
 
         self.conv2 = nn.Conv1d(32, 64, kernel_size=3)
         self.bn2 = nn.BatchNorm1d(64)
         self.relu2 = nn.ReLU()
-        self.drop2 = nn.Dropout(0)
+        self.drop2 = nn.Dropout(0.0)
 
         self.conv3 = nn.Conv1d(64, 128, kernel_size=3)
         self.bn3 = nn.BatchNorm1d(128)
@@ -502,7 +502,7 @@ class Lrw_Shape_Classifier(BaseModel):
         self.conv4 = nn.Conv1d(128, 256, kernel_size=3)
         self.bn4 = nn.BatchNorm1d(256)
         self.relu4 = nn.ReLU()
-        self.drop4 = nn.Dropout(0)
+        self.drop4 = nn.Dropout(0.0)
 
         self.conv5 = nn.Conv1d(256, 512, kernel_size=3)
         self.bn5 = nn.BatchNorm1d(512)
@@ -511,7 +511,7 @@ class Lrw_Shape_Classifier(BaseModel):
 
         self.conv6 = nn.Conv1d(512, 256, kernel_size=3)
         self.relu6 = nn.ReLU()
-        self.drop6 = nn.Dropout(0)
+        self.drop6 = nn.Dropout(0.0)
 
         self.lin7 = nn.Linear(1280, 500)
         self.softmax7 = nn.LogSoftmax()
