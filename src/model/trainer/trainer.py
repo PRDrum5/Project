@@ -508,8 +508,6 @@ class LrwShapeTrainer(BaseTrainer):
                 continue
             else:
                 old_val_ave = running_ave_val_loss
-                print(old_val_ave)
-                print(self.val_loss_hist)
 
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
