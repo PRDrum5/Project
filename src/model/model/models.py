@@ -427,23 +427,23 @@ class Mfcc_Multi_Towers_Classifier(BaseModel):
         self.conv1 = nn.Conv2d(1, 512, kernel_size=(3,1))
         self.bn1 = nn.BatchNorm2d(512)
         self.relu1 = nn.ReLU()
-        self.drop1 = nn.Dropout(0.5)
+        self.drop1 = nn.Dropout(0.2)
 
         self.conv2 = nn.Conv2d(512, 256, kernel_size=(2,1))
         self.bn2 = nn.BatchNorm2d(256)
         self.relu2 = nn.ReLU()
-        self.drop2 = nn.Dropout(0.5)
+        self.drop2 = nn.Dropout(0.2)
 
         self.conv3 = nn.Conv1d(256, 128, kernel_size=3)
         self.bn3 = nn.BatchNorm1d(128)
         self.relu3 = nn.ReLU()
-        self.drop3 = nn.Dropout(0.5)
+        self.drop3 = nn.Dropout(0.2)
         self.max_pool3 = nn.MaxPool1d(kernel_size=3, stride=2)
 
         self.conv4 = nn.Conv1d(128, 64, kernel_size=3)
         self.bn4 = nn.BatchNorm1d(64)
         self.relu4 = nn.ReLU()
-        self.drop4 = nn.Dropout(0.5)
+        self.drop4 = nn.Dropout(0.2)
         self.max_pool4 = nn.MaxPool1d(kernel_size=2, stride=2)
 
         self.conv5 = nn.Conv1d(64, 64, kernel_size=3)
