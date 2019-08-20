@@ -504,8 +504,8 @@ class LrwShapeTrainer(BaseTrainer):
             running_ave_val_loss = self.running_loss_ave(current_val_loss)
 
             # Early stopping
-            if old_val_ave > running_ave_val_loss:
-                continue
+            if old_val_ave < running_ave_val_loss:
+                break
             else:
                 old_val_ave = running_ave_val_loss
 
@@ -536,12 +536,9 @@ class LrwShapeTrainer(BaseTrainer):
             train_loss.backward()
             self.optimizer.step()
 
-            self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
-            self.writer.add_scalar('train/loss', train_loss)
+
 
             train_acc = train_correct / ((batch_idx+1) * self.batch_size)
-            self.writer.add_scalar('train/accuracy', train_acc)
-
             total_train_loss += train_loss
 
             if batch_idx % self.log_step == 0:
@@ -553,7 +550,9 @@ class LrwShapeTrainer(BaseTrainer):
                     'Loss: {:.6f} '
                     'Accuracy: {:.6f}'.format(epoch, batch_idx, mean_train_loss, train_acc))
 
-        train_loss = total_train_loss / self.len_train_epoch
+            self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
+            self.writer.add_scalar('train/loss', mean_train_loss)
+            self.writer.add_scalar('train/accuracy', train_acc)
 
         if self.val_step:
             val_loss = self._val_epoch(epoch)
@@ -596,7 +595,7 @@ class LrwShapeTrainer(BaseTrainer):
                             epoch, batch_idx, mean_val_loss, val_acc))
                 self.writer.set_step(
                     (epoch-1) * self.len_val_epoch + batch_idx, 'val')
-                self.writer.add_scalar('val/loss', val_loss)
+                self.writer.add_scalar('val/loss', mean_val_loss)
                 self.writer.add_scalar('val/accuracy', val_acc)
     
         return mean_val_loss
