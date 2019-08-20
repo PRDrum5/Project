@@ -488,6 +488,7 @@ class LrwShapeTrainer(BaseTrainer):
         if val_loader:
             self.val_step = True
             self.len_val_epoch = len(self.val_loader)
+            self.val_loss_hist = [np.inf] * config['early_stopping']['length']
         else:
             self.val_step = False
 
@@ -496,8 +497,15 @@ class LrwShapeTrainer(BaseTrainer):
         super().__init__(config, model, loss_func, optimizer)
     
     def train(self):
+        old_val_ave = self.running_loss_ave()
+
         for epoch in range(1, self.epochs+1):
-            self._training_epoch(epoch)
+            current_val_loss = self._training_epoch(epoch)
+            running_ave_val_loss = self.running_loss_ave(current_val_loss)
+
+            # Early stopping
+            if old_val_ave > running_ave_val_loss:
+                continue
 
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch)
@@ -505,6 +513,7 @@ class LrwShapeTrainer(BaseTrainer):
     def _training_epoch(self, epoch):
         self.model.train()
 
+        val_loss = np.inf
         total_train_loss = 0
         train_correct = 0
 
@@ -545,9 +554,10 @@ class LrwShapeTrainer(BaseTrainer):
         train_loss = total_train_loss / self.len_train_epoch
 
         if self.val_step:
-            self._val_epoch(epoch)
+            val_loss = self._val_epoch(epoch)
 
         self.scheduler.step() 
+        return val_loss
 
     def _val_epoch(self, epoch):
         total_val_loss = 0
@@ -586,3 +596,12 @@ class LrwShapeTrainer(BaseTrainer):
                     (epoch-1) * self.len_val_epoch + batch_idx, 'val')
                 self.writer.add_scalar('val/loss', val_loss)
                 self.writer.add_scalar('val/accuracy', val_acc)
+    
+        return mean_val_loss
+    
+    def running_loss_ave(self, loss=None):
+        if loss:
+            del self.val_loss_hist[0]
+            self.val_loss_hist.append(loss)
+        average = sum(self.val_loss_hist) / len(self.val_loss_hist)
+        return average

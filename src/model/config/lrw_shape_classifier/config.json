@@ -45,6 +45,9 @@
             "tsfm": ["LrwShapesToTensor"]
         }
     },
+    "early_stopping": {
+        "length": 10
+    },
     "trainer": {
         "epochs": 1000,
         "save_dir": "saved/",
