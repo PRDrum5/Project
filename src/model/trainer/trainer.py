@@ -492,7 +492,10 @@ class LrwShapeTrainer(BaseTrainer):
         else:
             self.val_step = False
 
-        self.log_step = int(np.sqrt(self.batch_size))
+        if config['log_all']:
+            self.log_step = 1
+        else:
+            self.log_step = int(np.sqrt(self.batch_size))
 
         super().__init__(config, model, loss_func, optimizer)
     
