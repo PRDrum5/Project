@@ -155,6 +155,8 @@ class MfccShapeTrainer(BaseGanTrainer):
                          gen_model, gen_loss, gen_optimizer)
     
     def _disc_training_epoch(self, epoch, mfcc, shape_param):
+        disc_losses = {}
+
         self.disc_model.train()
         height, width = mfcc.size(2), mfcc.size(3)
 
@@ -172,6 +174,7 @@ class MfccShapeTrainer(BaseGanTrainer):
                                                  fake=fake_shapes,
                                                  conditional=mfcc)
             self.writer.add_scalar('critic/gradient_penalty', gp)
+            disc_losses['gp'] = gp
 
             disc_loss = disc_real_loss + disc_fake_loss + gp
         else:
@@ -179,12 +182,15 @@ class MfccShapeTrainer(BaseGanTrainer):
 
         self.writer.add_scalar('critic/real_loss', disc_real_loss)
         self.writer.add_scalar('critic/fake_loss', disc_fake_loss)
+        disc_losses['real'] = disc_real_loss
+        disc_losses['fake'] = disc_fake_loss
+        disc_losses['total'] = disc_loss
 
         self.disc_model.zero_grad()
         disc_loss.backward()
         self.disc_optimizer.step()
 
-        return disc_loss
+        return disc_losses
     
     def _gen_training_epoch(self, epoch, mfcc):
         self.gen_model.train()
@@ -231,16 +237,22 @@ class MfccShapeTrainer(BaseGanTrainer):
                 shape_param = sample['shape_param'].to(self.device)
 
                 # Train Discriminator
-                disc_loss = self._disc_training_epoch(epoch, 
-                                                      mfcc, 
-                                                      shape_param)
+                disc_losses = self._disc_training_epoch(epoch, 
+                                                        mfcc, 
+                                                        shape_param)
+                disc_loss = disc_losses['total']
+
                 total_disc_loss += disc_loss
                 if batch_idx % self.log_step == 0:
                     self.logger.info(
                         'Train Epoch: {} '
                         'Batch: {} '
-                        'Critic Loss: {:.6f} '.format(
-                            epoch, batch_idx+1, disc_loss))
+                        'Critic Total Loss: {:.6f} '
+                        'Critic Gradient Penalty: {:.6f} '
+                        'Critic Fake Loss: {:.6f} '
+                        'Critic Real Loss: {:.6f} '.format(epoch, 
+                            batch_idx+1, disc_loss, disc_losses['gp'],
+                            disc_losses['fake'], disc_losses['real']))
 
                 # Train Generator
                 if batch_idx % self.disc_gen_ratio == 0:
@@ -258,8 +270,10 @@ class MfccShapeTrainer(BaseGanTrainer):
 
             disc_loss = total_disc_loss / self.len_epoch
             gen_loss = (total_gen_loss / self.len_epoch) * self.disc_gen_ratio
-            self.logger.info('Critic Loss: {} '
-                             'Gen Loss: {}'.format(disc_loss, gen_loss))
+            self.logger.info('Epoch: {}'
+                             'Ave Epoch Critic Loss: {} '
+                             'Ave Epoch Gen Loss: {}'.format(epoch, 
+                                disc_loss, gen_loss))
 
             self.disc_scheduler.step() 
             self.gen_scheduler.step() 
