@@ -292,186 +292,6 @@ class MfccShapeTrainer(BaseGanTrainer):
             save_path = os.path.join(save_dir, sample_name)
             np.save(save_path, gen_sample_num)
 
-
-class TwoCriticsMfccShapeTrainer(BaseTwoCriticsGanTrainer):
-    def __init__(self, config, data_loader, test_loader,
-                 critic_1_model, critic_1_loss_f, critic_1_optimizer,
-                 critic_2_model, critic_2_loss_f, critic_2_optimizer,
-                 gen_model, gen_loss, gen_optimizer):
-
-        self.data_loader = data_loader
-        self.test_loader = test_loader
-        self.batch_size = self.data_loader.batch_size
-        self.test_batch_size = test_loader.batch_size
-        self.len_epoch = len(self.data_loader)
-
-        self.log_step = int(np.cbrt(self.batch_size))
-        self.len_train_epoch = len(self.data_loader)
-
-        self.penalty_1 = config['mfcc_critic']['loss_func']['gradient_penalty']
-        self.penalty_2 = config['shape_critic']['loss_func']['gradient_penalty']
-        self.z_dim = config['generator']['arch']['args']['z_dim']
-
-        super().__init__(config, 
-                         critic_1_model, critic_1_loss_f, critic_1_optimizer,
-                         critic_2_model, critic_2_loss_f, critic_2_optimizer,
-                         gen_model, gen_loss, gen_optimizer)
-    
-    def _critics_training_epoch(self, epoch, mfcc, shape_param):
-        self.critic_1_model.train()
-        self.critic_2_model.train()
-        height, width = mfcc.size(2), mfcc.size(3)
-
-        noise = torch.randn(self.batch_size, self.z_dim, height, width)
-        noise = noise.to(self.device)
-
-        fake_shapes = self.gen_model(noise, mfcc).detach()
-
-        real_logit_1 = self.critic_1_model(shape_param, mfcc)
-        fake_logit_1 = self.critic_1_model(fake_shapes, mfcc)
-        critic_1_loss_values = self.critic_1_loss_f(real_logit_1, fake_logit_1)
-        critic_1_real_loss, critic_1_fake_loss = critic_1_loss_values
-
-        real_logit_2 = self.critic_2_model(shape_param)
-        fake_logit_2 = self.critic_2_model(fake_shapes)
-        critic_2_loss_values = self.critic_2_loss_f(real_logit_2, fake_logit_2)
-        critic_2_real_loss, critic_2_fake_loss = critic_2_loss_values
-
-
-        if self.penalty_1:
-            gp_1 = self.penalty_1 * gradient_penalty(self.critic_1_model, 
-                                                     real=shape_param,
-                                                     fake=fake_shapes,
-                                                     conditional=mfcc)
-            self.writer.add_scalar('critic_1/gradient_penalty', gp_1)
-
-            critic_1_loss = critic_1_real_loss + critic_1_fake_loss + gp_1
-        else:
-            critic_1_loss = critic_1_real_loss + critic_1_fake_loss
-
-        self.writer.add_scalar('critic_1/real_loss', critic_1_real_loss)
-        self.writer.add_scalar('critic_1/fake_loss', critic_1_fake_loss)
-        self.writer.add_scalar('critic_1/total_loss', critic_1_loss)
-
-        if self.penalty_2:
-            gp_2 = self.penalty_2 * gradient_penalty(self.critic_2_model, 
-                                                     real=shape_param,
-                                                     fake=fake_shapes)
-            self.writer.add_scalar('critic_2/gradient_penalty', gp_2)
-
-            critic_2_loss = critic_2_real_loss + critic_2_fake_loss + gp_2
-        else:
-            critic_2_loss = critic_2_real_loss + critic_2_fake_loss
-
-        self.writer.add_scalar('critic_2/real_loss', critic_2_real_loss)
-        self.writer.add_scalar('critic_2/fake_loss', critic_2_fake_loss)
-        self.writer.add_scalar('critic_2/total_loss', critic_2_loss)
-
-        self.critic_1_model.zero_grad()
-        critic_1_loss.backward()
-        self.critic_1_optimizer.step()
-
-        self.critic_2_model.zero_grad()
-        critic_2_loss.backward()
-        self.critic_2_optimizer.step()
-
-        total_critic_losses = critic_1_loss + critic_2_loss
-
-        return total_critic_losses
-    
-    def _gen_training_epoch(self, epoch, mfcc):
-        self.gen_model.train()
-        height, width = mfcc.size(2), mfcc.size(3)
-        noise = torch.randn(self.batch_size, self.z_dim, height, width)
-        noise = noise.to(self.device)
-
-        fake_shapes = self.gen_model(noise, mfcc)
-        fake_logit_1 = self.critic_1_model(fake_shapes, mfcc)
-        fake_logit_2 = self.critic_2_model(fake_shapes)
-
-        joint_fake_logit = fake_logit_1 + fake_logit_2
-
-        gen_loss = self.gen_loss(joint_fake_logit)
-
-        self.gen_model.zero_grad()
-        gen_loss.backward()
-        self.gen_optimizer.step()
-
-        return gen_loss
-    
-    def train(self):
-        fixed_sample = next(iter(self.test_loader))
-        fixed_mfcc = fixed_sample['mfcc'].to(self.device)
-        height, width = fixed_mfcc.size(2), fixed_mfcc.size(3)
-        fixed_noise = torch.randn(self.test_batch_size, self.z_dim, 
-                                  height, width)
-        fixed_noise = fixed_noise.to(self.device)
-        fixed_item_names = fixed_sample['item_name']
-
-        for epoch in range(1, self.epochs+1):
-            total_critics_loss = 0
-            total_gen_loss = 0
-            for batch_idx, sample in enumerate(self.data_loader):
-                step = (epoch-1) * self.len_train_epoch + batch_idx
-                self.writer.set_step(step)
-
-                mfcc = sample['mfcc'].to(self.device)
-                shape_param = sample['shape_param'].to(self.device)
-
-                # Train Critics
-                critics_loss = self._critics_training_epoch(epoch, 
-                                                            mfcc, 
-                                                            shape_param)
-                total_critics_loss += critics_loss
-                if batch_idx % self.log_step == 0:
-                    self.logger.info(
-                        'Train Epoch: {} '
-                        'Batch: {} '
-                        'Joint Critics Loss: {:.6f} '.format(
-                            epoch, batch_idx+1, critics_loss))
-
-                # Train Generator
-                if batch_idx % self.critics_gen_ratio == 0:
-                    gen_loss = self._gen_training_epoch(epoch, mfcc)
-                    total_gen_loss += gen_loss
-                    if batch_idx % self.log_step == 0:
-                        self.logger.info(
-                            'Train Epoch: {} '
-                            'Batch: {} '
-                            'Gen Loss: {:.6f} '.format(
-                                epoch, batch_idx+1, gen_loss))
-
-                self.writer.add_scalar('critics/total_loss', critics_loss)
-                self.writer.add_scalar('gen/total_loss', gen_loss)
-            
-            critics_loss = total_critics_loss / self.len_epoch
-            gen_loss = self.critics_gen_ratio * (total_gen_loss
-                                                 / self.len_epoch)
-            self.logger.info('Critics Loss: {} '
-                             'Gen Loss: {}'.format(critics_loss, gen_loss))
-
-            self.save_sample(fixed_noise, fixed_mfcc, fixed_item_names, epoch)
-            if epoch % self.save_period == 0:
-                self._save_checkpoint(epoch)
-    
-    def save_sample(self, noise, mfcc, sample_names, epoch):
-
-        gen_sample = self.gen_model(noise, mfcc).detach().to('cpu')
-        gen_sample = gen_sample.squeeze(2)
-        gen_sample = gen_sample.numpy()
-        gen_sample = self.test_loader.dataset.denorm(gen_sample)
-
-        for sample_num, sample_name in enumerate(sample_names):
-            gen_sample_num = gen_sample[sample_num,:,:]
-
-            save_dir = os.path.join(self.config.samples_dir, str(epoch))
-            if not os.path.exists(save_dir):
-                os.mkdir(save_dir)
-
-            save_path = os.path.join(save_dir, sample_name)
-            np.save(save_path, gen_sample_num)
-
-
 class LrwShapeTrainer(BaseTrainer):
     def __init__(self, config, train_loader,
                  model, loss_func, optimizer, scheduler=None, val_loader=None):
@@ -540,9 +360,12 @@ class LrwShapeTrainer(BaseTrainer):
             train_loss.backward()
             self.optimizer.step()
 
-
+            self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
+            self.writer.add_scalar('train/loss', train_loss)
 
             train_acc = train_correct / ((batch_idx+1) * self.batch_size)
+            self.writer.add_scalar('train/accuracy', train_acc)
+
             total_train_loss += train_loss
 
             if batch_idx % self.log_step == 0:
@@ -554,9 +377,7 @@ class LrwShapeTrainer(BaseTrainer):
                     'Loss: {:.6f} '
                     'Accuracy: {:.6f}'.format(epoch, batch_idx, mean_train_loss, train_acc))
 
-            self.writer.set_step((epoch-1) * self.len_train_epoch + batch_idx)
-            self.writer.add_scalar('train/loss', mean_train_loss)
-            self.writer.add_scalar('train/accuracy', train_acc)
+        train_loss = total_train_loss / self.len_train_epoch
 
         if self.val_step:
             val_loss = self._val_epoch(epoch)
@@ -599,7 +420,7 @@ class LrwShapeTrainer(BaseTrainer):
                             epoch, batch_idx, mean_val_loss, val_acc))
                 self.writer.set_step(
                     (epoch-1) * self.len_val_epoch + batch_idx, 'val')
-                self.writer.add_scalar('val/loss', mean_val_loss)
+                self.writer.add_scalar('val/loss', val_loss)
                 self.writer.add_scalar('val/accuracy', val_acc)
     
         return mean_val_loss

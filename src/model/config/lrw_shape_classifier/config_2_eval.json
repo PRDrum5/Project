@@ -2,7 +2,7 @@
     "experiment_name": "LRW_SHAPE_CLASSIFER_EVAL",
     "n_gpu": 1,
     "train_mode": false,
-    "model_path": "trained_models/lrw_shape_classifier/20190820_152833/model.pth",
+    "model_path": "trained_models/lrw_shape_classifier/multi_towers/20190821_111936/model.pth",
 
     "arch": {
         "spec": "Mfcc_Multi_Towers_Classifier",
