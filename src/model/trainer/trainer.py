@@ -142,8 +142,10 @@ class MfccShapeTrainer(BaseGanTrainer):
         self.disc_scheduler = disc_scheduler
         self.gen_scheduler = gen_scheduler
 
-        self.log_step = int(np.cbrt(self.batch_size))
-        self.len_train_epoch = len(self.data_loader)
+        if config['log_all']:
+            self.log_step = 1
+        else:
+            self.log_step = int(np.sqrt(self.batch_size))
 
         self.penalty = config['discriminator']['loss_func']['gradient_penalty']
         self.z_dim = config['generator']['arch']['args']['z_dim']
@@ -222,7 +224,7 @@ class MfccShapeTrainer(BaseGanTrainer):
             total_disc_loss = 0
             total_gen_loss = 0
             for batch_idx, sample in enumerate(self.data_loader):
-                step = (epoch-1) * self.len_train_epoch + batch_idx
+                step = (epoch-1) * self.len_epoch + batch_idx
                 self.writer.set_step(step)
 
                 mfcc = sample['mfcc'].to(self.device)

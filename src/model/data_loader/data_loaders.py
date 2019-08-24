@@ -26,7 +26,7 @@ class DataLoaderWavShapes(BaseDataLoader):
     """
     """
     def __init__(self, wav_path, blendshapes_path, batch_size, 
-                 shuffle=False, train_split=1, n_workers=1, 
+                 shuffle=False, n_workers=1, 
                  drop_last=True, tsfm=None):
 
         self.wav_path = wav_path
@@ -44,7 +44,7 @@ class DataLoaderWavShapes(BaseDataLoader):
                                              transform=transform)
 
         super().__init__(self.dataset, batch_size, shuffle,
-                         train_split, n_workers, drop_last=drop_last)
+                         n_workers, drop_last=drop_last)
 
 class DataLoaderLrwShapes(BaseDataLoader):
     """

@@ -2,6 +2,9 @@
     "experiment_name": "Mfcc_Shape_Gan",
     "n_gpu": 1,
     "resume": true,
+    "train_mode": true,
+    "log_all": false,
+
     "data_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
@@ -9,7 +12,6 @@
             "blendshapes_path": "data/lrw_shape_params/train",
             "batch_size": 128,
             "shuffle": true,
-            "train_split": 1.0,
             "n_workers": 6,
             "drop_last": true,
             "tsfm": ["SpecShapesToTensor"]
@@ -22,7 +24,6 @@
             "blendshapes_path": "data/lrw_shape_params/test",
             "batch_size": 8,
             "shuffle": true,
-            "train_split": 1.00,
             "n_workers": 6,
             "drop_last": false,
             "tsfm": ["SpecShapesToTensor"]
