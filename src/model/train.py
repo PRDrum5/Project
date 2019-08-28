@@ -11,8 +11,8 @@ import logging
 def gan_main(config):
     logger = config.get_logger('train')
 
-    data_loader = config.get('data_loader', data_loaders)
-    test_loader = config.get('test_loader', data_loaders)
+    train_loader = config.get('train_loader', data_loaders)
+    val_loader = config.get('val_loader', data_loaders)
 
     disc_model = config.get('discriminator,arch', models)
 
@@ -41,7 +41,7 @@ def gan_main(config):
                               gen_optimizer)
 
     #TODO add Trainer selection to config
-    trainer = MfccShapeTrainer(config, data_loader, test_loader,
+    trainer = MfccShapeTrainer(config, train_loader, val_loader,
                          disc_model, disc_loss, disc_optimizer, disc_scheduler, 
                          gen_model, gen_loss, gen_optimizer, gen_scheduler)
     trainer.train()

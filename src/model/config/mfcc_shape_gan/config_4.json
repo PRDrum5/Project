@@ -3,9 +3,9 @@
     "n_gpu": 1,
     "resume": true,
     "train_mode": true,
-    "log_all": false,
+    "log_all": true,
 
-    "data_loader": {
+    "train_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
             "wav_path": "data/lrw_audio/train",
@@ -17,12 +17,12 @@
             "tsfm": ["SpecShapesToTensor"]
         }
     },
-    "test_loader": {
+    "val_loader": {
         "spec": "DataLoaderWavShapes",
         "args":{
-            "wav_path": "data/lrw_audio/test",
-            "blendshapes_path": "data/lrw_shape_params/test",
-            "batch_size": 8,
+            "wav_path": "data/lrw_audio/val",
+            "blendshapes_path": "data/lrw_shape_params/val",
+            "batch_size": 128,
             "shuffle": true,
             "n_workers": 6,
             "drop_last": false,
@@ -30,7 +30,7 @@
         }
     },
     "trainer": {
-        "epochs": 500,
+        "epochs": 200,
         "disc_gen_ratio": 10,
         "save_dir": "saved/",
         "save_period": 1,
