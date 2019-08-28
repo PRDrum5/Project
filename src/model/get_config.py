@@ -21,12 +21,12 @@ class GetConfig:
             self.save_dir = out_dir / 'models' / experiment_name / timestamp
             self.log_dir = out_dir / 'log' / experiment_name / timestamp
             self.train_samples_dir = out_dir / 'samples' / 'train' / experiment_name / timestamp
-            self.test_samples_dir = out_dir / 'samples' / 'test' / experiment_name / timestamp
+            self.val_samples_dir = out_dir / 'samples' / 'val' / experiment_name / timestamp
 
             self.save_dir.mkdir(parents=True, exist_ok=True)
             self.log_dir.mkdir(parents=True, exist_ok=True)
             self.train_samples_dir.mkdir(parents=True, exist_ok=True)
-            self.test_samples_dir.mkdir(parents=True, exist_ok=True)
+            self.val_samples_dir.mkdir(parents=True, exist_ok=True)
 
             configure_logging(self.log_dir)
             self.log_levels = {
