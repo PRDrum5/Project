@@ -1,5 +1,5 @@
 {
-    "experiment_name": "Mfcc_Shape_Gan",
+    "experiment_name": "Mfcc_Shape_Gan_12",
     "n_gpu": 1,
     "resume": true,
     "train_mode": true,
@@ -39,7 +39,7 @@
     },
     "generator": {
         "arch": {
-            "spec": "Mfcc_Shape_Gen_Small_2",
+            "spec": "Mfcc_Shape_Gen_12",
             "args": {
                 "z_dim": 100,
                 "shapes_dim": 4
@@ -63,7 +63,7 @@
     },
     "discriminator": {
         "arch": {
-            "spec": "Mfcc_Shape_Critic",
+            "spec": "Mfcc_Shape_Critic_12",
             "args": {
                 "shapes_dim": 4
             }

@@ -273,6 +273,38 @@ class Mfcc_Shape_Gen_Small_2(BaseModel):
         x = self.sig5(self.conv5(x))
         return x
 
+class Mfcc_Shape_Gen_12(BaseModel):
+    def __init__(self, z_dim, shapes_dim):
+        super().__init__()
+
+        in_dim = z_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 128, kernel_size=(3,3), padding=(0,6))
+        self.relu1 = nn.ReLU()
+
+        self.conv2 = nn.Conv2d(128, 64, kernel_size=(3,3))
+        self.relu2 = nn.ReLU()
+
+        self.conv3 = nn.Conv2d(64, 64, kernel_size=(3,3))
+        self.relu3 = nn.ReLU()
+
+        self.conv4 = nn.Conv2d(64, 32, kernel_size=(3,3))
+        self.relu4 = nn.ReLU()
+
+        self.conv5 = nn.Conv2d(32, 4, kernel_size=(4,5))
+        self.sig5 = nn.Sigmoid()
+
+    def forward(self, noise, mfcc):
+        batch_size = mfcc.size(0)
+        x = torch.cat((noise, mfcc), dim=1)
+    
+        x = self.relu1(self.conv1(x))
+        x = self.relu2(self.conv2(x))
+        x = self.relu3(self.conv3(x))
+        x = self.relu4(self.conv4(x))
+        x = self.sig5(self.conv5(x))
+        return x
+
 class Mfcc_Shape_Gen_Small_Lin(BaseModel):
     def __init__(self, z_dim, shapes_dim):
         super().__init__()
@@ -371,6 +403,55 @@ class Mfcc_Shape_Critic(BaseModel):
         x = self.tanh9(self.lin9(x))
         return x
 
+class Mfcc_Shape_Critic_12(BaseModel):
+    def __init__(self, shapes_dim):
+        super().__init__()
+
+        in_dim = shapes_dim + 1
+
+        self.conv1 = nn.Conv2d(in_dim, 64, kernel_size=(4,1), stride=(2,1))
+        self.lrelu1 = nn.LeakyReLU(0.2)
+
+        self.conv2 = nn.Conv2d(64, 128, kernel_size=(3,1))
+        self.lrelu2 = nn.LeakyReLU(0.2)
+
+        self.conv3 = nn.Conv2d(128, 128, kernel_size=(3,1))
+        self.lrelu3 = nn.LeakyReLU(0.2)
+
+        self.conv4 = nn.Conv1d(128, 128, kernel_size=5, stride=2)
+        self.lrelu4 = nn.LeakyReLU(0.2)
+
+        self.conv5 = nn.Conv1d(128, 128, kernel_size=4, stride=2)
+        self.lrelu5 = nn.LeakyReLU(0.2)
+
+        self.conv6 = nn.Conv1d(128, 64, kernel_size=3, stride=2)
+        self.lrelu6 = nn.LeakyReLU(0.2)
+
+        self.lin7 = nn.Linear(256, 16)
+        self.tanh7 = nn.Tanh()
+
+    
+    def forward(self, shapes, mfcc):
+        batch_size = mfcc.size(0)
+
+        # Expand shapes to same shape as mfcc
+        height, width = mfcc.size(2), mfcc.size(3)
+        ones = torch.ones(height, width, device=shapes.device)
+        shapes = shapes * ones
+
+        x = torch.cat((shapes, mfcc), dim=1)
+        x = self.lrelu1(self.conv1(x))
+        x = self.lrelu2(self.conv2(x))
+        x = self.lrelu3(self.conv3(x))
+        x = x.squeeze(2)
+        x = self.lrelu4(self.conv4(x))
+        x = self.lrelu5(self.conv5(x))
+        x = self.lrelu6(self.conv6(x))
+
+        x = x.view(batch_size, -1)
+        x = self.tanh7(self.lin7(x))
+        return x
+
 class Shape_Critic(BaseModel):
     def __init__(self, shapes_dim):
         super().__init__()
@@ -421,6 +502,9 @@ class Shape_Critic(BaseModel):
         return x
 
 class Mfcc_Multi_Towers_Classifier(BaseModel):
+    """
+    I don't know why I called this Mfcc, it doesn't use Mfccs...
+    """
     def __init__(self):
         super().__init__()
 
