@@ -27,7 +27,7 @@ def wasserstein_g_loss(fake_logit):
     fake_loss = -fake_logit.mean()
     return fake_loss
 
-def gradient_penalty(d_model, real, fake, conditional=None):
+def gradient_penalty(d_model, real, fake, conditional=None, graph=True):
     device = real.device
     batch_size = real.size(0)
 
@@ -48,7 +48,7 @@ def gradient_penalty(d_model, real, fake, conditional=None):
 
     gradient = grad(score, interpolated, 
                     grad_outputs=torch.ones(score.size()).to(device),
-                    create_graph=True)[0]
+                    create_graph=graph)[0]
 
     penalty = ((gradient.norm(p=2, dim=1) - 1) ** 2).mean()
     return penalty

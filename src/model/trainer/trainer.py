@@ -81,22 +81,27 @@ class MfccShapeTrainer(BaseGanTrainer):
         noise = torch.randn(self.batch_size, self.z_dim, height, width)
         noise = noise.to(self.device)
 
-        fake_shapes = self.gen_model(noise, mfcc).detach()
-        real_logit = self.disc_model(shape_param, mfcc)
-        fake_logit = self.disc_model(fake_shapes, mfcc)
+        with torch.no_grad():
+            fake_shapes = self.gen_model(noise, mfcc).detach()
+            real_logit = self.disc_model(shape_param, mfcc)
+            fake_logit = self.disc_model(fake_shapes, mfcc)
 
-        disc_real_loss, disc_fake_loss = self.disc_loss(real_logit, fake_logit)
+            disc_real_loss, disc_fake_loss = self.disc_loss(real_logit, fake_logit)
+
         if self.penalty:
             gp = self.penalty * gradient_penalty(self.disc_model, 
                                                  real=shape_param,
                                                  fake=fake_shapes,
-                                                 conditional=mfcc)
+                                                 conditional=mfcc,
+                                                 graph=False)
             self.writer.add_scalar('val/critic/gradient_penalty', gp)
             disc_losses['gp'] = gp
 
-            disc_loss = disc_real_loss + disc_fake_loss + gp
+            with torch.no_grad():
+                disc_loss = disc_real_loss + disc_fake_loss + gp
         else:
-            disc_loss = disc_real_loss + disc_fake_loss
+            with torch.no_grad():
+                disc_loss = disc_real_loss + disc_fake_loss
 
         self.writer.add_scalar('val/critic/real_loss', disc_real_loss)
         self.writer.add_scalar('val/critic/fake_loss', disc_fake_loss)
@@ -124,17 +129,18 @@ class MfccShapeTrainer(BaseGanTrainer):
         return gen_loss
 
     def _gen_val_epoch(self, epoch, mfcc):
-        self.gen_model.eval()
-        height, width = mfcc.size(2), mfcc.size(3)
-        noise = torch.randn(self.batch_size, self.z_dim, height, width)
-        noise = noise.to(self.device)
+        with torch.no_grad():
+            self.gen_model.eval()
+            height, width = mfcc.size(2), mfcc.size(3)
+            noise = torch.randn(self.batch_size, self.z_dim, height, width)
+            noise = noise.to(self.device)
 
-        fake_shapes = self.gen_model(noise, mfcc)
-        fake_logit = self.disc_model(fake_shapes, mfcc)
+            fake_shapes = self.gen_model(noise, mfcc)
+            fake_logit = self.disc_model(fake_shapes, mfcc)
 
-        gen_loss = self.gen_loss(fake_logit)
+            gen_loss = self.gen_loss(fake_logit)
 
-        return gen_loss
+            return gen_loss
     
     def _val_epoch(self, epoch):
         total_disc_loss = 0
