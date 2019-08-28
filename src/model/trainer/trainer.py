@@ -163,22 +163,21 @@ class MfccShapeTrainer(BaseGanTrainer):
                         disc_losses['fake'], disc_losses['real']))
 
             # Eval Generator
-            if batch_idx % self.disc_gen_ratio == 0:
-                gen_loss = self._gen_val_epoch(epoch, mfcc)
-                total_gen_loss += gen_loss
-                if batch_idx % self.log_step == 0:
-                    self.logger.info(
-                        'Val Epoch: {} '
-                        'Batch: {} '
-                        'Gen Loss: {:.6f} '.format(
-                            epoch, batch_idx+1, gen_loss))
+            gen_loss = self._gen_val_epoch(epoch, mfcc)
+            total_gen_loss += gen_loss
+            if batch_idx % self.log_step == 0:
+                self.logger.info(
+                    'Val Epoch: {} '
+                    'Batch: {} '
+                    'Gen Loss: {:.6f} '.format(
+                        epoch, batch_idx+1, gen_loss))
 
             self.writer.add_scalar('val/critic/total_loss', disc_loss)
             self.writer.add_scalar('val/gen/total_loss', gen_loss)
 
         disc_loss = total_disc_loss / self.len_epoch
-        gen_loss = (total_gen_loss / self.len_epoch) * self.disc_gen_ratio
-        self.logger.info('Val Epoch: {}'
+        gen_loss = total_gen_loss / self.len_epoch
+        self.logger.info('Val Epoch: {} '
                          'Ave Epoch Critic Loss: {} '
                          'Ave Epoch Gen Loss: {}'.format(epoch, 
                             disc_loss, gen_loss))
@@ -240,7 +239,7 @@ class MfccShapeTrainer(BaseGanTrainer):
 
             disc_loss = total_disc_loss / self.len_epoch
             gen_loss = (total_gen_loss / self.len_epoch) * self.disc_gen_ratio
-            self.logger.info('Train Epoch: {}'
+            self.logger.info('Train Epoch: {} '
                              'Ave Epoch Critic Loss: {} '
                              'Ave Epoch Gen Loss: {}'.format(epoch, 
                                 disc_loss, gen_loss))

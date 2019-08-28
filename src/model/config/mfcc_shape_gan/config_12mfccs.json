@@ -1,0 +1,88 @@
+{
+    "experiment_name": "Mfcc_Shape_Gan_12",
+    "n_gpu": 1,
+    "resume": true,
+    "train_mode": true,
+    "log_all": true,
+
+    "train_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/train",
+            "blendshapes_path": "data/lrw_shape_params/train",
+            "batch_size": 128,
+            "shuffle": true,
+            "n_workers": 6,
+            "drop_last": true,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    },
+    "val_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/val",
+            "blendshapes_path": "data/lrw_shape_params/val",
+            "batch_size": 128,
+            "shuffle": true,
+            "n_workers": 6,
+            "drop_last": false,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    },
+    "trainer": {
+        "epochs": 200,
+        "disc_gen_ratio": 10,
+        "save_dir": "saved/",
+        "save_period": 1,
+        "level": 2,
+        "tensorboard": true
+    },
+    "generator": {
+        "arch": {
+            "spec": "Mfcc_Shape_Gen_12",
+            "args": {
+                "z_dim": 100,
+                "shapes_dim": 4
+            }
+        },
+        "optimizer": {
+            "spec": "RMSprop",
+            "args": {
+                "lr": 0.00005
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_g_loss"
+        },
+        "lr_scheduler": {
+            "spec": "ExponentialLR",
+            "args": {
+                "gamma": 0.99
+            }
+        }
+    },
+    "discriminator": {
+        "arch": {
+            "spec": "Mfcc_Shape_Critic_12",
+            "args": {
+                "shapes_dim": 4
+            }
+        },
+        "optimizer": {
+            "spec": "RMSprop",
+            "args": {
+                "lr": 0.00005
+            }
+        },
+        "loss_func": {
+            "spec": "wasserstein_d_loss",
+            "gradient_penalty": 5
+        },
+        "lr_scheduler": {
+            "spec": "ExponentialLR",
+            "args": {
+                "gamma": 0.99
+            }
+        }
+    }
+}

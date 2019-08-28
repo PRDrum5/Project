@@ -190,7 +190,7 @@ class WavBlendshapesDataset(Dataset):
             with open('data/lrw_audio_stats.pkl', 'wb') as f:
                 pickle.dump(self.stats, f, pickle.HIGHEST_PROTOCOL)
             
-    def _mfcc(self, audio_data, sample_rate, n_mfcc=50):
+    def _mfcc(self, audio_data, sample_rate, n_mfcc=12):
         """
         Returns the mfcc of an audio signal.
         The number of mfcc filters can be varied.
