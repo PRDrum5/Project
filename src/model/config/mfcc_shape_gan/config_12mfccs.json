@@ -30,7 +30,7 @@
         }
     },
     "trainer": {
-        "epochs": 200,
+        "epochs": 500,
         "disc_gen_ratio": 10,
         "save_dir": "saved/",
         "save_period": 1,
@@ -39,16 +39,16 @@
     },
     "generator": {
         "arch": {
-            "spec": "Mfcc_Shape_Gen_12",
+            "spec": "Mfcc_Shape_Gen_12_Big",
             "args": {
-                "z_dim": 100,
+                "z_dim": 5,
                 "shapes_dim": 4
             }
         },
         "optimizer": {
             "spec": "RMSprop",
             "args": {
-                "lr": 0.00005
+                "lr": 0.00001
             }
         },
         "loss_func": {
@@ -57,7 +57,7 @@
         "lr_scheduler": {
             "spec": "ExponentialLR",
             "args": {
-                "gamma": 0.99
+                "gamma": 0.999
             }
         }
     },
@@ -71,7 +71,7 @@
         "optimizer": {
             "spec": "RMSprop",
             "args": {
-                "lr": 0.00005
+                "lr": 0.00002
             }
         },
         "loss_func": {
@@ -81,7 +81,7 @@
         "lr_scheduler": {
             "spec": "ExponentialLR",
             "args": {
-                "gamma": 0.99
+                "gamma": 0.999
             }
         }
     }
