@@ -3,25 +3,6 @@ from torchvision import datasets, transforms
 from base import BaseDataLoader
 from datasets import *
 
-class DataLoaderMFCCShapes(BaseDataLoader):
-    """
-    DataLoader for MFCC and Corresponding Blendshape Parameters
-    """
-    def __init__(self, melspec_dir, blendshapes_dir, batch_size,
-                 shuffle=False, train_split=1, n_workers=1, drop_last=True):
-
-        self.melspec_dir = melspec_dir
-        self.blendshapes_dir = blendshapes_dir
-
-        transform = SpecShapesToTensor()
-
-        self.dataset = MFCCBlendshapesDataset(self.melspec_dir,
-                                                 self.blendshapes_dir,
-                                                 transform=transform)
-
-        super().__init__(self.dataset, batch_size, shuffle, 
-                         train_split, n_workers, drop_last=drop_last)
-
 class DataLoaderWavShapes(BaseDataLoader):
     """
     """

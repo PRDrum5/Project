@@ -1,0 +1,47 @@
+{
+    "experiment_name": "Mfcc_Shape_Gan_12",
+    "n_gpu": 1,
+    "train_mode": false,
+    "model_path": "trained_models/shape_gan/20190828_163631/gen_checkpoint-150.pth",
+
+    "arch": {
+        "spec": "Mfcc_Shape_Gen_12",
+        "args": {
+            "z_dim": 100,
+            "shapes_dim": 4
+        }
+    },
+    "test_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/test",
+            "blendshapes_path": "data/lrw_shape_params/test",
+            "batch_size": 100,
+            "shuffle": true,
+            "n_workers": 0,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    },
+    "train_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/train",
+            "blendshapes_path": "data/lrw_shape_params/train",
+            "batch_size": 100,
+            "shuffle": true,
+            "n_workers": 0,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    },
+    "val_loader": {
+        "spec": "DataLoaderWavShapes",
+        "args":{
+            "wav_path": "data/lrw_audio/val",
+            "blendshapes_path": "data/lrw_shape_params/val",
+            "batch_size": 100,
+            "shuffle": true,
+            "n_workers": 0,
+            "tsfm": ["SpecShapesToTensor"]
+        }
+    }
+}
