@@ -12,7 +12,7 @@
             "blendshapes_path": "data/lrw_shape_params/train",
             "batch_size": 128,
             "shuffle": true,
-            "n_workers": 6,
+            "n_workers": 0,
             "drop_last": true,
             "tsfm": ["SpecShapesToTensor"]
         }
@@ -24,7 +24,7 @@
             "blendshapes_path": "data/lrw_shape_params/val",
             "batch_size": 128,
             "shuffle": true,
-            "n_workers": 6,
+            "n_workers": 0,
             "drop_last": false,
             "tsfm": ["SpecShapesToTensor"]
         }
