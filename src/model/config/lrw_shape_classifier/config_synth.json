@@ -1,0 +1,58 @@
+{
+    "experiment_name": "LRW_SHAPE_CLASSIFER_SYNTH",
+    "n_gpu": 1,
+    "resume": false,
+    "train_mode": true,
+    "log_all": true,
+
+    "arch": {
+        "spec": "Lrw_Shape_Classifier",
+        "args": {}
+    },
+    "optimizer": {
+        "spec": "RMSprop",
+        "args": {
+            "lr": 0.00005,
+            "weight_decay": 0.005
+        }
+    },
+    "loss_func": {
+        "spec": "nll_loss"
+    },
+    "lr_scheduler": {
+        "spec": "ExponentialLR",
+        "args": {
+            "gamma": 0.99
+        }
+    },
+    "train_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params_gan/001/train",
+            "batch_size": 128,
+            "shuffle": true,
+            "n_workers": 6,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "val_loader": {
+        "spec": "DataLoaderLrwShapes",
+        "args":{
+            "blendshapes_dir": "data/lrw_shape_params_gan/001/val",
+            "batch_size": 128,
+            "shuffle": true,
+            "n_workers": 6,
+            "tsfm": ["LrwShapesToTensor"]
+        }
+    },
+    "early_stopping": {
+        "length": 10
+    },
+    "trainer": {
+        "epochs": 500,
+        "save_dir": "saved/",
+        "save_period": 100,
+        "level": 2,
+        "tensorboard": true
+    }
+}

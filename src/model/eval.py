@@ -355,7 +355,7 @@ class Classifer_Eval(Eval):
             preds[batch_idx*batch_size:(batch_idx+1)*batch_size] = _preds
 
         correct = np.zeros(500,)
-        occurences = np.zeros(500,)
+        occurences = 0.000000000001 * np.ones(500,)
         for i in range(n_samples):
             label = int(preds[i])
             occurences[label] += 1
@@ -363,14 +363,17 @@ class Classifer_Eval(Eval):
                 correct[label] += 1
 
         acc = correct / occurences
+        mean_acc = np.mean(acc)
 
         if plot:
             fig, ax = plt.subplots()
-            ax.bar(range(500), acc, width=1.0)
-            ax.set_title("Blendshape Channels Per Word Test Accuracy")
+            ax.bar(range(500), acc, width=1.2)
+            ax.axhline(y=mean_acc, xmin=0.0, xmax=500, color='r', label=f'Mean Accuracy: {mean_acc:.5f}')
+            ax.set_title("Multiple Towers Per Word Test Accuracy")
             ax.set_xlabel("Word Labels")
             ax.set_ylabel("Class Accuracy")
             plt.tight_layout()
+            plt.legend()
             plt.show()
         else:
             return acc
@@ -381,6 +384,7 @@ if __name__ == "__main__":
     #classifier_config = GetConfig('./config/lrw_shape_classifier/config_eval.json')
     gen_config = GetConfig('./config/mfcc_shape_gan/config_12mfccs_eval.json')
     #classifier_config = GetConfig('./config/mfcc_shape_gan/eval_gan_with_channels.json')
+    #classifier_config = GetConfig('./config/mfcc_shape_gan/eval_gan_with_multitower.json')
     #ce = Classifer_Eval(classifier_config)
 
     #cls_data_loaders = ce.get_dataloaders()
@@ -393,6 +397,7 @@ if __name__ == "__main__":
     #                             ce.test_batch_size)
     #print(acc)
     #ce.eval_class_accuracy(classifier_model, cls_test_loader, ce.test_batch_size)
+    #ce.eval_conf_matrix(classifier_model, cls_test_loader, ce.test_batch_size)
 
 
     gan = Generator_Eval(gen_config, save_path='data/lrw_shape_params_gan/')

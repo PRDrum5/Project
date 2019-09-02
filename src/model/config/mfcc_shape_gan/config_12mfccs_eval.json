@@ -1,13 +1,13 @@
 {
-    "experiment_name": "Mfcc_Shape_Gan_12",
+    "experiment_name": "Mfcc_Shape_Gan_12_Big",
     "n_gpu": 1,
     "train_mode": false,
-    "model_path": "trained_models/shape_gan/20190828_163631/gen_checkpoint-150.pth",
+    "model_path": "trained_models/shape_gan/20190830_165408/gen_checkpoint-500.pth",
 
     "arch": {
-        "spec": "Mfcc_Shape_Gen_12",
+        "spec": "Mfcc_Shape_Gen_12_Big",
         "args": {
-            "z_dim": 100,
+            "z_dim": 5,
             "shapes_dim": 4
         }
     },

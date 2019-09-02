@@ -11,7 +11,7 @@
     "test_loader": {
         "spec": "DataLoaderLrwShapes",
         "args":{
-            "blendshapes_dir": "data/lrw_shape_params_gan/000",
+            "blendshapes_dir": "data/lrw_shape_params_gan/001",
             "batch_size": 100,
             "n_workers": 0,
             "tsfm": ["LrwShapesToTensor"]
